@@ -1,7 +1,7 @@
 # sui-go
 Go API for SUI
 ## Usage
-```yml
+```Go
 sui := new(SUIClient) //Create instance of client
 sui.Init("http://127.0.0.1:9000") //Initialise on local node
 
