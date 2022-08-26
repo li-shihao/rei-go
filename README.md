@@ -15,4 +15,4 @@ ct := tx.GetContractDeploy()
 obj = sui.GetObject("0xde1e02902f1c591d6e71d68d41e663105a4e8f25")
 owner = obj.GetOwner()
 ```
-For more guidance look in [a relative link](internal/sui/types)
+For more guidance look [here](/internal/sui/types)
