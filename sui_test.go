@@ -7,7 +7,7 @@ import (
 
 func TestGetTotalTransactionNumber(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	if result := tc.GetTotalTransactionNumber(); result == 0 {
 		t.Errorf("Error while getting total transaction number")
@@ -16,7 +16,7 @@ func TestGetTotalTransactionNumber(t *testing.T) {
 
 func TestGetTransaction(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("tsl8gn6Wbeq17lmh8MCRkacdHYCiuKDj7r80MD3OhpA=")
 	got1 := uint32(result1.Result.Certificate.Data.Transactions[0]["TransferSui"].(map[string]interface{})["amount"].(float64))
@@ -66,7 +66,7 @@ func TestGetTransaction(t *testing.T) {
 
 func TestGetTransactionInRange(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransactionsInRange(0, 10)
 
@@ -83,7 +83,7 @@ func TestGetTransactionInRange(t *testing.T) {
 
 func TestGetTransactionsByObject(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransactionsByObject("0x42fe8e8893586133fe7b5e5e225b288baed58ec7")
 	got1 := false
@@ -116,7 +116,7 @@ func TestGetTransactionsByObject(t *testing.T) {
 
 func TestGetType(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1 := result1.GetType()
@@ -142,7 +142,7 @@ func TestGetType(t *testing.T) {
 
 func TestGetTime(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1 := result1.GetTime()
@@ -168,7 +168,7 @@ func TestGetTime(t *testing.T) {
 
 func TestGetID(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1 := result1.GetID()
@@ -194,7 +194,7 @@ func TestGetID(t *testing.T) {
 
 func TestGetStatus(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1 := result1.GetStatus()
@@ -213,7 +213,7 @@ func TestGetStatus(t *testing.T) {
 
 func TestGetSender(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1 := result1.GetSender()
@@ -239,7 +239,7 @@ func TestGetSender(t *testing.T) {
 
 func TestGetRecipient(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1, _ := result1.GetRecipient()
@@ -265,7 +265,7 @@ func TestGetRecipient(t *testing.T) {
 
 func TestGetTransferAmount(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1, _ := result1.GetTransferAmount()
@@ -291,7 +291,7 @@ func TestGetTransferAmount(t *testing.T) {
 
 func TestGetGetContractPackage(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1, _ := result1.GetContractPackage()
@@ -345,7 +345,7 @@ func TestGetGetContractPackage(t *testing.T) {
 
 func TestGetContractModule(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1, _ := result1.GetContractModule()
@@ -399,7 +399,7 @@ func TestGetContractModule(t *testing.T) {
 
 func TestGetContractFunction(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1, _ := result1.GetContractFunction()
@@ -453,7 +453,7 @@ func TestGetContractFunction(t *testing.T) {
 
 func TestGetRawContractArguments(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1, _ := result1.GetRawContractArguments()
@@ -547,7 +547,7 @@ func TestGetRawContractArguments(t *testing.T) {
 
 func TestGetObject(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetObject("0xb12cb53ad48c6ace9231dec7495bc8bae86ffb66")
 	got1 := result1.Result.Details.Data.DataType
@@ -584,7 +584,7 @@ func TestGetObject(t *testing.T) {
 
 func TestGetDataType(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetObject("0xb12cb53ad48c6ace9231dec7495bc8bae86ffb66")
 	got1 := result1.GetObjectDataType()
@@ -621,7 +621,7 @@ func TestGetDataType(t *testing.T) {
 
 func TestGetObjectType(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetObject("0xb12cb53ad48c6ace9231dec7495bc8bae86ffb66")
 	got1 := result1.GetObjectType()
@@ -658,7 +658,7 @@ func TestGetObjectType(t *testing.T) {
 
 func TestHasPublicTransfer(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetObject("0xb12cb53ad48c6ace9231dec7495bc8bae86ffb66")
 	got1 := result1.HasPublicTransfer()
@@ -695,7 +695,7 @@ func TestHasPublicTransfer(t *testing.T) {
 
 func TestGetOwner(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetObject("0xb12cb53ad48c6ace9231dec7495bc8bae86ffb66")
 	got1 := result1.GetOwner()
@@ -732,7 +732,7 @@ func TestGetOwner(t *testing.T) {
 
 func TestGetObjectID(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetObject("0xb12cb53ad48c6ace9231dec7495bc8bae86ffb66")
 	got1 := result1.GetObjectID()
@@ -769,7 +769,7 @@ func TestGetObjectID(t *testing.T) {
 
 func TestGetObjectPackage(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetObject("0xb12cb53ad48c6ace9231dec7495bc8bae86ffb66")
 	got1 := result1.GetObjectPackage()
@@ -806,7 +806,7 @@ func TestGetObjectPackage(t *testing.T) {
 
 func TestGetObjectModule(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetObject("0xb12cb53ad48c6ace9231dec7495bc8bae86ffb66")
 	got1 := result1.GetObjectModule()
@@ -843,7 +843,7 @@ func TestGetObjectModule(t *testing.T) {
 
 func TestGetObjectMetadata(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetObject("0xb12cb53ad48c6ace9231dec7495bc8bae86ffb66")
 	got1 := result1.GetObjectMetadata()
@@ -905,7 +905,7 @@ func TestGetObjectMetadata(t *testing.T) {
 
 func TestGetAccount(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetAccount("0x66f68a701b4cb5f2b3d3446c093eb91fae8af34f")
 	got1 := result1.Balance
@@ -947,7 +947,7 @@ func TestGetAccount(t *testing.T) {
 
 func TestGetAccountNFTs(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetAccount("0x66f68a701b4cb5f2b3d3446c093eb91fae8af34f")
 	got1 := result1.GetAccountNFTs()
@@ -969,7 +969,7 @@ func TestGetAccountNFTs(t *testing.T) {
 
 func TestGetGetContractDeploy(t *testing.T) {
 	tc := new(SUIClient)
-	tc.Init("http://127.0.0.1:9000")
+	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("xVFZ7KO5uMrBSLtwLku4TMLZaIEMmhob0G/erUmTa6U=")
 	got1, _ := result1.GetContractDeploy()
