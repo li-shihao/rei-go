@@ -1,6 +1,6 @@
 # sui-go
+![test](https://github.com/li-shihao/sui-go/actions/workflows/go.yml/badge.svg)  
 Go API for SUI
-![test](https://github.com/li-shihao/sui-go/actions/workflows/go.yml/badge.svg)
 ## Usage
 ```Go
 import (
