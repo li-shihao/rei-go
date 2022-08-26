@@ -5,7 +5,7 @@ Go API for SUI
 sui := new(SUIClient) //Create instance of client
 sui.Init("http://127.0.0.1:9000") //Initialise on local node
 
-max := sui.GetTotalTransactionNumber
+max := sui.GetTotalTransactionNumber()
 
 arr := sui.GetTransactionsInRange(0, 10)
 
