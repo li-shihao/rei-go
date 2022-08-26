@@ -2,6 +2,11 @@
 Go API for SUI
 ## Usage
 ```Go
+import (
+  "rei.io/rei/internal/helpers"
+  "rei.io/rei/internal/sui"
+)
+
 sui := new(SUIClient) //Create instance of client
 sui.Init("http://127.0.0.1:9000") //Initialise on local node
 
