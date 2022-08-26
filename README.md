@@ -1,5 +1,6 @@
 # sui-go
 Go API for SUI
+[](https://github.com/li-shihao/sui-go/actions/workflows/go.yml/badge.svg)
 ## Usage
 ```Go
 import (
