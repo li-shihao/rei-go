@@ -5,10 +5,14 @@ Go API for SUI
 sui := new(SUIClient) //Create instance of client
 sui.Init("http://127.0.0.1:9000") //Initialise on local node
 
-_ := sui.GetTotalTransactionNumber
-_ = sui.GetTransactionsInRange(0, 10)
-_ = sui.GetTransaction("Um5bXvoCztqZlhOy/xWslobwSTrXVxVt6QxDjYG+ep0=")
-obj = sui.GetObject("0xde1e02902f1c591d6e71d68d41e663105a4e8f25")
+max := sui.GetTotalTransactionNumber
 
-_ = obj.GetOwner()
+arr := sui.GetTransactionsInRange(0, 10)
+
+tx := sui.GetTransaction("Um5bXvoCztqZlhOy/xWslobwSTrXVxVt6QxDjYG+ep0=")
+ct := tx.GetContractDeploy()
+
+obj = sui.GetObject("0xde1e02902f1c591d6e71d68d41e663105a4e8f25")
+owner = obj.GetOwner()
 ```
+For more guidance look in [a relative link](internal/sui/types)
