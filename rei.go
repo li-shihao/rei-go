@@ -8,6 +8,8 @@ import (
 	"rei.io/rei/internal/sui"
 )
 
+var check = helpers.Check
+
 func initResume(name string) uint64 {
 	cnt := uint64(0)
 
@@ -16,11 +18,11 @@ func initResume(name string) uint64 {
 
 		// Open count file
 		file, err := os.Open(name)
-		helpers.Check(err)
+		check(err)
 
 		// Read into cnt
 		_, err = fmt.Fscanf(file, "%d\n", &cnt)
-		helpers.Check(err)
+		check(err)
 		file.Close()
 	}
 	return cnt

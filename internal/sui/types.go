@@ -113,8 +113,9 @@ type Obj struct {
 // Response structure from calling sui_getObjectsOwnedByAddress
 type AccResponse struct {
 	Result []struct {
-		ObjectId string `json:"objectId"`
-		Type     string `json:"type"`
+		ObjectId string                 `json:"objectId"`
+		Type     string                 `json:"type"`
+		Metadata map[string]interface{} `json:"-"`
 	} `json:"result"`
 }
 
@@ -125,6 +126,7 @@ type Acc struct {
 	Objects []struct {
 		ObjectId string
 		Type     string
+		Metadata map[string]interface{}
 	}
 	Transactions []string
 }
@@ -365,6 +367,7 @@ func (acc *Acc) GetAccountNFTs() []map[string]interface{} {
 			obj := map[string]interface{}{
 				"ObjectId": v.ObjectId,
 				"Type":     v.Type,
+				"Metadata": v.Metadata,
 			}
 			result = append(result, obj)
 		}

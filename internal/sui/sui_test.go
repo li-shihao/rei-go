@@ -959,10 +959,18 @@ func TestGetAccountNFTs(t *testing.T) {
 
 	result2, _ := tc.GetAccount("0x1a6254d89ee1698ed62c03481d28eee88c685b94")
 	got2 := result2.GetAccountNFTs()
-	exp2 := []map[string]interface{}{{"ObjectId": "0xa61de7bb233df7870bca7ed3459f1261f393ec7f", "Type": "0x95cd99feeeb3f49a52f2b4267743f551c828d5b2::rgb::ColorObject"}}
+	exp2 := []map[string]interface{}{{
+		"ObjectId": "0xa61de7bb233df7870bca7ed3459f1261f393ec7f",
+		"Type":     "0x95cd99feeeb3f49a52f2b4267743f551c828d5b2::rgb::ColorObject",
+		"Metadata": map[string]interface{}{
+			"blue":  float64(0),
+			"green": float64(255),
+			"red":   float64(0),
+		},
+	}}
 
 	if !reflect.DeepEqual(got2, exp2) {
-		t.Errorf("Result was incorrect, got %v, want %v.", got2, exp2)
+		t.Errorf("Result was incorrect, got %+v, want %+v.", got2, exp2)
 	}
 
 }

@@ -13,6 +13,8 @@ import (
 	"rei.io/rei/internal/helpers"
 )
 
+var check = helpers.Check
+
 type SUIClient struct {
 	ip     string
 	client http.Client
@@ -39,21 +41,21 @@ func (sc *SUIClient) GetTotalTransactionNumber() uint64 {
 
 	// Creates new POST request with body
 	req, err := http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
-	helpers.Check(err)
+	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Dispatches request
 	res, err := sc.client.Do(req)
-	helpers.Check(err)
+	check(err)
 	defer res.Body.Close()
 
 	// Converting Response body to byte array
 	arr, err := io.ReadAll(res.Body)
-	helpers.Check(err)
+	check(err)
 
 	// Decodes bytearray
 	err = json.Unmarshal(arr, &x)
-	helpers.Check(err)
+	check(err)
 
 	// Casting float64 result to uint32
 	return uint64(x.Result)
@@ -73,17 +75,17 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 
 	// Creates new POST request with body
 	req, err := http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
-	helpers.Check(err)
+	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Dispatches request
 	res, err := sc.client.Do(req)
-	helpers.Check(err)
+	check(err)
 	defer res.Body.Close()
 
 	// Converting Response body to byte array
 	arr, err := io.ReadAll(res.Body)
-	helpers.Check(err)
+	check(err)
 
 	/*
 		Decodes entire transaction into placeholder
@@ -91,11 +93,11 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 		We decode first then set fields
 	*/
 	err = json.Unmarshal(arr, &z)
-	helpers.Check(err)
+	check(err)
 
 	// Convert map to struct
 	err = mapstructure.Decode(z, &x)
-	helpers.Check(err)
+	check(err)
 
 	if reflect.ValueOf(x.Result).IsZero() {
 		return TX{}, errors.New("not valid transaction")
@@ -159,11 +161,11 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 	if x.GetType() == "Call" {
 
 		pkg, err := x.GetContractPackage()
-		helpers.Check(err)
+		check(err)
 		mod, err := x.GetContractModule()
-		helpers.Check(err)
+		check(err)
 		fn, err := x.GetContractFunction()
-		helpers.Check(err)
+		check(err)
 
 		body = []byte(fmt.Sprintf(`{"jsonrpc":"2.0", "id":1, "method": "sui_getNormalizedMoveFunction", "params": ["%s", "%s", "%s"]}`, pkg, mod, fn))
 
@@ -172,17 +174,17 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 
 		// Creates new POST request with body
 		req, err := http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
-		helpers.Check(err)
+		check(err)
 		req.Header.Set("Content-Type", "application/json")
 
 		// Dispatches request
 		res, err := sc.client.Do(req)
-		helpers.Check(err)
+		check(err)
 		defer res.Body.Close()
 
 		// Converting Response body to byte array
 		arr, err := io.ReadAll(res.Body)
-		helpers.Check(err)
+		check(err)
 
 		/*
 			Decodes entire transaction into placeholder
@@ -190,13 +192,13 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 			We decode first then set fields
 		*/
 		err = json.Unmarshal(arr, &z)
-		helpers.Check(err)
+		check(err)
 
 		tmp := []map[string]interface{}{}
 
 		// Get raw arguments data from transaction for later indexing use
 		raw, err := x.GetRawContractArguments()
-		helpers.Check(err)
+		check(err)
 
 		// Loop through all the parameters that the function call takes
 		for i, v := range z["result"].(map[string]interface{})["parameters"].([]interface{}) {
@@ -267,21 +269,21 @@ func (sc *SUIClient) GetTransactionsInRange(start uint64, end uint64) ([]string,
 
 	// Creates new POST request with body
 	req, err := http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
-	helpers.Check(err)
+	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Dispatches request
 	res, err := sc.client.Do(req)
-	helpers.Check(err)
+	check(err)
 	defer res.Body.Close()
 
 	// Converting Response body to byte array
 	arr, err := io.ReadAll(res.Body)
-	helpers.Check(err)
+	check(err)
 
 	// Decodes bytearray
 	err = json.Unmarshal(arr, &x)
-	helpers.Check(err)
+	check(err)
 
 	// Look for the string value in the index, id array and appends it to the return array
 	for _, i := range x.Result {
@@ -308,17 +310,17 @@ func (sc *SUIClient) GetObject(id string) (Obj, error) {
 
 	// Creates new POST request with body
 	req, err := http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
-	helpers.Check(err)
+	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Dispatches request
 	res, err := sc.client.Do(req)
-	helpers.Check(err)
+	check(err)
 	defer res.Body.Close()
 
 	// Converting Response body to byte array
 	arr, err := io.ReadAll(res.Body)
-	helpers.Check(err)
+	check(err)
 
 	/*
 		Decodes entire object into placeholder
@@ -326,11 +328,11 @@ func (sc *SUIClient) GetObject(id string) (Obj, error) {
 		We decode first then set fields
 	*/
 	err = json.Unmarshal(arr, &z)
-	helpers.Check(err)
+	check(err)
 
 	// Convert map to struct
 	err = mapstructure.Decode(z, &x)
-	helpers.Check(err)
+	check(err)
 
 	if reflect.ValueOf(x.Result).IsZero() {
 		return Obj{}, errors.New("not valid object")
@@ -355,21 +357,21 @@ func (sc *SUIClient) GetTransactionsByObject(id string) ([]string, error) {
 
 	// Creates new POST request with body
 	req, err := http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
-	helpers.Check(err)
+	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Dispatches request
 	res, err := sc.client.Do(req)
-	helpers.Check(err)
+	check(err)
 	defer res.Body.Close()
 
 	// Converting Response body to byte array
 	arr, err := io.ReadAll(res.Body)
-	helpers.Check(err)
+	check(err)
 
 	// Decodes bytearray
 	err = json.Unmarshal(arr, &x)
-	helpers.Check(err)
+	check(err)
 
 	if reflect.ValueOf(x.Result).IsZero() {
 		return []string{}, errors.New("not valid object")
@@ -418,17 +420,17 @@ func (sc *SUIClient) GetAccount(id string) (Acc, error) {
 
 	// Creates new POST request with body
 	req, err := http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
-	helpers.Check(err)
+	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Dispatches request
 	res, err := sc.client.Do(req)
-	helpers.Check(err)
+	check(err)
 	defer res.Body.Close()
 
 	// Converting Response body to byte array
 	arr, err := io.ReadAll(res.Body)
-	helpers.Check(err)
+	check(err)
 
 	/*
 		Decodes entire object into placeholder
@@ -436,7 +438,7 @@ func (sc *SUIClient) GetAccount(id string) (Acc, error) {
 		We decode first then set fields
 	*/
 	err = json.Unmarshal(arr, &y)
-	helpers.Check(err)
+	check(err)
 
 	if reflect.ValueOf(y.Result).IsZero() {
 		return Acc{}, errors.New("not valid account")
@@ -446,12 +448,13 @@ func (sc *SUIClient) GetAccount(id string) (Acc, error) {
 	x.Objects = []struct {
 		ObjectId string
 		Type     string
+		Metadata map[string]interface{}
 	}(y.Result)
 
 	// Set balance of account
-	for _, v := range y.Result {
+	for i, v := range y.Result {
 
-		// helpers.Check if object is of SUI Type
+		// check if object is of SUI Type
 		if v.Type == "0x2::coin::Coin<0x2::sui::SUI>" {
 
 			// Grab a copy of the object
@@ -461,11 +464,19 @@ func (sc *SUIClient) GetAccount(id string) (Acc, error) {
 			mtdt := tmp.GetObjectMetadata()
 			bal := mtdt["balance"]
 
-			// helpers.Check if object balance is of float64 type
+			// check if object balance is of float64 type
 			if reflect.TypeOf(bal) == reflect.TypeOf(1.0) {
 				x.Balance += uint64(bal.(float64))
 			}
 		}
+
+		// For each object owned by account, retrieve its metadata
+		obj, err := sc.GetObject(v.ObjectId)
+		check(err)
+
+		mtdt := obj.GetObjectMetadata()
+		delete(mtdt, "id")
+		x.Objects[i].Metadata = mtdt
 	}
 
 	// Set account ID
@@ -478,21 +489,21 @@ func (sc *SUIClient) GetAccount(id string) (Acc, error) {
 
 	// Creates new POST request with body
 	req, err = http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
-	helpers.Check(err)
+	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Dispatches request
 	res, err = sc.client.Do(req)
-	helpers.Check(err)
+	check(err)
 	defer res.Body.Close()
 
 	// Converting Response body to byte array
 	arr, err = io.ReadAll(res.Body)
-	helpers.Check(err)
+	check(err)
 
 	// Decodes bytearray
 	err = json.Unmarshal(arr, &y2)
-	helpers.Check(err)
+	check(err)
 
 	// Look for the string value in the index, id array and appends it to the return array
 	for _, i := range y2.Result {
@@ -511,21 +522,21 @@ func (sc *SUIClient) GetAccount(id string) (Acc, error) {
 
 	// Creates new POST request with body
 	req, err = http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
-	helpers.Check(err)
+	check(err)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Dispatches request
 	res, err = sc.client.Do(req)
-	helpers.Check(err)
+	check(err)
 	defer res.Body.Close()
 
 	// Converting Response body to byte array
 	arr, err = io.ReadAll(res.Body)
-	helpers.Check(err)
+	check(err)
 
 	// Decodes bytearray
 	err = json.Unmarshal(arr, &y3)
-	helpers.Check(err)
+	check(err)
 
 	// Look for the string value in the index, id array and appends it to the return array
 	for _, i := range y3.Result {
