@@ -4,7 +4,6 @@ Go API for SUI
 ## Usage
 ```Go
 import (
-  "rei.io/rei/internal/helpers"
   "rei.io/rei/internal/sui"
 )
 
