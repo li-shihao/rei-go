@@ -1,14 +1,24 @@
 # sui-go
+![test](https://github.com/li-shihao/sui-go/actions/workflows/go.yml/badge.svg)  
 Go API for SUI
 ## Usage
-```yml
-sui := new(SUIClient) //Create instance of client
-sui.Init("http://127.0.0.1:9000") //Initialise on local node
+```Go
+import (
+  "rei.io/rei/internal/helpers"
+  "rei.io/rei/internal/sui"
+)
 
-_ := sui.GetTotalTransactionNumber
-_ = sui.GetTransactionsInRange(0, 10)
-_ = sui.GetTransaction("Um5bXvoCztqZlhOy/xWslobwSTrXVxVt6QxDjYG+ep0=")
-obj = sui.GetObject("0xde1e02902f1c591d6e71d68d41e663105a4e8f25")
+sc := new(sui.SUIClient) //Create instance of client
+sc.Init("http://127.0.0.1:9000") //Initialise on local node
 
-_ = obj.GetOwner()
+max := sc.GetTotalTransactionNumber()
+
+arr := sc.GetTransactionsInRange(0, 10)
+
+tx := sc.GetTransaction("Um5bXvoCztqZlhOy/xWslobwSTrXVxVt6QxDjYG+ep0=")
+ct := tx.GetContractDeploy()
+
+obj = sc.GetObject("0xde1e02902f1c591d6e71d68d41e663105a4e8f25")
+owner = obj.GetOwner()
 ```
+For more guidance look [here](/internal/sui/types.go)
