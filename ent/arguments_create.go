@@ -38,8 +38,8 @@ func (ac *ArgumentsCreate) SetTransactionID(s string) *ArgumentsCreate {
 }
 
 // SetData sets the "Data" field.
-func (ac *ArgumentsCreate) SetData(i []interface{}) *ArgumentsCreate {
-	ac.mutation.SetData(i)
+func (ac *ArgumentsCreate) SetData(s string) *ArgumentsCreate {
+	ac.mutation.SetData(s)
 	return ac
 }
 
@@ -184,7 +184,7 @@ func (ac *ArgumentsCreate) createSpec() (*Arguments, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := ac.mutation.Data(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: arguments.FieldData,
 		})

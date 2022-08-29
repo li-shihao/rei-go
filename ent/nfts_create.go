@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -34,6 +35,12 @@ func (ntc *NFTsCreate) SetType(s string) *NFTsCreate {
 // SetMetadata sets the "Metadata" field.
 func (ntc *NFTsCreate) SetMetadata(m map[string]interface{}) *NFTsCreate {
 	ntc.mutation.SetMetadata(m)
+	return ntc
+}
+
+// SetTime sets the "Time" field.
+func (ntc *NFTsCreate) SetTime(t time.Time) *NFTsCreate {
+	ntc.mutation.SetTime(t)
 	return ntc
 }
 
@@ -122,6 +129,9 @@ func (ntc *NFTsCreate) check() error {
 	if _, ok := ntc.mutation.Metadata(); !ok {
 		return &ValidationError{Name: "Metadata", err: errors.New(`ent: missing required field "NFTs.Metadata"`)}
 	}
+	if _, ok := ntc.mutation.Time(); !ok {
+		return &ValidationError{Name: "Time", err: errors.New(`ent: missing required field "NFTs.Time"`)}
+	}
 	return nil
 }
 
@@ -172,6 +182,14 @@ func (ntc *NFTsCreate) createSpec() (*NFTs, *sqlgraph.CreateSpec) {
 			Column: nfts.FieldMetadata,
 		})
 		_node.Metadata = value
+	}
+	if value, ok := ntc.mutation.Time(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: nfts.FieldTime,
+		})
+		_node.Time = value
 	}
 	return _node, _spec
 }

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -48,7 +49,7 @@ func (au *AccountsUpdate) AddBalance(u int64) *AccountsUpdate {
 }
 
 // SetObjects sets the "Objects" field.
-func (au *AccountsUpdate) SetObjects(so *schema.AccObject) *AccountsUpdate {
+func (au *AccountsUpdate) SetObjects(so []schema.AccObject) *AccountsUpdate {
 	au.mutation.SetObjects(so)
 	return au
 }
@@ -56,6 +57,12 @@ func (au *AccountsUpdate) SetObjects(so *schema.AccObject) *AccountsUpdate {
 // SetTransactions sets the "Transactions" field.
 func (au *AccountsUpdate) SetTransactions(s []string) *AccountsUpdate {
 	au.mutation.SetTransactions(s)
+	return au
+}
+
+// SetTime sets the "Time" field.
+func (au *AccountsUpdate) SetTime(t time.Time) *AccountsUpdate {
+	au.mutation.SetTime(t)
 	return au
 }
 
@@ -171,6 +178,13 @@ func (au *AccountsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: accounts.FieldTransactions,
 		})
 	}
+	if value, ok := au.mutation.Time(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: accounts.FieldTime,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{accounts.Label}
@@ -210,7 +224,7 @@ func (auo *AccountsUpdateOne) AddBalance(u int64) *AccountsUpdateOne {
 }
 
 // SetObjects sets the "Objects" field.
-func (auo *AccountsUpdateOne) SetObjects(so *schema.AccObject) *AccountsUpdateOne {
+func (auo *AccountsUpdateOne) SetObjects(so []schema.AccObject) *AccountsUpdateOne {
 	auo.mutation.SetObjects(so)
 	return auo
 }
@@ -218,6 +232,12 @@ func (auo *AccountsUpdateOne) SetObjects(so *schema.AccObject) *AccountsUpdateOn
 // SetTransactions sets the "Transactions" field.
 func (auo *AccountsUpdateOne) SetTransactions(s []string) *AccountsUpdateOne {
 	auo.mutation.SetTransactions(s)
+	return auo
+}
+
+// SetTime sets the "Time" field.
+func (auo *AccountsUpdateOne) SetTime(t time.Time) *AccountsUpdateOne {
+	auo.mutation.SetTime(t)
 	return auo
 }
 
@@ -361,6 +381,13 @@ func (auo *AccountsUpdateOne) sqlSave(ctx context.Context) (_node *Accounts, err
 			Type:   field.TypeJSON,
 			Value:  value,
 			Column: accounts.FieldTransactions,
+		})
+	}
+	if value, ok := auo.mutation.Time(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: accounts.FieldTime,
 		})
 	}
 	_node = &Accounts{config: auo.config}

@@ -3,6 +3,8 @@
 package nfts
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"rei.io/rei/ent/predicate"
 )
@@ -89,6 +91,13 @@ func ObjectID(v string) predicate.NFTs {
 func Type(v string) predicate.NFTs {
 	return predicate.NFTs(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldType), v))
+	})
+}
+
+// Time applies equality check predicate on the "Time" field. It's identical to TimeEQ.
+func Time(v time.Time) predicate.NFTs {
+	return predicate.NFTs(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTime), v))
 	})
 }
 
@@ -287,6 +296,70 @@ func TypeEqualFold(v string) predicate.NFTs {
 func TypeContainsFold(v string) predicate.NFTs {
 	return predicate.NFTs(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldType), v))
+	})
+}
+
+// TimeEQ applies the EQ predicate on the "Time" field.
+func TimeEQ(v time.Time) predicate.NFTs {
+	return predicate.NFTs(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTime), v))
+	})
+}
+
+// TimeNEQ applies the NEQ predicate on the "Time" field.
+func TimeNEQ(v time.Time) predicate.NFTs {
+	return predicate.NFTs(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldTime), v))
+	})
+}
+
+// TimeIn applies the In predicate on the "Time" field.
+func TimeIn(vs ...time.Time) predicate.NFTs {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.NFTs(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldTime), v...))
+	})
+}
+
+// TimeNotIn applies the NotIn predicate on the "Time" field.
+func TimeNotIn(vs ...time.Time) predicate.NFTs {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.NFTs(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldTime), v...))
+	})
+}
+
+// TimeGT applies the GT predicate on the "Time" field.
+func TimeGT(v time.Time) predicate.NFTs {
+	return predicate.NFTs(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldTime), v))
+	})
+}
+
+// TimeGTE applies the GTE predicate on the "Time" field.
+func TimeGTE(v time.Time) predicate.NFTs {
+	return predicate.NFTs(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldTime), v))
+	})
+}
+
+// TimeLT applies the LT predicate on the "Time" field.
+func TimeLT(v time.Time) predicate.NFTs {
+	return predicate.NFTs(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldTime), v))
+	})
+}
+
+// TimeLTE applies the LTE predicate on the "Time" field.
+func TimeLTE(v time.Time) predicate.NFTs {
+	return predicate.NFTs(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldTime), v))
 	})
 }
 

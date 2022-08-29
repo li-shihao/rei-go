@@ -37,6 +37,14 @@ func (ec *EventsCreate) SetRecipient(s string) *EventsCreate {
 	return ec
 }
 
+// SetNillableRecipient sets the "Recipient" field if the given value is not nil.
+func (ec *EventsCreate) SetNillableRecipient(s *string) *EventsCreate {
+	if s != nil {
+		ec.SetRecipient(*s)
+	}
+	return ec
+}
+
 // SetTransactionID sets the "TransactionID" field.
 func (ec *EventsCreate) SetTransactionID(s string) *EventsCreate {
 	ec.mutation.SetTransactionID(s)
@@ -136,9 +144,6 @@ func (ec *EventsCreate) check() error {
 	}
 	if _, ok := ec.mutation.Sender(); !ok {
 		return &ValidationError{Name: "Sender", err: errors.New(`ent: missing required field "Events.Sender"`)}
-	}
-	if _, ok := ec.mutation.Recipient(); !ok {
-		return &ValidationError{Name: "Recipient", err: errors.New(`ent: missing required field "Events.Recipient"`)}
 	}
 	if _, ok := ec.mutation.TransactionID(); !ok {
 		return &ValidationError{Name: "TransactionID", err: errors.New(`ent: missing required field "Events.TransactionID"`)}

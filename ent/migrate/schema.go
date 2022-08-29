@@ -15,6 +15,7 @@ var (
 		{Name: "balance", Type: field.TypeUint64},
 		{Name: "objects", Type: field.TypeJSON},
 		{Name: "transactions", Type: field.TypeJSON},
+		{Name: "time", Type: field.TypeTime},
 	}
 	// AccountsTable holds the schema information for the "accounts" table.
 	AccountsTable = &schema.Table{
@@ -28,7 +29,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
 		{Name: "transaction_id", Type: field.TypeString},
-		{Name: "data", Type: field.TypeJSON},
+		{Name: "data", Type: field.TypeString},
 	}
 	// ArgumentsTable holds the schema information for the "arguments" table.
 	ArgumentsTable = &schema.Table{
@@ -41,7 +42,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "type", Type: field.TypeString},
 		{Name: "sender", Type: field.TypeString},
-		{Name: "recipient", Type: field.TypeString},
+		{Name: "recipient", Type: field.TypeString, Nullable: true},
 		{Name: "transaction_id", Type: field.TypeString},
 		{Name: "object_id", Type: field.TypeString},
 		{Name: "version", Type: field.TypeUint32},
@@ -58,6 +59,7 @@ var (
 		{Name: "object_id", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
 		{Name: "metadata", Type: field.TypeJSON},
+		{Name: "time", Type: field.TypeTime},
 	}
 	// NfTsTable holds the schema information for the "nf_ts" table.
 	NfTsTable = &schema.Table{
@@ -74,7 +76,6 @@ var (
 		{Name: "has_public_transfer", Type: field.TypeBool},
 		{Name: "fields", Type: field.TypeJSON},
 		{Name: "owner", Type: field.TypeString},
-		{Name: "storage_rebate", Type: field.TypeFloat64},
 		{Name: "object_id", Type: field.TypeString},
 	}
 	// ObjectsTable holds the schema information for the "objects" table.
@@ -109,6 +110,7 @@ var (
 		{Name: "package", Type: field.TypeString, Nullable: true},
 		{Name: "module", Type: field.TypeString, Nullable: true},
 		{Name: "function", Type: field.TypeString, Nullable: true},
+		{Name: "gas", Type: field.TypeUint32},
 	}
 	// TransactionsTable holds the schema information for the "transactions" table.
 	TransactionsTable = &schema.Table{

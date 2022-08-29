@@ -120,6 +120,12 @@ func (tc *TransactionsCreate) SetNillableFunction(s *string) *TransactionsCreate
 	return tc
 }
 
+// SetGas sets the "Gas" field.
+func (tc *TransactionsCreate) SetGas(u uint32) *TransactionsCreate {
+	tc.mutation.SetGas(u)
+	return tc
+}
+
 // Mutation returns the TransactionsMutation object of the builder.
 func (tc *TransactionsCreate) Mutation() *TransactionsMutation {
 	return tc.mutation
@@ -210,6 +216,9 @@ func (tc *TransactionsCreate) check() error {
 	}
 	if _, ok := tc.mutation.Sender(); !ok {
 		return &ValidationError{Name: "Sender", err: errors.New(`ent: missing required field "Transactions.Sender"`)}
+	}
+	if _, ok := tc.mutation.Gas(); !ok {
+		return &ValidationError{Name: "Gas", err: errors.New(`ent: missing required field "Transactions.Gas"`)}
 	}
 	return nil
 }
@@ -317,6 +326,14 @@ func (tc *TransactionsCreate) createSpec() (*Transactions, *sqlgraph.CreateSpec)
 			Column: transactions.FieldFunction,
 		})
 		_node.Function = value
+	}
+	if value, ok := tc.mutation.Gas(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Value:  value,
+			Column: transactions.FieldGas,
+		})
+		_node.Gas = value
 	}
 	return _node, _spec
 }

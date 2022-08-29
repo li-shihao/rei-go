@@ -46,8 +46,8 @@ func (au *ArgumentsUpdate) SetTransactionID(s string) *ArgumentsUpdate {
 }
 
 // SetData sets the "Data" field.
-func (au *ArgumentsUpdate) SetData(i []interface{}) *ArgumentsUpdate {
-	au.mutation.SetData(i)
+func (au *ArgumentsUpdate) SetData(s string) *ArgumentsUpdate {
+	au.mutation.SetData(s)
 	return au
 }
 
@@ -151,7 +151,7 @@ func (au *ArgumentsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := au.mutation.Data(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: arguments.FieldData,
 		})
@@ -194,8 +194,8 @@ func (auo *ArgumentsUpdateOne) SetTransactionID(s string) *ArgumentsUpdateOne {
 }
 
 // SetData sets the "Data" field.
-func (auo *ArgumentsUpdateOne) SetData(i []interface{}) *ArgumentsUpdateOne {
-	auo.mutation.SetData(i)
+func (auo *ArgumentsUpdateOne) SetData(s string) *ArgumentsUpdateOne {
+	auo.mutation.SetData(s)
 	return auo
 }
 
@@ -329,7 +329,7 @@ func (auo *ArgumentsUpdateOne) sqlSave(ctx context.Context) (_node *Arguments, e
 	}
 	if value, ok := auo.mutation.Data(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeJSON,
+			Type:   field.TypeString,
 			Value:  value,
 			Column: arguments.FieldData,
 		})

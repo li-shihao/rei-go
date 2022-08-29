@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"rei.io/rei/ent/accounts"
@@ -22,9 +23,11 @@ type Accounts struct {
 	// Balance holds the value of the "Balance" field.
 	Balance uint64 `json:"Balance,omitempty"`
 	// Objects holds the value of the "Objects" field.
-	Objects *schema.AccObject `json:"Objects,omitempty"`
+	Objects []schema.AccObject `json:"Objects,omitempty"`
 	// Transactions holds the value of the "Transactions" field.
 	Transactions []string `json:"Transactions,omitempty"`
+	// Time holds the value of the "Time" field.
+	Time time.Time `json:"Time,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -38,6 +41,8 @@ func (*Accounts) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case accounts.FieldAccountID:
 			values[i] = new(sql.NullString)
+		case accounts.FieldTime:
+			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Accounts", columns[i])
 		}
@@ -87,6 +92,12 @@ func (a *Accounts) assignValues(columns []string, values []interface{}) error {
 					return fmt.Errorf("unmarshal field Transactions: %w", err)
 				}
 			}
+		case accounts.FieldTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field Time", values[i])
+			} else if value.Valid {
+				a.Time = value.Time
+			}
 		}
 	}
 	return nil
@@ -126,6 +137,9 @@ func (a *Accounts) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("Transactions=")
 	builder.WriteString(fmt.Sprintf("%v", a.Transactions))
+	builder.WriteString(", ")
+	builder.WriteString("Time=")
+	builder.WriteString(a.Time.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

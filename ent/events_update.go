@@ -45,6 +45,20 @@ func (eu *EventsUpdate) SetRecipient(s string) *EventsUpdate {
 	return eu
 }
 
+// SetNillableRecipient sets the "Recipient" field if the given value is not nil.
+func (eu *EventsUpdate) SetNillableRecipient(s *string) *EventsUpdate {
+	if s != nil {
+		eu.SetRecipient(*s)
+	}
+	return eu
+}
+
+// ClearRecipient clears the value of the "Recipient" field.
+func (eu *EventsUpdate) ClearRecipient() *EventsUpdate {
+	eu.mutation.ClearRecipient()
+	return eu
+}
+
 // SetTransactionID sets the "TransactionID" field.
 func (eu *EventsUpdate) SetTransactionID(s string) *EventsUpdate {
 	eu.mutation.SetTransactionID(s)
@@ -168,6 +182,12 @@ func (eu *EventsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: events.FieldRecipient,
 		})
 	}
+	if eu.mutation.RecipientCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: events.FieldRecipient,
+		})
+	}
 	if value, ok := eu.mutation.TransactionID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -230,6 +250,20 @@ func (euo *EventsUpdateOne) SetSender(s string) *EventsUpdateOne {
 // SetRecipient sets the "Recipient" field.
 func (euo *EventsUpdateOne) SetRecipient(s string) *EventsUpdateOne {
 	euo.mutation.SetRecipient(s)
+	return euo
+}
+
+// SetNillableRecipient sets the "Recipient" field if the given value is not nil.
+func (euo *EventsUpdateOne) SetNillableRecipient(s *string) *EventsUpdateOne {
+	if s != nil {
+		euo.SetRecipient(*s)
+	}
+	return euo
+}
+
+// ClearRecipient clears the value of the "Recipient" field.
+func (euo *EventsUpdateOne) ClearRecipient() *EventsUpdateOne {
+	euo.mutation.ClearRecipient()
 	return euo
 }
 
@@ -383,6 +417,12 @@ func (euo *EventsUpdateOne) sqlSave(ctx context.Context) (_node *Events, err err
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
+			Column: events.FieldRecipient,
+		})
+	}
+	if euo.mutation.RecipientCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
 			Column: events.FieldRecipient,
 		})
 	}

@@ -165,6 +165,19 @@ func (tu *TransactionsUpdate) ClearFunction() *TransactionsUpdate {
 	return tu
 }
 
+// SetGas sets the "Gas" field.
+func (tu *TransactionsUpdate) SetGas(u uint32) *TransactionsUpdate {
+	tu.mutation.ResetGas()
+	tu.mutation.SetGas(u)
+	return tu
+}
+
+// AddGas adds u to the "Gas" field.
+func (tu *TransactionsUpdate) AddGas(u int32) *TransactionsUpdate {
+	tu.mutation.AddGas(u)
+	return tu
+}
+
 // Mutation returns the TransactionsMutation object of the builder.
 func (tu *TransactionsUpdate) Mutation() *TransactionsMutation {
 	return tu.mutation
@@ -349,6 +362,20 @@ func (tu *TransactionsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: transactions.FieldFunction,
 		})
 	}
+	if value, ok := tu.mutation.Gas(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Value:  value,
+			Column: transactions.FieldGas,
+		})
+	}
+	if value, ok := tu.mutation.AddedGas(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Value:  value,
+			Column: transactions.FieldGas,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{transactions.Label}
@@ -502,6 +529,19 @@ func (tuo *TransactionsUpdateOne) SetNillableFunction(s *string) *TransactionsUp
 // ClearFunction clears the value of the "Function" field.
 func (tuo *TransactionsUpdateOne) ClearFunction() *TransactionsUpdateOne {
 	tuo.mutation.ClearFunction()
+	return tuo
+}
+
+// SetGas sets the "Gas" field.
+func (tuo *TransactionsUpdateOne) SetGas(u uint32) *TransactionsUpdateOne {
+	tuo.mutation.ResetGas()
+	tuo.mutation.SetGas(u)
+	return tuo
+}
+
+// AddGas adds u to the "Gas" field.
+func (tuo *TransactionsUpdateOne) AddGas(u int32) *TransactionsUpdateOne {
+	tuo.mutation.AddGas(u)
 	return tuo
 }
 
@@ -717,6 +757,20 @@ func (tuo *TransactionsUpdateOne) sqlSave(ctx context.Context) (_node *Transacti
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: transactions.FieldFunction,
+		})
+	}
+	if value, ok := tuo.mutation.Gas(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Value:  value,
+			Column: transactions.FieldGas,
+		})
+	}
+	if value, ok := tuo.mutation.AddedGas(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint32,
+			Value:  value,
+			Column: transactions.FieldGas,
 		})
 	}
 	_node = &Transactions{config: tuo.config}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -42,6 +43,12 @@ func (ntu *NFTsUpdate) SetType(s string) *NFTsUpdate {
 // SetMetadata sets the "Metadata" field.
 func (ntu *NFTsUpdate) SetMetadata(m map[string]interface{}) *NFTsUpdate {
 	ntu.mutation.SetMetadata(m)
+	return ntu
+}
+
+// SetTime sets the "Time" field.
+func (ntu *NFTsUpdate) SetTime(t time.Time) *NFTsUpdate {
+	ntu.mutation.SetTime(t)
 	return ntu
 }
 
@@ -143,6 +150,13 @@ func (ntu *NFTsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: nfts.FieldMetadata,
 		})
 	}
+	if value, ok := ntu.mutation.Time(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: nfts.FieldTime,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ntu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{nfts.Label}
@@ -177,6 +191,12 @@ func (ntuo *NFTsUpdateOne) SetType(s string) *NFTsUpdateOne {
 // SetMetadata sets the "Metadata" field.
 func (ntuo *NFTsUpdateOne) SetMetadata(m map[string]interface{}) *NFTsUpdateOne {
 	ntuo.mutation.SetMetadata(m)
+	return ntuo
+}
+
+// SetTime sets the "Time" field.
+func (ntuo *NFTsUpdateOne) SetTime(t time.Time) *NFTsUpdateOne {
+	ntuo.mutation.SetTime(t)
 	return ntuo
 }
 
@@ -306,6 +326,13 @@ func (ntuo *NFTsUpdateOne) sqlSave(ctx context.Context) (_node *NFTs, err error)
 			Type:   field.TypeJSON,
 			Value:  value,
 			Column: nfts.FieldMetadata,
+		})
+	}
+	if value, ok := ntuo.mutation.Time(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: nfts.FieldTime,
 		})
 	}
 	_node = &NFTs{config: ntuo.config}

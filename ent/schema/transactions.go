@@ -23,6 +23,7 @@ func (Transactions) Fields() []ent.Field {
 		field.String("Package").Optional(),
 		field.String("Module").Optional(),
 		field.String("Function").Optional(),
+		field.Uint32("Gas"),
 	}
 }
 

@@ -16,6 +16,7 @@ func (NFTs) Fields() []ent.Field {
 		field.String("ObjectID"),
 		field.String("Type"),
 		field.JSON("Metadata", map[string]interface{}{}),
+		field.Time("Time"),
 	}
 }
 

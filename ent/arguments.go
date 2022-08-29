@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -23,7 +22,7 @@ type Arguments struct {
 	// TransactionID holds the value of the "TransactionID" field.
 	TransactionID string `json:"TransactionID,omitempty"`
 	// Data holds the value of the "Data" field.
-	Data []interface{} `json:"Data,omitempty"`
+	Data string `json:"Data,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -31,11 +30,9 @@ func (*Arguments) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case arguments.FieldData:
-			values[i] = new([]byte)
 		case arguments.FieldID:
 			values[i] = new(sql.NullInt64)
-		case arguments.FieldName, arguments.FieldType, arguments.FieldTransactionID:
+		case arguments.FieldName, arguments.FieldType, arguments.FieldTransactionID, arguments.FieldData:
 			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Arguments", columns[i])
@@ -77,12 +74,10 @@ func (a *Arguments) assignValues(columns []string, values []interface{}) error {
 				a.TransactionID = value.String
 			}
 		case arguments.FieldData:
-			if value, ok := values[i].(*[]byte); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field Data", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &a.Data); err != nil {
-					return fmt.Errorf("unmarshal field Data: %w", err)
-				}
+			} else if value.Valid {
+				a.Data = value.String
 			}
 		}
 	}
@@ -122,7 +117,7 @@ func (a *Arguments) String() string {
 	builder.WriteString(a.TransactionID)
 	builder.WriteString(", ")
 	builder.WriteString("Data=")
-	builder.WriteString(fmt.Sprintf("%v", a.Data))
+	builder.WriteString(a.Data)
 	builder.WriteByte(')')
 	return builder.String()
 }

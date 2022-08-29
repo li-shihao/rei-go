@@ -15,7 +15,7 @@ func (Events) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("Type"),
 		field.String("Sender"),
-		field.String("Recipient"),
+		field.String("Recipient").Optional(),
 		field.String("TransactionID"),
 		field.String("ObjectID"),
 		field.Uint32("Version"),

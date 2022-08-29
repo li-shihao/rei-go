@@ -16,7 +16,7 @@ func (Arguments) Fields() []ent.Field {
 		field.String("Name"),
 		field.String("Type"),
 		field.String("TransactionID"),
-		field.JSON("Data", []interface{}{}),
+		field.String("Data"),
 	}
 }
 

@@ -28,8 +28,6 @@ type Objects struct {
 	Fields map[string]interface{} `json:"Fields,omitempty"`
 	// Owner holds the value of the "Owner" field.
 	Owner string `json:"Owner,omitempty"`
-	// StorageRebate holds the value of the "StorageRebate" field.
-	StorageRebate float64 `json:"StorageRebate,omitempty"`
 	// ObjectID holds the value of the "ObjectID" field.
 	ObjectID string `json:"ObjectID,omitempty"`
 }
@@ -43,8 +41,6 @@ func (*Objects) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case objects.FieldHasPublicTransfer:
 			values[i] = new(sql.NullBool)
-		case objects.FieldStorageRebate:
-			values[i] = new(sql.NullFloat64)
 		case objects.FieldID:
 			values[i] = new(sql.NullInt64)
 		case objects.FieldStatus, objects.FieldDataType, objects.FieldType, objects.FieldOwner, objects.FieldObjectID:
@@ -108,12 +104,6 @@ func (o *Objects) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				o.Owner = value.String
 			}
-		case objects.FieldStorageRebate:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field StorageRebate", values[i])
-			} else if value.Valid {
-				o.StorageRebate = value.Float64
-			}
 		case objects.FieldObjectID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field ObjectID", values[i])
@@ -165,9 +155,6 @@ func (o *Objects) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("Owner=")
 	builder.WriteString(o.Owner)
-	builder.WriteString(", ")
-	builder.WriteString("StorageRebate=")
-	builder.WriteString(fmt.Sprintf("%v", o.StorageRebate))
 	builder.WriteString(", ")
 	builder.WriteString("ObjectID=")
 	builder.WriteString(o.ObjectID)

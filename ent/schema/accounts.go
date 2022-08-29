@@ -21,8 +21,9 @@ func (Accounts) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("AccountID"),
 		field.Uint64("Balance"),
-		field.JSON("Objects", &AccObject{}),
+		field.JSON("Objects", []AccObject{}),
 		field.Strings("Transactions"),
+		field.Time("Time"),
 	}
 }
 

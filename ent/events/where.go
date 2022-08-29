@@ -403,6 +403,20 @@ func RecipientHasSuffix(v string) predicate.Events {
 	})
 }
 
+// RecipientIsNil applies the IsNil predicate on the "Recipient" field.
+func RecipientIsNil() predicate.Events {
+	return predicate.Events(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldRecipient)))
+	})
+}
+
+// RecipientNotNil applies the NotNil predicate on the "Recipient" field.
+func RecipientNotNil() predicate.Events {
+	return predicate.Events(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldRecipient)))
+	})
+}
+
 // RecipientEqualFold applies the EqualFold predicate on the "Recipient" field.
 func RecipientEqualFold(v string) predicate.Events {
 	return predicate.Events(func(s *sql.Selector) {

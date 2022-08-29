@@ -19,8 +19,6 @@ const (
 	FieldFields = "fields"
 	// FieldOwner holds the string denoting the owner field in the database.
 	FieldOwner = "owner"
-	// FieldStorageRebate holds the string denoting the storagerebate field in the database.
-	FieldStorageRebate = "storage_rebate"
 	// FieldObjectID holds the string denoting the objectid field in the database.
 	FieldObjectID = "object_id"
 	// Table holds the table name of the objects in the database.
@@ -36,7 +34,6 @@ var Columns = []string{
 	FieldHasPublicTransfer,
 	FieldFields,
 	FieldOwner,
-	FieldStorageRebate,
 	FieldObjectID,
 }
 

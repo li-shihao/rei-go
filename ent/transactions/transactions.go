@@ -27,6 +27,8 @@ const (
 	FieldModule = "module"
 	// FieldFunction holds the string denoting the function field in the database.
 	FieldFunction = "function"
+	// FieldGas holds the string denoting the gas field in the database.
+	FieldGas = "gas"
 	// Table holds the table name of the transactions in the database.
 	Table = "transactions"
 )
@@ -44,6 +46,7 @@ var Columns = []string{
 	FieldPackage,
 	FieldModule,
 	FieldFunction,
+	FieldGas,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

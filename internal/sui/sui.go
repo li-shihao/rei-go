@@ -110,7 +110,7 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 
 	// Loop through all events
 	for i := range x.Result.Effects.Events {
-		for z, _ := range x.Result.Effects.Events[i] {
+		for z := range x.Result.Effects.Events[i] {
 			if z == "newObject" || z == "deleteObject" || z == "transferObject" {
 				tmp := Event{}
 
@@ -123,10 +123,12 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 						tmp.Sender = k.(map[string]interface{})["sender"].(string)
 						if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf(map[string]interface{}{}) {
 							for _, v := range k.(map[string]interface{})["recipient"].(map[string]interface{}) {
-								tmp.Recipient = v.(string)
+								temp := v.(string)
+								tmp.Recipient = &temp
 							}
 						} else if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf("") {
-							tmp.Recipient = k.(map[string]interface{})["recipient"].(string)
+							temp := k.(map[string]interface{})["recipient"].(string)
+							tmp.Recipient = &temp
 						}
 						tmp.ObjectId = k.(map[string]interface{})["objectId"].(string)
 						tmp.Version = uint32(0)
@@ -134,13 +136,16 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 						tmp.Type = "burn"
 						tmp.Sender = k.(map[string]interface{})["sender"].(string)
 						tmp.ObjectId = k.(map[string]interface{})["objectId"].(string)
+						tmp.Recipient = nil
 					case "transferObject":
 						tmp.Type = "transfer"
 						tmp.Sender = k.(map[string]interface{})["sender"].(string)
 						if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf(map[string]interface{}{}) {
-							tmp.Recipient = k.(map[string]interface{})["recipient"].(map[string]interface{})["AddressOwner"].(string)
+							temp := k.(map[string]interface{})["recipient"].(map[string]interface{})["AddressOwner"].(string)
+							tmp.Recipient = &temp
 						} else if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf("") {
-							tmp.Recipient = k.(map[string]interface{})["recipient"].(string)
+							temp := k.(map[string]interface{})["recipient"].(string)
+							tmp.Recipient = &temp
 						}
 						tmp.ObjectId = k.(map[string]interface{})["objectId"].(string)
 						tmp.Version = uint32(k.(map[string]interface{})["version"].(float64))
@@ -201,9 +206,6 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 
 			// Get raw arguments data from transaction for later indexing use
 			raw, err := x.GetRawContractArguments()
-			if err != nil {
-				fmt.Println(id)
-			}
 			check(err)
 
 			// Loop through all the parameters that the function call takes
@@ -241,7 +243,7 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 				} else {
 					tmp[i].Type = v.(string)
 				}
-				tmp[i].Data = raw.([]interface{})[i]
+				tmp[i].Data = fmt.Sprintf("%v", raw.([]interface{})[i])
 			}
 
 			x.Arguments = &tmp

@@ -113,13 +113,6 @@ func Owner(v string) predicate.Objects {
 	})
 }
 
-// StorageRebate applies equality check predicate on the "StorageRebate" field. It's identical to StorageRebateEQ.
-func StorageRebate(v float64) predicate.Objects {
-	return predicate.Objects(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldStorageRebate), v))
-	})
-}
-
 // ObjectID applies equality check predicate on the "ObjectID" field. It's identical to ObjectIDEQ.
 func ObjectID(v string) predicate.Objects {
 	return predicate.Objects(func(s *sql.Selector) {
@@ -534,70 +527,6 @@ func OwnerEqualFold(v string) predicate.Objects {
 func OwnerContainsFold(v string) predicate.Objects {
 	return predicate.Objects(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldOwner), v))
-	})
-}
-
-// StorageRebateEQ applies the EQ predicate on the "StorageRebate" field.
-func StorageRebateEQ(v float64) predicate.Objects {
-	return predicate.Objects(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldStorageRebate), v))
-	})
-}
-
-// StorageRebateNEQ applies the NEQ predicate on the "StorageRebate" field.
-func StorageRebateNEQ(v float64) predicate.Objects {
-	return predicate.Objects(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldStorageRebate), v))
-	})
-}
-
-// StorageRebateIn applies the In predicate on the "StorageRebate" field.
-func StorageRebateIn(vs ...float64) predicate.Objects {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Objects(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldStorageRebate), v...))
-	})
-}
-
-// StorageRebateNotIn applies the NotIn predicate on the "StorageRebate" field.
-func StorageRebateNotIn(vs ...float64) predicate.Objects {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Objects(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldStorageRebate), v...))
-	})
-}
-
-// StorageRebateGT applies the GT predicate on the "StorageRebate" field.
-func StorageRebateGT(v float64) predicate.Objects {
-	return predicate.Objects(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldStorageRebate), v))
-	})
-}
-
-// StorageRebateGTE applies the GTE predicate on the "StorageRebate" field.
-func StorageRebateGTE(v float64) predicate.Objects {
-	return predicate.Objects(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldStorageRebate), v))
-	})
-}
-
-// StorageRebateLT applies the LT predicate on the "StorageRebate" field.
-func StorageRebateLT(v float64) predicate.Objects {
-	return predicate.Objects(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldStorageRebate), v))
-	})
-}
-
-// StorageRebateLTE applies the LTE predicate on the "StorageRebate" field.
-func StorageRebateLTE(v float64) predicate.Objects {
-	return predicate.Objects(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldStorageRebate), v))
 	})
 }
 

@@ -44,7 +44,7 @@ func TestGetTransaction(t *testing.T) {
 	got4 := *result4.Arguments
 	exp4 := []Arg{
 		{ID: "ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=", Type: "U8", Data: ""},
-		{ID: "ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=", Type: "U8", Data: float64(255)},
+		{ID: "ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=", Type: "U8", Data: "255"},
 		{ID: "ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=", Type: "U8", Data: ""},
 	}
 
@@ -54,10 +54,12 @@ func TestGetTransaction(t *testing.T) {
 
 	result5, _ := tc.GetTransaction("f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=")
 	got5 := *result5.Events
+	rec1 := "0x84278a52a92e9532ffcc06a73a3d9b9a79696936"
+	rec2 := "0x84278a52a92e9532ffcc06a73a3d9b9a79696936"
 	exp5 := []Event{
-		{TX: "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", Type: "mint", Sender: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", Recipient: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", ObjectId: "0xc4b9a5e7dd8acd17697762b5068050de68ca4d61", Version: uint32(0)},
-		{TX: "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", Type: "transfer", Sender: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", Recipient: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", ObjectId: "0xde1e02902f1c591d6e71d68d41e663105a4e8f25", Version: uint32(1)},
-		{TX: "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", Type: "burn", Sender: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", ObjectId: "0x3c18ae6cde75b48702a737f7d6663359bd4865c1"},
+		{TX: "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", Type: "mint", Sender: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", Recipient: &rec1, ObjectId: "0xc4b9a5e7dd8acd17697762b5068050de68ca4d61", Version: uint32(0)},
+		{TX: "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", Type: "transfer", Sender: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", Recipient: &rec2, ObjectId: "0xde1e02902f1c591d6e71d68d41e663105a4e8f25", Version: uint32(1)},
+		{TX: "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", Type: "burn", Sender: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", Recipient: nil, ObjectId: "0x3c18ae6cde75b48702a737f7d6663359bd4865c1"},
 	}
 
 	if !reflect.DeepEqual(got5, exp5) {
@@ -264,6 +266,32 @@ func TestGetRecipient(t *testing.T) {
 
 	if *got3 != "0x5f00c4a09b4f2cf91c7d6478be22a6a522d9299f" {
 		t.Errorf("Result was incorrect, got %s, want %s.", *got3, "0x5f00c4a09b4f2cf91c7d6478be22a6a522d9299f")
+	}
+}
+
+func TestGetGas(t *testing.T) {
+	tc := new(SUIClient)
+	tc.Init("http://158.140.129.74:9000")
+
+	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
+	got1 := result1.GetGas()
+
+	if got1 != 845 {
+		t.Errorf("Result was incorrect, got %d, want %d.", got1, 845)
+	}
+
+	result2, _ := tc.GetTransaction("tsl8gn6Wbeq17lmh8MCRkacdHYCiuKDj7r80MD3OhpA=")
+	got2 := result2.GetGas()
+
+	if got2 != 90 {
+		t.Errorf("Result was incorrect, got %d, want %d.", got2, 90)
+	}
+
+	result3, _ := tc.GetTransaction("qurUKphegqg9QJjmqyoxFg2U5G+HAK49Wbk0YxDOI7c=")
+	got3 := result3.GetGas()
+
+	if got3 != 86 {
+		t.Errorf("Result was incorrect, got %d, want %d.", got3, 86)
 	}
 }
 
@@ -955,10 +983,9 @@ func TestGetAccountNFTs(t *testing.T) {
 
 	result1, _ := tc.GetAccount("0x66f68a701b4cb5f2b3d3446c093eb91fae8af34f")
 	got1 := result1.GetAccountNFTs()
-	exp1 := []AccObject{}
 
-	if !reflect.DeepEqual(got1, exp1) {
-		t.Errorf("Result was incorrect, got %v, want %v.", got1, exp1)
+	if got1 != nil {
+		t.Errorf("Result was incorrect, got %v, want %v.", got1, nil)
 	}
 
 	result2, _ := tc.GetAccount("0x1a6254d89ee1698ed62c03481d28eee88c685b94")

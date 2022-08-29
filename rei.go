@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	database "rei.io/rei/internal/db"
@@ -47,6 +48,66 @@ func cleanUp(name string, cnt uint64) {
 
 	fmt.Println("Program killed !")
 	os.Exit(0)
+}
+
+func processTX(transactionId string, sc *sui.SUIClient, db *database.EntClient, cnt uint64) {
+	tx, err := sc.GetTransaction(transactionId)
+	check(err)
+	db.CreateTransaction(tx)
+
+	// If call has arguments insert arguments
+	if tx.Arguments != nil && tx.GetStatus() {
+		for _, k := range *tx.Arguments {
+			db.CreateArgument(k)
+		}
+	}
+
+	if tx.GetType() == "Publish" && tx.GetStatus() {
+		dply, err := tx.GetContractDeploy()
+		check(err)
+		db.CreatePackage(dply)
+	}
+
+	// Insert events
+	if tx.Events != nil {
+		for _, k := range *tx.Events {
+
+			// Insert event
+			db.CreateEvent(k)
+
+			// Insert sender account
+			sdr, err := sc.GetAccount(k.Sender)
+			check(err)
+			db.CreateAccount(sdr)
+
+			// Insert sender NFTs
+			if sdr.GetAccountNFTs() != nil {
+				for _, k := range sdr.GetAccountNFTs() {
+					db.CreateNFT(k)
+				}
+			}
+
+			// Check if recipient exist && recipient is actually an address (not 'shared' or smth else)
+			if k.Recipient != nil && strings.HasPrefix(*k.Recipient, "0x") {
+				rcp, err := sc.GetAccount(*k.Recipient)
+				check(err)
+				db.CreateAccount(rcp)
+
+				if rcp.GetAccountNFTs() != nil {
+					for _, k := range rcp.GetAccountNFTs() {
+						db.CreateNFT(k)
+					}
+				}
+			}
+
+			obj, err := sc.GetObject(k.ObjectId)
+			check(err)
+			db.CreateObject(obj)
+		}
+	}
+
+	// count always before print so we don't skip transactions
+	fmt.Printf("%s: Finished processing %d\n", tx.GetID(), cnt)
 }
 
 func main() {
@@ -117,15 +178,7 @@ func main() {
 				// If ctrl-c not triggered, process the transaction
 				default:
 					cnt++
-					tx, err := sc.GetTransaction(v)
-					check(err)
-					db.CreateTransaction(tx)
-					for _, k := range *tx.Events {
-						db.CreateEvent(k)
-					}
-
-					// count always before print so we don't skip transactions
-					fmt.Printf("%s: Finished processing %d\n", tx.GetID(), cnt)
+					processTX(v, sc, db, cnt)
 				}
 			}
 		}

@@ -99,6 +99,13 @@ func TransactionID(v string) predicate.Arguments {
 	})
 }
 
+// Data applies equality check predicate on the "Data" field. It's identical to DataEQ.
+func Data(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldData), v))
+	})
+}
+
 // NameEQ applies the EQ predicate on the "Name" field.
 func NameEQ(v string) predicate.Arguments {
 	return predicate.Arguments(func(s *sql.Selector) {
@@ -393,6 +400,105 @@ func TransactionIDEqualFold(v string) predicate.Arguments {
 func TransactionIDContainsFold(v string) predicate.Arguments {
 	return predicate.Arguments(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldTransactionID), v))
+	})
+}
+
+// DataEQ applies the EQ predicate on the "Data" field.
+func DataEQ(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldData), v))
+	})
+}
+
+// DataNEQ applies the NEQ predicate on the "Data" field.
+func DataNEQ(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldData), v))
+	})
+}
+
+// DataIn applies the In predicate on the "Data" field.
+func DataIn(vs ...string) predicate.Arguments {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldData), v...))
+	})
+}
+
+// DataNotIn applies the NotIn predicate on the "Data" field.
+func DataNotIn(vs ...string) predicate.Arguments {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldData), v...))
+	})
+}
+
+// DataGT applies the GT predicate on the "Data" field.
+func DataGT(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldData), v))
+	})
+}
+
+// DataGTE applies the GTE predicate on the "Data" field.
+func DataGTE(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldData), v))
+	})
+}
+
+// DataLT applies the LT predicate on the "Data" field.
+func DataLT(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldData), v))
+	})
+}
+
+// DataLTE applies the LTE predicate on the "Data" field.
+func DataLTE(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldData), v))
+	})
+}
+
+// DataContains applies the Contains predicate on the "Data" field.
+func DataContains(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldData), v))
+	})
+}
+
+// DataHasPrefix applies the HasPrefix predicate on the "Data" field.
+func DataHasPrefix(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldData), v))
+	})
+}
+
+// DataHasSuffix applies the HasSuffix predicate on the "Data" field.
+func DataHasSuffix(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldData), v))
+	})
+}
+
+// DataEqualFold applies the EqualFold predicate on the "Data" field.
+func DataEqualFold(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldData), v))
+	})
+}
+
+// DataContainsFold applies the ContainsFold predicate on the "Data" field.
+func DataContainsFold(v string) predicate.Arguments {
+	return predicate.Arguments(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldData), v))
 	})
 }
 

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"rei.io/rei/ent/nfts"
@@ -22,6 +23,8 @@ type NFTs struct {
 	Type string `json:"Type,omitempty"`
 	// Metadata holds the value of the "Metadata" field.
 	Metadata map[string]interface{} `json:"Metadata,omitempty"`
+	// Time holds the value of the "Time" field.
+	Time time.Time `json:"Time,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -35,6 +38,8 @@ func (*NFTs) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullInt64)
 		case nfts.FieldObjectID, nfts.FieldType:
 			values[i] = new(sql.NullString)
+		case nfts.FieldTime:
+			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type NFTs", columns[i])
 		}
@@ -76,6 +81,12 @@ func (nt *NFTs) assignValues(columns []string, values []interface{}) error {
 					return fmt.Errorf("unmarshal field Metadata: %w", err)
 				}
 			}
+		case nfts.FieldTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field Time", values[i])
+			} else if value.Valid {
+				nt.Time = value.Time
+			}
 		}
 	}
 	return nil
@@ -112,6 +123,9 @@ func (nt *NFTs) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("Metadata=")
 	builder.WriteString(fmt.Sprintf("%v", nt.Metadata))
+	builder.WriteString(", ")
+	builder.WriteString("Time=")
+	builder.WriteString(nt.Time.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

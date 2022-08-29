@@ -49,8 +49,9 @@ type AccountsMutation struct {
 	_AccountID    *string
 	_Balance      *uint64
 	add_Balance   *int64
-	_Objects      **schema.AccObject
+	_Objects      *[]schema.AccObject
 	_Transactions *[]string
+	_Time         *time.Time
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Accounts, error)
@@ -248,12 +249,12 @@ func (m *AccountsMutation) ResetBalance() {
 }
 
 // SetObjects sets the "Objects" field.
-func (m *AccountsMutation) SetObjects(so *schema.AccObject) {
+func (m *AccountsMutation) SetObjects(so []schema.AccObject) {
 	m._Objects = &so
 }
 
 // Objects returns the value of the "Objects" field in the mutation.
-func (m *AccountsMutation) Objects() (r *schema.AccObject, exists bool) {
+func (m *AccountsMutation) Objects() (r []schema.AccObject, exists bool) {
 	v := m._Objects
 	if v == nil {
 		return
@@ -264,7 +265,7 @@ func (m *AccountsMutation) Objects() (r *schema.AccObject, exists bool) {
 // OldObjects returns the old "Objects" field's value of the Accounts entity.
 // If the Accounts object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AccountsMutation) OldObjects(ctx context.Context) (v *schema.AccObject, err error) {
+func (m *AccountsMutation) OldObjects(ctx context.Context) (v []schema.AccObject, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldObjects is only allowed on UpdateOne operations")
 	}
@@ -319,6 +320,42 @@ func (m *AccountsMutation) ResetTransactions() {
 	m._Transactions = nil
 }
 
+// SetTime sets the "Time" field.
+func (m *AccountsMutation) SetTime(t time.Time) {
+	m._Time = &t
+}
+
+// Time returns the value of the "Time" field in the mutation.
+func (m *AccountsMutation) Time() (r time.Time, exists bool) {
+	v := m._Time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTime returns the old "Time" field's value of the Accounts entity.
+// If the Accounts object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountsMutation) OldTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTime: %w", err)
+	}
+	return oldValue.Time, nil
+}
+
+// ResetTime resets all changes to the "Time" field.
+func (m *AccountsMutation) ResetTime() {
+	m._Time = nil
+}
+
 // Where appends a list predicates to the AccountsMutation builder.
 func (m *AccountsMutation) Where(ps ...predicate.Accounts) {
 	m.predicates = append(m.predicates, ps...)
@@ -338,7 +375,7 @@ func (m *AccountsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AccountsMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m._AccountID != nil {
 		fields = append(fields, accounts.FieldAccountID)
 	}
@@ -350,6 +387,9 @@ func (m *AccountsMutation) Fields() []string {
 	}
 	if m._Transactions != nil {
 		fields = append(fields, accounts.FieldTransactions)
+	}
+	if m._Time != nil {
+		fields = append(fields, accounts.FieldTime)
 	}
 	return fields
 }
@@ -367,6 +407,8 @@ func (m *AccountsMutation) Field(name string) (ent.Value, bool) {
 		return m.Objects()
 	case accounts.FieldTransactions:
 		return m.Transactions()
+	case accounts.FieldTime:
+		return m.Time()
 	}
 	return nil, false
 }
@@ -384,6 +426,8 @@ func (m *AccountsMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldObjects(ctx)
 	case accounts.FieldTransactions:
 		return m.OldTransactions(ctx)
+	case accounts.FieldTime:
+		return m.OldTime(ctx)
 	}
 	return nil, fmt.Errorf("unknown Accounts field %s", name)
 }
@@ -408,7 +452,7 @@ func (m *AccountsMutation) SetField(name string, value ent.Value) error {
 		m.SetBalance(v)
 		return nil
 	case accounts.FieldObjects:
-		v, ok := value.(*schema.AccObject)
+		v, ok := value.([]schema.AccObject)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -420,6 +464,13 @@ func (m *AccountsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTransactions(v)
+		return nil
+	case accounts.FieldTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTime(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Accounts field %s", name)
@@ -497,6 +548,9 @@ func (m *AccountsMutation) ResetField(name string) error {
 	case accounts.FieldTransactions:
 		m.ResetTransactions()
 		return nil
+	case accounts.FieldTime:
+		m.ResetTime()
+		return nil
 	}
 	return fmt.Errorf("unknown Accounts field %s", name)
 }
@@ -558,7 +612,7 @@ type ArgumentsMutation struct {
 	_Name          *string
 	_Type          *string
 	_TransactionID *string
-	_Data          *[]interface{}
+	_Data          *string
 	clearedFields  map[string]struct{}
 	done           bool
 	oldValue       func(context.Context) (*Arguments, error)
@@ -772,12 +826,12 @@ func (m *ArgumentsMutation) ResetTransactionID() {
 }
 
 // SetData sets the "Data" field.
-func (m *ArgumentsMutation) SetData(i []interface{}) {
-	m._Data = &i
+func (m *ArgumentsMutation) SetData(s string) {
+	m._Data = &s
 }
 
 // Data returns the value of the "Data" field in the mutation.
-func (m *ArgumentsMutation) Data() (r []interface{}, exists bool) {
+func (m *ArgumentsMutation) Data() (r string, exists bool) {
 	v := m._Data
 	if v == nil {
 		return
@@ -788,7 +842,7 @@ func (m *ArgumentsMutation) Data() (r []interface{}, exists bool) {
 // OldData returns the old "Data" field's value of the Arguments entity.
 // If the Arguments object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ArgumentsMutation) OldData(ctx context.Context) (v []interface{}, err error) {
+func (m *ArgumentsMutation) OldData(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldData is only allowed on UpdateOne operations")
 	}
@@ -903,7 +957,7 @@ func (m *ArgumentsMutation) SetField(name string, value ent.Value) error {
 		m.SetTransactionID(v)
 		return nil
 	case arguments.FieldData:
-		v, ok := value.([]interface{})
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1242,9 +1296,22 @@ func (m *EventsMutation) OldRecipient(ctx context.Context) (v string, err error)
 	return oldValue.Recipient, nil
 }
 
+// ClearRecipient clears the value of the "Recipient" field.
+func (m *EventsMutation) ClearRecipient() {
+	m._Recipient = nil
+	m.clearedFields[events.FieldRecipient] = struct{}{}
+}
+
+// RecipientCleared returns if the "Recipient" field was cleared in this mutation.
+func (m *EventsMutation) RecipientCleared() bool {
+	_, ok := m.clearedFields[events.FieldRecipient]
+	return ok
+}
+
 // ResetRecipient resets all changes to the "Recipient" field.
 func (m *EventsMutation) ResetRecipient() {
 	m._Recipient = nil
+	delete(m.clearedFields, events.FieldRecipient)
 }
 
 // SetTransactionID sets the "TransactionID" field.
@@ -1549,7 +1616,11 @@ func (m *EventsMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *EventsMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(events.FieldRecipient) {
+		fields = append(fields, events.FieldRecipient)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1562,6 +1633,11 @@ func (m *EventsMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *EventsMutation) ClearField(name string) error {
+	switch name {
+	case events.FieldRecipient:
+		m.ClearRecipient()
+		return nil
+	}
 	return fmt.Errorf("unknown Events nullable field %s", name)
 }
 
@@ -1648,6 +1724,7 @@ type NFTsMutation struct {
 	_ObjectID     *string
 	_Type         *string
 	_Metadata     *map[string]interface{}
+	_Time         *time.Time
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*NFTs, error)
@@ -1860,6 +1937,42 @@ func (m *NFTsMutation) ResetMetadata() {
 	m._Metadata = nil
 }
 
+// SetTime sets the "Time" field.
+func (m *NFTsMutation) SetTime(t time.Time) {
+	m._Time = &t
+}
+
+// Time returns the value of the "Time" field in the mutation.
+func (m *NFTsMutation) Time() (r time.Time, exists bool) {
+	v := m._Time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTime returns the old "Time" field's value of the NFTs entity.
+// If the NFTs object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NFTsMutation) OldTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTime: %w", err)
+	}
+	return oldValue.Time, nil
+}
+
+// ResetTime resets all changes to the "Time" field.
+func (m *NFTsMutation) ResetTime() {
+	m._Time = nil
+}
+
 // Where appends a list predicates to the NFTsMutation builder.
 func (m *NFTsMutation) Where(ps ...predicate.NFTs) {
 	m.predicates = append(m.predicates, ps...)
@@ -1879,7 +1992,7 @@ func (m *NFTsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NFTsMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m._ObjectID != nil {
 		fields = append(fields, nfts.FieldObjectID)
 	}
@@ -1888,6 +2001,9 @@ func (m *NFTsMutation) Fields() []string {
 	}
 	if m._Metadata != nil {
 		fields = append(fields, nfts.FieldMetadata)
+	}
+	if m._Time != nil {
+		fields = append(fields, nfts.FieldTime)
 	}
 	return fields
 }
@@ -1903,6 +2019,8 @@ func (m *NFTsMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case nfts.FieldMetadata:
 		return m.Metadata()
+	case nfts.FieldTime:
+		return m.Time()
 	}
 	return nil, false
 }
@@ -1918,6 +2036,8 @@ func (m *NFTsMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldType(ctx)
 	case nfts.FieldMetadata:
 		return m.OldMetadata(ctx)
+	case nfts.FieldTime:
+		return m.OldTime(ctx)
 	}
 	return nil, fmt.Errorf("unknown NFTs field %s", name)
 }
@@ -1947,6 +2067,13 @@ func (m *NFTsMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMetadata(v)
+		return nil
+	case nfts.FieldTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTime(v)
 		return nil
 	}
 	return fmt.Errorf("unknown NFTs field %s", name)
@@ -2005,6 +2132,9 @@ func (m *NFTsMutation) ResetField(name string) error {
 		return nil
 	case nfts.FieldMetadata:
 		m.ResetMetadata()
+		return nil
+	case nfts.FieldTime:
+		m.ResetTime()
 		return nil
 	}
 	return fmt.Errorf("unknown NFTs field %s", name)
@@ -2070,8 +2200,6 @@ type ObjectsMutation struct {
 	_Has_public_transfer *bool
 	_Fields              *map[string]interface{}
 	_Owner               *string
-	_StorageRebate       *float64
-	add_StorageRebate    *float64
 	_ObjectID            *string
 	clearedFields        map[string]struct{}
 	done                 bool
@@ -2393,62 +2521,6 @@ func (m *ObjectsMutation) ResetOwner() {
 	m._Owner = nil
 }
 
-// SetStorageRebate sets the "StorageRebate" field.
-func (m *ObjectsMutation) SetStorageRebate(f float64) {
-	m._StorageRebate = &f
-	m.add_StorageRebate = nil
-}
-
-// StorageRebate returns the value of the "StorageRebate" field in the mutation.
-func (m *ObjectsMutation) StorageRebate() (r float64, exists bool) {
-	v := m._StorageRebate
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStorageRebate returns the old "StorageRebate" field's value of the Objects entity.
-// If the Objects object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ObjectsMutation) OldStorageRebate(ctx context.Context) (v float64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStorageRebate is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStorageRebate requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStorageRebate: %w", err)
-	}
-	return oldValue.StorageRebate, nil
-}
-
-// AddStorageRebate adds f to the "StorageRebate" field.
-func (m *ObjectsMutation) AddStorageRebate(f float64) {
-	if m.add_StorageRebate != nil {
-		*m.add_StorageRebate += f
-	} else {
-		m.add_StorageRebate = &f
-	}
-}
-
-// AddedStorageRebate returns the value that was added to the "StorageRebate" field in this mutation.
-func (m *ObjectsMutation) AddedStorageRebate() (r float64, exists bool) {
-	v := m.add_StorageRebate
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetStorageRebate resets all changes to the "StorageRebate" field.
-func (m *ObjectsMutation) ResetStorageRebate() {
-	m._StorageRebate = nil
-	m.add_StorageRebate = nil
-}
-
 // SetObjectID sets the "ObjectID" field.
 func (m *ObjectsMutation) SetObjectID(s string) {
 	m._ObjectID = &s
@@ -2504,7 +2576,7 @@ func (m *ObjectsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ObjectsMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m._Status != nil {
 		fields = append(fields, objects.FieldStatus)
 	}
@@ -2522,9 +2594,6 @@ func (m *ObjectsMutation) Fields() []string {
 	}
 	if m._Owner != nil {
 		fields = append(fields, objects.FieldOwner)
-	}
-	if m._StorageRebate != nil {
-		fields = append(fields, objects.FieldStorageRebate)
 	}
 	if m._ObjectID != nil {
 		fields = append(fields, objects.FieldObjectID)
@@ -2549,8 +2618,6 @@ func (m *ObjectsMutation) Field(name string) (ent.Value, bool) {
 		return m.GetFields()
 	case objects.FieldOwner:
 		return m.Owner()
-	case objects.FieldStorageRebate:
-		return m.StorageRebate()
 	case objects.FieldObjectID:
 		return m.ObjectID()
 	}
@@ -2574,8 +2641,6 @@ func (m *ObjectsMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldFields(ctx)
 	case objects.FieldOwner:
 		return m.OldOwner(ctx)
-	case objects.FieldStorageRebate:
-		return m.OldStorageRebate(ctx)
 	case objects.FieldObjectID:
 		return m.OldObjectID(ctx)
 	}
@@ -2629,13 +2694,6 @@ func (m *ObjectsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetOwner(v)
 		return nil
-	case objects.FieldStorageRebate:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStorageRebate(v)
-		return nil
 	case objects.FieldObjectID:
 		v, ok := value.(string)
 		if !ok {
@@ -2650,21 +2708,13 @@ func (m *ObjectsMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ObjectsMutation) AddedFields() []string {
-	var fields []string
-	if m.add_StorageRebate != nil {
-		fields = append(fields, objects.FieldStorageRebate)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ObjectsMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case objects.FieldStorageRebate:
-		return m.AddedStorageRebate()
-	}
 	return nil, false
 }
 
@@ -2673,13 +2723,6 @@ func (m *ObjectsMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ObjectsMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case objects.FieldStorageRebate:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddStorageRebate(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Objects numeric field %s", name)
 }
@@ -2724,9 +2767,6 @@ func (m *ObjectsMutation) ResetField(name string) error {
 		return nil
 	case objects.FieldOwner:
 		m.ResetOwner()
-		return nil
-	case objects.FieldStorageRebate:
-		m.ResetStorageRebate()
 		return nil
 	case objects.FieldObjectID:
 		m.ResetObjectID()
@@ -3219,6 +3259,8 @@ type TransactionsMutation struct {
 	_Package       *string
 	_Module        *string
 	_Function      *string
+	_Gas           *uint32
+	add_Gas        *int32
 	clearedFields  map[string]struct{}
 	done           bool
 	oldValue       func(context.Context) (*Transactions, error)
@@ -3769,6 +3811,62 @@ func (m *TransactionsMutation) ResetFunction() {
 	delete(m.clearedFields, transactions.FieldFunction)
 }
 
+// SetGas sets the "Gas" field.
+func (m *TransactionsMutation) SetGas(u uint32) {
+	m._Gas = &u
+	m.add_Gas = nil
+}
+
+// Gas returns the value of the "Gas" field in the mutation.
+func (m *TransactionsMutation) Gas() (r uint32, exists bool) {
+	v := m._Gas
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGas returns the old "Gas" field's value of the Transactions entity.
+// If the Transactions object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransactionsMutation) OldGas(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGas is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGas requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGas: %w", err)
+	}
+	return oldValue.Gas, nil
+}
+
+// AddGas adds u to the "Gas" field.
+func (m *TransactionsMutation) AddGas(u int32) {
+	if m.add_Gas != nil {
+		*m.add_Gas += u
+	} else {
+		m.add_Gas = &u
+	}
+}
+
+// AddedGas returns the value that was added to the "Gas" field in this mutation.
+func (m *TransactionsMutation) AddedGas() (r int32, exists bool) {
+	v := m.add_Gas
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetGas resets all changes to the "Gas" field.
+func (m *TransactionsMutation) ResetGas() {
+	m._Gas = nil
+	m.add_Gas = nil
+}
+
 // Where appends a list predicates to the TransactionsMutation builder.
 func (m *TransactionsMutation) Where(ps ...predicate.Transactions) {
 	m.predicates = append(m.predicates, ps...)
@@ -3788,7 +3886,7 @@ func (m *TransactionsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TransactionsMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m._Type != nil {
 		fields = append(fields, transactions.FieldType)
 	}
@@ -3819,6 +3917,9 @@ func (m *TransactionsMutation) Fields() []string {
 	if m._Function != nil {
 		fields = append(fields, transactions.FieldFunction)
 	}
+	if m._Gas != nil {
+		fields = append(fields, transactions.FieldGas)
+	}
 	return fields
 }
 
@@ -3847,6 +3948,8 @@ func (m *TransactionsMutation) Field(name string) (ent.Value, bool) {
 		return m.Module()
 	case transactions.FieldFunction:
 		return m.Function()
+	case transactions.FieldGas:
+		return m.Gas()
 	}
 	return nil, false
 }
@@ -3876,6 +3979,8 @@ func (m *TransactionsMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldModule(ctx)
 	case transactions.FieldFunction:
 		return m.OldFunction(ctx)
+	case transactions.FieldGas:
+		return m.OldGas(ctx)
 	}
 	return nil, fmt.Errorf("unknown Transactions field %s", name)
 }
@@ -3955,6 +4060,13 @@ func (m *TransactionsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetFunction(v)
 		return nil
+	case transactions.FieldGas:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGas(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Transactions field %s", name)
 }
@@ -3966,6 +4078,9 @@ func (m *TransactionsMutation) AddedFields() []string {
 	if m.add_Amount != nil {
 		fields = append(fields, transactions.FieldAmount)
 	}
+	if m.add_Gas != nil {
+		fields = append(fields, transactions.FieldGas)
+	}
 	return fields
 }
 
@@ -3976,6 +4091,8 @@ func (m *TransactionsMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case transactions.FieldAmount:
 		return m.AddedAmount()
+	case transactions.FieldGas:
+		return m.AddedGas()
 	}
 	return nil, false
 }
@@ -3991,6 +4108,13 @@ func (m *TransactionsMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddAmount(v)
+		return nil
+	case transactions.FieldGas:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddGas(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Transactions numeric field %s", name)
@@ -4081,6 +4205,9 @@ func (m *TransactionsMutation) ResetField(name string) error {
 		return nil
 	case transactions.FieldFunction:
 		m.ResetFunction()
+		return nil
+	case transactions.FieldGas:
+		m.ResetGas()
 		return nil
 	}
 	return fmt.Errorf("unknown Transactions field %s", name)

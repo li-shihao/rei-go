@@ -150,6 +150,13 @@ func Function(v string) predicate.Transactions {
 	})
 }
 
+// Gas applies equality check predicate on the "Gas" field. It's identical to GasEQ.
+func Gas(v uint32) predicate.Transactions {
+	return predicate.Transactions(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldGas), v))
+	})
+}
+
 // TypeEQ applies the EQ predicate on the "Type" field.
 func TypeEQ(v string) predicate.Transactions {
 	return predicate.Transactions(func(s *sql.Selector) {
@@ -1052,6 +1059,70 @@ func FunctionEqualFold(v string) predicate.Transactions {
 func FunctionContainsFold(v string) predicate.Transactions {
 	return predicate.Transactions(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldFunction), v))
+	})
+}
+
+// GasEQ applies the EQ predicate on the "Gas" field.
+func GasEQ(v uint32) predicate.Transactions {
+	return predicate.Transactions(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldGas), v))
+	})
+}
+
+// GasNEQ applies the NEQ predicate on the "Gas" field.
+func GasNEQ(v uint32) predicate.Transactions {
+	return predicate.Transactions(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldGas), v))
+	})
+}
+
+// GasIn applies the In predicate on the "Gas" field.
+func GasIn(vs ...uint32) predicate.Transactions {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Transactions(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldGas), v...))
+	})
+}
+
+// GasNotIn applies the NotIn predicate on the "Gas" field.
+func GasNotIn(vs ...uint32) predicate.Transactions {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Transactions(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldGas), v...))
+	})
+}
+
+// GasGT applies the GT predicate on the "Gas" field.
+func GasGT(v uint32) predicate.Transactions {
+	return predicate.Transactions(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldGas), v))
+	})
+}
+
+// GasGTE applies the GTE predicate on the "Gas" field.
+func GasGTE(v uint32) predicate.Transactions {
+	return predicate.Transactions(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldGas), v))
+	})
+}
+
+// GasLT applies the LT predicate on the "Gas" field.
+func GasLT(v uint32) predicate.Transactions {
+	return predicate.Transactions(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldGas), v))
+	})
+}
+
+// GasLTE applies the LTE predicate on the "Gas" field.
+func GasLTE(v uint32) predicate.Transactions {
+	return predicate.Transactions(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldGas), v))
 	})
 }
 

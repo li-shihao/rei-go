@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -33,7 +34,7 @@ func (ac *AccountsCreate) SetBalance(u uint64) *AccountsCreate {
 }
 
 // SetObjects sets the "Objects" field.
-func (ac *AccountsCreate) SetObjects(so *schema.AccObject) *AccountsCreate {
+func (ac *AccountsCreate) SetObjects(so []schema.AccObject) *AccountsCreate {
 	ac.mutation.SetObjects(so)
 	return ac
 }
@@ -41,6 +42,12 @@ func (ac *AccountsCreate) SetObjects(so *schema.AccObject) *AccountsCreate {
 // SetTransactions sets the "Transactions" field.
 func (ac *AccountsCreate) SetTransactions(s []string) *AccountsCreate {
 	ac.mutation.SetTransactions(s)
+	return ac
+}
+
+// SetTime sets the "Time" field.
+func (ac *AccountsCreate) SetTime(t time.Time) *AccountsCreate {
+	ac.mutation.SetTime(t)
 	return ac
 }
 
@@ -132,6 +139,9 @@ func (ac *AccountsCreate) check() error {
 	if _, ok := ac.mutation.Transactions(); !ok {
 		return &ValidationError{Name: "Transactions", err: errors.New(`ent: missing required field "Accounts.Transactions"`)}
 	}
+	if _, ok := ac.mutation.Time(); !ok {
+		return &ValidationError{Name: "Time", err: errors.New(`ent: missing required field "Accounts.Time"`)}
+	}
 	return nil
 }
 
@@ -190,6 +200,14 @@ func (ac *AccountsCreate) createSpec() (*Accounts, *sqlgraph.CreateSpec) {
 			Column: accounts.FieldTransactions,
 		})
 		_node.Transactions = value
+	}
+	if value, ok := ac.mutation.Time(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: accounts.FieldTime,
+		})
+		_node.Time = value
 	}
 	return _node, _spec
 }

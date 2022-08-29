@@ -36,6 +36,8 @@ type Transactions struct {
 	Module string `json:"Module,omitempty"`
 	// Function holds the value of the "Function" field.
 	Function string `json:"Function,omitempty"`
+	// Gas holds the value of the "Gas" field.
+	Gas uint32 `json:"Gas,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -47,7 +49,7 @@ func (*Transactions) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullBool)
 		case transactions.FieldAmount:
 			values[i] = new(sql.NullFloat64)
-		case transactions.FieldID:
+		case transactions.FieldID, transactions.FieldGas:
 			values[i] = new(sql.NullInt64)
 		case transactions.FieldType, transactions.FieldTransactionID, transactions.FieldSender, transactions.FieldRecipient, transactions.FieldPackage, transactions.FieldModule, transactions.FieldFunction:
 			values[i] = new(sql.NullString)
@@ -134,6 +136,12 @@ func (t *Transactions) assignValues(columns []string, values []interface{}) erro
 			} else if value.Valid {
 				t.Function = value.String
 			}
+		case transactions.FieldGas:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field Gas", values[i])
+			} else if value.Valid {
+				t.Gas = uint32(value.Int64)
+			}
 		}
 	}
 	return nil
@@ -191,6 +199,9 @@ func (t *Transactions) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("Function=")
 	builder.WriteString(t.Function)
+	builder.WriteString(", ")
+	builder.WriteString("Gas=")
+	builder.WriteString(fmt.Sprintf("%v", t.Gas))
 	builder.WriteByte(')')
 	return builder.String()
 }

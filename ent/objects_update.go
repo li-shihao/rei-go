@@ -63,19 +63,6 @@ func (ou *ObjectsUpdate) SetOwner(s string) *ObjectsUpdate {
 	return ou
 }
 
-// SetStorageRebate sets the "StorageRebate" field.
-func (ou *ObjectsUpdate) SetStorageRebate(f float64) *ObjectsUpdate {
-	ou.mutation.ResetStorageRebate()
-	ou.mutation.SetStorageRebate(f)
-	return ou
-}
-
-// AddStorageRebate adds f to the "StorageRebate" field.
-func (ou *ObjectsUpdate) AddStorageRebate(f float64) *ObjectsUpdate {
-	ou.mutation.AddStorageRebate(f)
-	return ou
-}
-
 // SetObjectID sets the "ObjectID" field.
 func (ou *ObjectsUpdate) SetObjectID(s string) *ObjectsUpdate {
 	ou.mutation.SetObjectID(s)
@@ -201,20 +188,6 @@ func (ou *ObjectsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: objects.FieldOwner,
 		})
 	}
-	if value, ok := ou.mutation.StorageRebate(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Value:  value,
-			Column: objects.FieldStorageRebate,
-		})
-	}
-	if value, ok := ou.mutation.AddedStorageRebate(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Value:  value,
-			Column: objects.FieldStorageRebate,
-		})
-	}
 	if value, ok := ou.mutation.ObjectID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -274,19 +247,6 @@ func (ouo *ObjectsUpdateOne) SetFields(m map[string]interface{}) *ObjectsUpdateO
 // SetOwner sets the "Owner" field.
 func (ouo *ObjectsUpdateOne) SetOwner(s string) *ObjectsUpdateOne {
 	ouo.mutation.SetOwner(s)
-	return ouo
-}
-
-// SetStorageRebate sets the "StorageRebate" field.
-func (ouo *ObjectsUpdateOne) SetStorageRebate(f float64) *ObjectsUpdateOne {
-	ouo.mutation.ResetStorageRebate()
-	ouo.mutation.SetStorageRebate(f)
-	return ouo
-}
-
-// AddStorageRebate adds f to the "StorageRebate" field.
-func (ouo *ObjectsUpdateOne) AddStorageRebate(f float64) *ObjectsUpdateOne {
-	ouo.mutation.AddStorageRebate(f)
 	return ouo
 }
 
@@ -443,20 +403,6 @@ func (ouo *ObjectsUpdateOne) sqlSave(ctx context.Context) (_node *Objects, err e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: objects.FieldOwner,
-		})
-	}
-	if value, ok := ouo.mutation.StorageRebate(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Value:  value,
-			Column: objects.FieldStorageRebate,
-		})
-	}
-	if value, ok := ouo.mutation.AddedStorageRebate(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Value:  value,
-			Column: objects.FieldStorageRebate,
 		})
 	}
 	if value, ok := ouo.mutation.ObjectID(); ok {

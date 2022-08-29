@@ -15,6 +15,8 @@ const (
 	FieldObjects = "objects"
 	// FieldTransactions holds the string denoting the transactions field in the database.
 	FieldTransactions = "transactions"
+	// FieldTime holds the string denoting the time field in the database.
+	FieldTime = "time"
 	// Table holds the table name of the accounts in the database.
 	Table = "accounts"
 )
@@ -26,6 +28,7 @@ var Columns = []string{
 	FieldBalance,
 	FieldObjects,
 	FieldTransactions,
+	FieldTime,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

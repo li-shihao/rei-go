@@ -133,13 +133,13 @@ type Arg struct {
 	Name string
 	Type string
 	ID   string
-	Data interface{}
+	Data string
 }
 
 type Event struct {
 	Type      string
 	Sender    string
-	Recipient string
+	Recipient *string
 	TX        string
 	ObjectId  string
 	Version   uint32
@@ -222,6 +222,12 @@ func (tx *TX) GetTransferAmount() *float64 {
 	} else {
 		return nil
 	}
+}
+
+// Get gas cost
+func (tx *TX) GetGas() uint32 {
+	return uint32(tx.Result.Effects.GasUsed.StorageCost) + uint32(tx.Result.Effects.GasUsed.ComputationCost)
+
 }
 
 // Get the package of a Call transaction
@@ -341,6 +347,11 @@ func (obj *Obj) GetObjectID() string {
 	return obj.Result.Details.Reference.ObjectId
 }
 
+// Get the object status of an object
+func (obj *Obj) GetObjectStatus() string {
+	return obj.Result.Status
+}
+
 // Get the package that the object belongs to
 func (obj *Obj) GetObjectPackage() string {
 
@@ -404,5 +415,9 @@ func (acc *Acc) GetAccountNFTs() []AccObject {
 			result = append(result, obj)
 		}
 	}
-	return result
+	if len(result) == 0 {
+		return nil
+	} else {
+		return result
+	}
 }

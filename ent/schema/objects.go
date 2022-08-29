@@ -19,7 +19,6 @@ func (Objects) Fields() []ent.Field {
 		field.Bool("Has_public_transfer"),
 		field.JSON("Fields", map[string]interface{}{}),
 		field.String("Owner"),
-		field.Float("StorageRebate"),
 		field.String("ObjectID"),
 	}
 }

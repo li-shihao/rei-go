@@ -55,12 +55,6 @@ func (oc *ObjectsCreate) SetOwner(s string) *ObjectsCreate {
 	return oc
 }
 
-// SetStorageRebate sets the "StorageRebate" field.
-func (oc *ObjectsCreate) SetStorageRebate(f float64) *ObjectsCreate {
-	oc.mutation.SetStorageRebate(f)
-	return oc
-}
-
 // SetObjectID sets the "ObjectID" field.
 func (oc *ObjectsCreate) SetObjectID(s string) *ObjectsCreate {
 	oc.mutation.SetObjectID(s)
@@ -161,9 +155,6 @@ func (oc *ObjectsCreate) check() error {
 	if _, ok := oc.mutation.Owner(); !ok {
 		return &ValidationError{Name: "Owner", err: errors.New(`ent: missing required field "Objects.Owner"`)}
 	}
-	if _, ok := oc.mutation.StorageRebate(); !ok {
-		return &ValidationError{Name: "StorageRebate", err: errors.New(`ent: missing required field "Objects.StorageRebate"`)}
-	}
 	if _, ok := oc.mutation.ObjectID(); !ok {
 		return &ValidationError{Name: "ObjectID", err: errors.New(`ent: missing required field "Objects.ObjectID"`)}
 	}
@@ -241,14 +232,6 @@ func (oc *ObjectsCreate) createSpec() (*Objects, *sqlgraph.CreateSpec) {
 			Column: objects.FieldOwner,
 		})
 		_node.Owner = value
-	}
-	if value, ok := oc.mutation.StorageRebate(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeFloat64,
-			Value:  value,
-			Column: objects.FieldStorageRebate,
-		})
-		_node.StorageRebate = value
 	}
 	if value, ok := oc.mutation.ObjectID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
