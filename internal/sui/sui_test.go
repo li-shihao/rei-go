@@ -3,6 +3,7 @@ package sui
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestGetTotalTransactionNumber(t *testing.T) {
@@ -41,26 +42,26 @@ func TestGetTransaction(t *testing.T) {
 
 	result4, _ := tc.GetTransaction("ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=")
 	got4 := *result4.Arguments
-	exp4 := []map[string]interface{}{
-		{"id": "ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=", "name": nil, "type": "U8", "data": ""},
-		{"id": "ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=", "name": nil, "type": "U8", "data": float64(255)},
-		{"id": "ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=", "name": nil, "type": "U8", "data": ""},
+	exp4 := []Arg{
+		{ID: "ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=", Type: "U8", Data: ""},
+		{ID: "ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=", Type: "U8", Data: float64(255)},
+		{ID: "ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=", Type: "U8", Data: ""},
 	}
 
 	if !reflect.DeepEqual(got4, exp4) {
-		t.Errorf("Result was incorrect, got %s, want %s.", got4, exp4)
+		t.Errorf("Result was incorrect, got %v, want %v.", got4, exp4)
 	}
 
 	result5, _ := tc.GetTransaction("f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=")
 	got5 := *result5.Events
-	exp5 := []map[string]interface{}{
-		{"tx": "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", "type": "mint", "sender": "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", "recipient": "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", "objectId": "0xc4b9a5e7dd8acd17697762b5068050de68ca4d61", "version": uint32(0)},
-		{"tx": "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", "type": "transfer", "sender": "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", "recipient": "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", "objectId": "0xde1e02902f1c591d6e71d68d41e663105a4e8f25", "version": uint32(1)},
-		{"tx": "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", "type": "burn", "sender": "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", "recipient": nil, "objectId": "0x3c18ae6cde75b48702a737f7d6663359bd4865c1", "version": nil},
+	exp5 := []Event{
+		{TX: "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", Type: "mint", Sender: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", Recipient: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", ObjectId: "0xc4b9a5e7dd8acd17697762b5068050de68ca4d61", Version: uint32(0)},
+		{TX: "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", Type: "transfer", Sender: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", Recipient: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", ObjectId: "0xde1e02902f1c591d6e71d68d41e663105a4e8f25", Version: uint32(1)},
+		{TX: "f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=", Type: "burn", Sender: "0x84278a52a92e9532ffcc06a73a3d9b9a79696936", ObjectId: "0x3c18ae6cde75b48702a737f7d6663359bd4865c1"},
 	}
 
 	if !reflect.DeepEqual(got5, exp5) {
-		t.Errorf("Result was incorrect, got %s, want %s.", got5, exp5)
+		t.Errorf("Result was incorrect, got %v, want %v.", got5, exp5)
 	}
 }
 
@@ -146,23 +147,26 @@ func TestGetTime(t *testing.T) {
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
 	got1 := result1.GetTime()
+	exp1, _ := time.Parse(time.RFC3339, "2022-08-25T14:05:55.835000038Z")
 
-	if got1 != float64(1661436355835) {
-		t.Errorf("Result was incorrect, got %f, want %f.", got1, float64(1661436355835))
+	if got1 != exp1 {
+		t.Errorf("Result was incorrect, got %s, want %s.", got1, exp1)
 	}
 
 	result2, _ := tc.GetTransaction("tsl8gn6Wbeq17lmh8MCRkacdHYCiuKDj7r80MD3OhpA=")
 	got2 := result2.GetTime()
+	exp2, _ := time.Parse(time.RFC3339, "2022-08-25T09:40:38.845000028Z")
 
-	if got2 != float64(1661420438845) {
-		t.Errorf("Result was incorrect, got %f, want %f.", got2, float64(1661420438845))
+	if got2 != exp2 {
+		t.Errorf("Result was incorrect, got %s, want %s.", got2, exp2)
 	}
 
 	result3, _ := tc.GetTransaction("qurUKphegqg9QJjmqyoxFg2U5G+HAK49Wbk0YxDOI7c=")
 	got3 := result3.GetTime()
+	exp3, _ := time.Parse(time.RFC3339, "2022-08-25T14:11:13.457999944Z")
 
-	if got3 != float64(1661436673458) {
-		t.Errorf("Result was incorrect, got %f, want %f.", got3, float64(1661436673458))
+	if got3 != exp3 {
+		t.Errorf("Result was incorrect, got %s, want %s.", got3, exp3)
 	}
 }
 
@@ -242,24 +246,24 @@ func TestGetRecipient(t *testing.T) {
 	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
-	got1, _ := result1.GetRecipient()
+	got1 := result1.GetRecipient()
 
-	if got1 != "" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got1, "")
+	if got1 != nil {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got1, "nil")
 	}
 
 	result2, _ := tc.GetTransaction("tsl8gn6Wbeq17lmh8MCRkacdHYCiuKDj7r80MD3OhpA=")
-	got2, _ := result2.GetRecipient()
+	got2 := result2.GetRecipient()
 
-	if got2 != "0xce1313e3b8e5326568e91460cfc449f2cb7ebfc0" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got2, "0xce1313e3b8e5326568e91460cfc449f2cb7ebfc0")
+	if *got2 != "0xce1313e3b8e5326568e91460cfc449f2cb7ebfc0" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got2, "0xce1313e3b8e5326568e91460cfc449f2cb7ebfc0")
 	}
 
 	result3, _ := tc.GetTransaction("qurUKphegqg9QJjmqyoxFg2U5G+HAK49Wbk0YxDOI7c=")
-	got3, _ := result3.GetRecipient()
+	got3 := result3.GetRecipient()
 
-	if got3 != "0x5f00c4a09b4f2cf91c7d6478be22a6a522d9299f" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got3, "0x5f00c4a09b4f2cf91c7d6478be22a6a522d9299f")
+	if *got3 != "0x5f00c4a09b4f2cf91c7d6478be22a6a522d9299f" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got3, "0x5f00c4a09b4f2cf91c7d6478be22a6a522d9299f")
 	}
 }
 
@@ -268,24 +272,24 @@ func TestGetTransferAmount(t *testing.T) {
 	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
-	got1, _ := result1.GetTransferAmount()
+	got1 := result1.GetTransferAmount()
 
-	if got1 != 0 {
-		t.Errorf("Result was incorrect, got %f, want %f.", got1, 0.0)
+	if got1 != nil {
+		t.Errorf("Result was incorrect, got %f, want %f.", *got1, 0.0)
 	}
 
 	result2, _ := tc.GetTransaction("tsl8gn6Wbeq17lmh8MCRkacdHYCiuKDj7r80MD3OhpA=")
-	got2, _ := result2.GetTransferAmount()
+	got2 := result2.GetTransferAmount()
 
-	if got2 != 50000 {
-		t.Errorf("Result was incorrect, got %f, want %f.", got2, 50000.0)
+	if *got2 != 50000 {
+		t.Errorf("Result was incorrect, got %f, want %f.", *got2, 50000.0)
 	}
 
 	result3, _ := tc.GetTransaction("qurUKphegqg9QJjmqyoxFg2U5G+HAK49Wbk0YxDOI7c=")
-	got3, _ := result3.GetTransferAmount()
+	got3 := result3.GetTransferAmount()
 
-	if got3 != 0 {
-		t.Errorf("Result was incorrect, got %f, want %f.", got3, 0.0)
+	if got3 != nil {
+		t.Errorf("Result was incorrect, got %f, want %f.", *got3, 0.0)
 	}
 }
 
@@ -294,52 +298,52 @@ func TestGetGetContractPackage(t *testing.T) {
 	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
-	got1, _ := result1.GetContractPackage()
+	got1 := result1.GetContractPackage()
 
-	if got1 != "0x0000000000000000000000000000000000000002" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got1, "0x0000000000000000000000000000000000000002")
+	if *got1 != "0x0000000000000000000000000000000000000002" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got1, "0x0000000000000000000000000000000000000002")
 	}
 
 	result2, _ := tc.GetTransaction("tsl8gn6Wbeq17lmh8MCRkacdHYCiuKDj7r80MD3OhpA=")
-	got2, _ := result2.GetContractPackage()
+	got2 := result2.GetContractPackage()
 
-	if got2 != "" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got2, "")
+	if got2 != nil {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got2, "nil")
 	}
 
 	result3, _ := tc.GetTransaction("qurUKphegqg9QJjmqyoxFg2U5G+HAK49Wbk0YxDOI7c=")
-	got3, _ := result3.GetContractPackage()
+	got3 := result3.GetContractPackage()
 
-	if got3 != "" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got3, "")
+	if got3 != nil {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got3, "nil")
 	}
 
 	result4, _ := tc.GetTransaction("1MI3iWk0MBEe2BwpMDpsiX1UWgkTg5Oh6KJzG9DrCxM=")
-	got4, _ := result4.GetContractPackage()
+	got4 := result4.GetContractPackage()
 
-	if got4 != "0xa41ca8645474a1cacc08ce4559275ba07136c412" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got4, "0xa41ca8645474a1cacc08ce4559275ba07136c412")
+	if *got4 != "0xa41ca8645474a1cacc08ce4559275ba07136c412" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got4, "0xa41ca8645474a1cacc08ce4559275ba07136c412")
 	}
 
 	result5, _ := tc.GetTransaction("KEErop0BQhU0vM8sQNb2X0IygEVUar60XBn9eOFqlTQ=")
-	got5, _ := result5.GetContractPackage()
+	got5 := result5.GetContractPackage()
 
-	if got5 != "0x0000000000000000000000000000000000000002" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got5, "0x0000000000000000000000000000000000000002")
+	if *got5 != "0x0000000000000000000000000000000000000002" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got5, "0x0000000000000000000000000000000000000002")
 	}
 
 	result6, _ := tc.GetTransaction("f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=")
-	got6, _ := result6.GetContractPackage()
+	got6 := result6.GetContractPackage()
 
-	if got6 != "0x6774c132abf5521bf9bd8e8c6948c03f0f0cb3f4" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got6, "0x6774c132abf5521bf9bd8e8c6948c03f0f0cb3f4")
+	if *got6 != "0x6774c132abf5521bf9bd8e8c6948c03f0f0cb3f4" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got6, "0x6774c132abf5521bf9bd8e8c6948c03f0f0cb3f4")
 	}
 
 	result7, _ := tc.GetTransaction("ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=")
-	got7, _ := result7.GetContractPackage()
+	got7 := result7.GetContractPackage()
 
-	if got7 != "0xb82c2e33acecc71f2b2b742c366d902bd640a1bf" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got7, "0xb82c2e33acecc71f2b2b742c366d902bd640a1bf")
+	if *got7 != "0xb82c2e33acecc71f2b2b742c366d902bd640a1bf" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got7, "0xb82c2e33acecc71f2b2b742c366d902bd640a1bf")
 	}
 }
 
@@ -348,52 +352,52 @@ func TestGetContractModule(t *testing.T) {
 	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
-	got1, _ := result1.GetContractModule()
+	got1 := result1.GetContractModule()
 
-	if got1 != "devnet_nft" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got1, "devnet_nft")
+	if *got1 != "devnet_nft" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got1, "devnet_nft")
 	}
 
 	result2, _ := tc.GetTransaction("tsl8gn6Wbeq17lmh8MCRkacdHYCiuKDj7r80MD3OhpA=")
-	got2, _ := result2.GetContractModule()
+	got2 := result2.GetContractModule()
 
-	if got2 != "" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got2, "")
+	if got2 != nil {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got2, "nil")
 	}
 
 	result3, _ := tc.GetTransaction("qurUKphegqg9QJjmqyoxFg2U5G+HAK49Wbk0YxDOI7c=")
-	got3, _ := result3.GetContractModule()
+	got3 := result3.GetContractModule()
 
-	if got3 != "" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got3, "")
+	if got3 != nil {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got3, "nil")
 	}
 
 	result4, _ := tc.GetTransaction("1MI3iWk0MBEe2BwpMDpsiX1UWgkTg5Oh6KJzG9DrCxM=")
-	got4, _ := result4.GetContractModule()
+	got4 := result4.GetContractModule()
 
-	if got4 != "suiname_nft" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got4, "suiname_nft")
+	if *got4 != "suiname_nft" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got4, "suiname_nft")
 	}
 
 	result5, _ := tc.GetTransaction("KEErop0BQhU0vM8sQNb2X0IygEVUar60XBn9eOFqlTQ=")
-	got5, _ := result5.GetContractModule()
+	got5 := result5.GetContractModule()
 
-	if got5 != "coin" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got5, "coin")
+	if *got5 != "coin" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got5, "coin")
 	}
 
 	result6, _ := tc.GetTransaction("f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=")
-	got6, _ := result6.GetContractModule()
+	got6 := result6.GetContractModule()
 
-	if got6 != "market" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got6, "market")
+	if *got6 != "market" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got6, "market")
 	}
 
 	result7, _ := tc.GetTransaction("ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=")
-	got7, _ := result7.GetContractModule()
+	got7 := result7.GetContractModule()
 
-	if got7 != "rgb" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got7, "rgb")
+	if *got7 != "rgb" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got7, "rgb")
 	}
 }
 
@@ -402,52 +406,52 @@ func TestGetContractFunction(t *testing.T) {
 	tc.Init("http://158.140.129.74:9000")
 
 	result1, _ := tc.GetTransaction("WCyfaBotBOKG1qBwakZ92wKtm79itrRpvJVj9zLaFIY=")
-	got1, _ := result1.GetContractFunction()
+	got1 := result1.GetContractFunction()
 
-	if got1 != "mint" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got1, "mint")
+	if *got1 != "mint" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got1, "mint")
 	}
 
 	result2, _ := tc.GetTransaction("tsl8gn6Wbeq17lmh8MCRkacdHYCiuKDj7r80MD3OhpA=")
-	got2, _ := result2.GetContractFunction()
+	got2 := result2.GetContractFunction()
 
-	if got2 != "" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got2, "")
+	if got2 != nil {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got2, "nil")
 	}
 
 	result3, _ := tc.GetTransaction("qurUKphegqg9QJjmqyoxFg2U5G+HAK49Wbk0YxDOI7c=")
-	got3, _ := result3.GetContractFunction()
+	got3 := result3.GetContractFunction()
 
-	if got3 != "" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got3, "")
+	if got3 != nil {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got3, "nil")
 	}
 
 	result4, _ := tc.GetTransaction("1MI3iWk0MBEe2BwpMDpsiX1UWgkTg5Oh6KJzG9DrCxM=")
-	got4, _ := result4.GetContractFunction()
+	got4 := result4.GetContractFunction()
 
-	if got4 != "mint" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got4, "mint")
+	if *got4 != "mint" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got4, "mint")
 	}
 
 	result5, _ := tc.GetTransaction("KEErop0BQhU0vM8sQNb2X0IygEVUar60XBn9eOFqlTQ=")
-	got5, _ := result5.GetContractFunction()
+	got5 := result5.GetContractFunction()
 
-	if got5 != "join" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got5, "join")
+	if *got5 != "join" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got5, "join")
 	}
 
 	result6, _ := tc.GetTransaction("f+eG0euJ2s5X/md68P+gQwHwVCn6PEAtdUXC+ocOeQA=")
-	got6, _ := result6.GetContractFunction()
+	got6 := result6.GetContractFunction()
 
-	if got6 != "new_order" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got6, "new_order")
+	if *got6 != "new_order" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got6, "new_order")
 	}
 
 	result7, _ := tc.GetTransaction("ytTaRyKDc/eBVxlfijdOAPQZbvA42LlGQoK+s2XJhz0=")
-	got7, _ := result7.GetContractFunction()
+	got7 := result7.GetContractFunction()
 
-	if got7 != "create" {
-		t.Errorf("Result was incorrect, got %s, want %s.", got7, "create")
+	if *got7 != "create" {
+		t.Errorf("Result was incorrect, got %s, want %s.", *got7, "create")
 	}
 }
 
@@ -466,14 +470,14 @@ func TestGetRawContractArguments(t *testing.T) {
 	result2, _ := tc.GetTransaction("tsl8gn6Wbeq17lmh8MCRkacdHYCiuKDj7r80MD3OhpA=")
 	got2, _ := result2.GetRawContractArguments()
 
-	if got2 != "" {
+	if got2 != nil {
 		t.Errorf("Result was incorrect, got %s, want %s.", got2, "")
 	}
 
 	result3, _ := tc.GetTransaction("qurUKphegqg9QJjmqyoxFg2U5G+HAK49Wbk0YxDOI7c=")
 	got3, _ := result3.GetRawContractArguments()
 
-	if got3 != "" {
+	if got3 != nil {
 		t.Errorf("Result was incorrect, got %s, want %s.", got3, "")
 	}
 
@@ -951,7 +955,7 @@ func TestGetAccountNFTs(t *testing.T) {
 
 	result1, _ := tc.GetAccount("0x66f68a701b4cb5f2b3d3446c093eb91fae8af34f")
 	got1 := result1.GetAccountNFTs()
-	exp1 := []map[string]interface{}{}
+	exp1 := []AccObject{}
 
 	if !reflect.DeepEqual(got1, exp1) {
 		t.Errorf("Result was incorrect, got %v, want %v.", got1, exp1)
@@ -959,10 +963,10 @@ func TestGetAccountNFTs(t *testing.T) {
 
 	result2, _ := tc.GetAccount("0x1a6254d89ee1698ed62c03481d28eee88c685b94")
 	got2 := result2.GetAccountNFTs()
-	exp2 := []map[string]interface{}{{
-		"ObjectId": "0xa61de7bb233df7870bca7ed3459f1261f393ec7f",
-		"Type":     "0x95cd99feeeb3f49a52f2b4267743f551c828d5b2::rgb::ColorObject",
-		"Metadata": map[string]interface{}{
+	exp2 := []AccObject{{
+		ObjectId: "0xa61de7bb233df7870bca7ed3459f1261f393ec7f",
+		Type:     "0x95cd99feeeb3f49a52f2b4267743f551c828d5b2::rgb::ColorObject",
+		Metadata: map[string]interface{}{
 			"blue":  float64(0),
 			"green": float64(255),
 			"red":   float64(0),
@@ -982,10 +986,10 @@ func TestGetGetContractDeploy(t *testing.T) {
 	result1, _ := tc.GetTransaction("xVFZ7KO5uMrBSLtwLku4TMLZaIEMmhob0G/erUmTa6U=")
 	got1, _ := result1.GetContractDeploy()
 	suiname_nft := "// Move bytecode v5\nmodule 0.suiname_nft {\nstruct AdminCap has key {\n\tid: UID\n}\nstruct GroupsInfo has key {\n\tid: UID,\n\tdata: VecMap<u8, ID>\n}\nstruct NFTMinted has copy, drop {\n\tobject_id: ID,\n\tcreator: address,\n\tname: String\n}\nstruct NamesGroup has key {\n\tid: UID,\n\ttype: u8,\n\tnames: VecMap<String, ID>,\n\tbalance: Balance<SUI>\n}\nstruct SuiNameNFT has store, key {\n\tid: UID,\n\tname: String,\n\turl: Url,\n\tis_active: bool\n}\n\nentry public change_name_status(Arg0: &mut SuiNameNFT, Arg1: bool) {\nB0:\n\t0: MoveLoc[1](Arg1: bool)\n\t1: MoveLoc[0](Arg0: &mut SuiNameNFT)\n\t2: MutBorrowField[0](SuiNameNFT.is_active: bool)\n\t3: WriteRef\n\t4: Ret\n}\nentry public collect_payments(Arg0: &AdminCap, Arg1: &mut NamesGroup, Arg2: &mut TxContext) {\nB0:\n\t0: CopyLoc[1](Arg1: &mut NamesGroup)\n\t1: ImmBorrowField[1](NamesGroup.balance: Balance<SUI>)\n\t2: Call[0](value<SUI>(&Balance<SUI>): u64)\n\t3: StLoc[3](loc0: u64)\n\t4: MoveLoc[1](Arg1: &mut NamesGroup)\n\t5: MutBorrowField[1](NamesGroup.balance: Balance<SUI>)\n\t6: MoveLoc[3](loc0: u64)\n\t7: CopyLoc[2](Arg2: &mut TxContext)\n\t8: Call[1](take<SUI>(&mut Balance<SUI>, u64, &mut TxContext): Coin<SUI>)\n\t9: StLoc[4](loc1: Coin<SUI>)\n\t10: MoveLoc[4](loc1: Coin<SUI>)\n\t11: MoveLoc[2](Arg2: &mut TxContext)\n\t12: FreezeRef\n\t13: Call[12](sender(&TxContext): address)\n\t14: Call[2](transfer<Coin<SUI>>(Coin<SUI>, address))\n\t15: Ret\n}\npublic get_name(Arg0: &SuiNameNFT): String {\nB0:\n\t0: MoveLoc[0](Arg0: &SuiNameNFT)\n\t1: ImmBorrowField[2](SuiNameNFT.name: String)\n\t2: ReadRef\n\t3: Ret\n}\npublic get_price(Arg0: &vector<u8>): u64 {\nL0:\tloc1: u64\nB0:\n\t0: MoveLoc[0](Arg0: &vector<u8>)\n\t1: VecLen(7)\n\t2: StLoc[1](loc0: u64)\n\t3: CopyLoc[1](loc0: u64)\n\t4: LdU64(1)\n\t5: Eq\n\t6: BrTrue(8)\nB1:\n\t7: Branch(11)\nB2:\n\t8: LdU64(5000)\n\t9: StLoc[2](loc1: u64)\n\t10: Branch(29)\nB3:\n\t11: CopyLoc[1](loc0: u64)\n\t12: LdU64(2)\n\t13: Eq\n\t14: BrTrue(16)\nB4:\n\t15: Branch(19)\nB5:\n\t16: LdU64(3000)\n\t17: StLoc[2](loc1: u64)\n\t18: Branch(29)\nB6:\n\t19: MoveLoc[1](loc0: u64)\n\t20: LdU64(3)\n\t21: Eq\n\t22: BrTrue(24)\nB7:\n\t23: Branch(27)\nB8:\n\t24: LdU64(2000)\n\t25: StLoc[2](loc1: u64)\n\t26: Branch(29)\nB9:\n\t27: LdU64(1000)\n\t28: StLoc[2](loc1: u64)\nB10:\n\t29: MoveLoc[2](loc1: u64)\n\t30: Ret\n}\npublic get_type(Arg0: &vector<u8>): u8 {\nL0:\tloc1: u64\nL1:\tloc2: u64\nB0:\n\t0: LdU8(0)\n\t1: StLoc[1](loc0: u8)\n\t2: CopyLoc[0](Arg0: &vector<u8>)\n\t3: VecLen(7)\n\t4: StLoc[3](loc2: u64)\n\t5: LdU64(0)\n\t6: StLoc[2](loc1: u64)\nB1:\n\t7: CopyLoc[2](loc1: u64)\n\t8: CopyLoc[3](loc2: u64)\n\t9: Lt\n\t10: BrTrue(12)\nB2:\n\t11: Branch(26)\nB3:\n\t12: MoveLoc[1](loc0: u8)\n\t13: CopyLoc[0](Arg0: &vector<u8>)\n\t14: CopyLoc[2](loc1: u64)\n\t15: VecImmBorrow(7)\n\t16: ReadRef\n\t17: Add\n\t18: LdConst[7](U8: [64])\n\t19: Mod\n\t20: StLoc[1](loc0: u8)\n\t21: MoveLoc[2](loc1: u64)\n\t22: LdU64(1)\n\t23: Add\n\t24: StLoc[2](loc1: u64)\n\t25: Branch(7)\nB4:\n\t26: MoveLoc[0](Arg0: &vector<u8>)\n\t27: Pop\n\t28: MoveLoc[1](loc0: u8)\n\t29: LdU8(1)\n\t30: Add\n\t31: Ret\n}\ninit(Arg0: &mut TxContext) {\nL0:\tloc1: VecMap<u8, ID>\nL1:\tloc2: UID\nB0:\n\t0: CopyLoc[0](Arg0: &mut TxContext)\n\t1: Call[14](new(&mut TxContext): UID)\n\t2: Pack[0](AdminCap)\n\t3: CopyLoc[0](Arg0: &mut TxContext)\n\t4: FreezeRef\n\t5: Call[12](sender(&TxContext): address)\n\t6: Call[3](transfer<AdminCap>(AdminCap, address))\n\t7: Call[4](empty<u8, ID>(): VecMap<u8, ID>)\n\t8: StLoc[2](loc1: VecMap<u8, ID>)\n\t9: LdU8(1)\n\t10: StLoc[1](loc0: u8)\nB1:\n\t11: CopyLoc[1](loc0: u8)\n\t12: LdConst[7](U8: [64])\n\t13: Le\n\t14: BrTrue(16)\nB2:\n\t15: Branch(35)\nB3:\n\t16: CopyLoc[0](Arg0: &mut TxContext)\n\t17: Call[14](new(&mut TxContext): UID)\n\t18: StLoc[3](loc2: UID)\n\t19: MutBorrowLoc[2](loc1: VecMap<u8, ID>)\n\t20: CopyLoc[1](loc0: u8)\n\t21: ImmBorrowLoc[3](loc2: UID)\n\t22: Call[16](uid_to_inner(&UID): ID)\n\t23: Call[5](insert<u8, ID>(&mut VecMap<u8, ID>, u8, ID))\n\t24: MoveLoc[3](loc2: UID)\n\t25: CopyLoc[1](loc0: u8)\n\t26: Call[6](empty<String, ID>(): VecMap<String, ID>)\n\t27: Call[7](zero<SUI>(): Balance<SUI>)\n\t28: Pack[3](NamesGroup)\n\t29: Call[8](share_object<NamesGroup>(NamesGroup))\n\t30: MoveLoc[1](loc0: u8)\n\t31: LdU8(1)\n\t32: Add\n\t33: StLoc[1](loc0: u8)\n\t34: Branch(11)\nB4:\n\t35: MoveLoc[0](Arg0: &mut TxContext)\n\t36: Call[14](new(&mut TxContext): UID)\n\t37: MoveLoc[2](loc1: VecMap<u8, ID>)\n\t38: Pack[1](GroupsInfo)\n\t39: Call[9](share_object<GroupsInfo>(GroupsInfo))\n\t40: Ret\n}\npublic is_name_available(Arg0: &VecMap<String, ID>, Arg1: &String): bool {\nB0:\n\t0: MoveLoc[0](Arg0: &VecMap<String, ID>)\n\t1: MoveLoc[1](Arg1: &String)\n\t2: Call[10](contains<String, ID>(&VecMap<String, ID>, &String): bool)\n\t3: Not\n\t4: Ret\n}\npublic is_name_correct(Arg0: &vector<u8>): bool {\nL0:\tloc1: bool\nL1:\tloc2: bool\nL2:\tloc3: bool\nL3:\tloc4: u8\nL4:\tloc5: u64\nL5:\tloc6: u64\nB0:\n\t0: CopyLoc[0](Arg0: &vector<u8>)\n\t1: VecLen(7)\n\t2: StLoc[7](loc6: u64)\n\t3: CopyLoc[7](loc6: u64)\n\t4: LdU64(1)\n\t5: Lt\n\t6: BrTrue(8)\nB1:\n\t7: Branch(11)\nB2:\n\t8: LdTrue\n\t9: StLoc[1](loc0: bool)\n\t10: Branch(15)\nB3:\n\t11: CopyLoc[7](loc6: u64)\n\t12: LdU64(24)\n\t13: Gt\n\t14: StLoc[1](loc0: bool)\nB4:\n\t15: MoveLoc[1](loc0: bool)\n\t16: BrTrue(18)\nB5:\n\t17: Branch(22)\nB6:\n\t18: MoveLoc[0](Arg0: &vector<u8>)\n\t19: Pop\n\t20: LdFalse\n\t21: Ret\nB7:\n\t22: LdU64(0)\n\t23: StLoc[6](loc5: u64)\nB8:\n\t24: CopyLoc[6](loc5: u64)\n\t25: CopyLoc[7](loc6: u64)\n\t26: Lt\n\t27: BrTrue(29)\nB9:\n\t28: Branch(79)\nB10:\n\t29: CopyLoc[0](Arg0: &vector<u8>)\n\t30: CopyLoc[6](loc5: u64)\n\t31: VecImmBorrow(7)\n\t32: ReadRef\n\t33: StLoc[5](loc4: u8)\n\t34: LdU8(48)\n\t35: CopyLoc[5](loc4: u8)\n\t36: Le\n\t37: BrTrue(39)\nB11:\n\t38: Branch(44)\nB12:\n\t39: CopyLoc[5](loc4: u8)\n\t40: LdU8(57)\n\t41: Le\n\t42: StLoc[2](loc1: bool)\n\t43: Branch(46)\nB13:\n\t44: LdFalse\n\t45: StLoc[2](loc1: bool)\nB14:\n\t46: MoveLoc[2](loc1: bool)\n\t47: BrTrue(49)\nB15:\n\t48: Branch(52)\nB16:\n\t49: LdTrue\n\t50: StLoc[4](loc3: bool)\n\t51: Branch(66)\nB17:\n\t52: LdU8(97)\n\t53: CopyLoc[5](loc4: u8)\n\t54: Le\n\t55: BrTrue(57)\nB18:\n\t56: Branch(62)\nB19:\n\t57: MoveLoc[5](loc4: u8)\n\t58: LdU8(122)\n\t59: Le\n\t60: StLoc[3](loc2: bool)\n\t61: Branch(64)\nB20:\n\t62: LdFalse\n\t63: StLoc[3](loc2: bool)\nB21:\n\t64: MoveLoc[3](loc2: bool)\n\t65: StLoc[4](loc3: bool)\nB22:\n\t66: MoveLoc[4](loc3: bool)\n\t67: Not\n\t68: BrTrue(70)\nB23:\n\t69: Branch(74)\nB24:\n\t70: MoveLoc[0](Arg0: &vector<u8>)\n\t71: Pop\n\t72: LdFalse\n\t73: Ret\nB25:\n\t74: MoveLoc[6](loc5: u64)\n\t75: LdU64(1)\n\t76: Add\n\t77: StLoc[6](loc5: u64)\n\t78: Branch(24)\nB26:\n\t79: MoveLoc[0](Arg0: &vector<u8>)\n\t80: Pop\n\t81: LdTrue\n\t82: Ret\n}\nentry public mint(Arg0: &mut NamesGroup, Arg1: &GroupsInfo, Arg2: vector<u8>, Arg3: vector<u8>, Arg4: &mut Coin<SUI>, Arg5: &mut TxContext) {\nB0:\n\t0: CopyLoc[5](Arg5: &mut TxContext)\n\t1: FreezeRef\n\t2: Call[12](sender(&TxContext): address)\n\t3: StLoc[9](loc3: address)\n\t4: CopyLoc[9](loc3: address)\n\t5: LdConst[8](Address: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])\n\t6: Neq\n\t7: BrTrue(18)\nB1:\n\t8: MoveLoc[4](Arg4: &mut Coin<SUI>)\n\t9: Pop\n\t10: MoveLoc[0](Arg0: &mut NamesGroup)\n\t11: Pop\n\t12: MoveLoc[1](Arg1: &GroupsInfo)\n\t13: Pop\n\t14: MoveLoc[5](Arg5: &mut TxContext)\n\t15: Pop\n\t16: LdConst[1](U64: [106, 0, 0, 0, 0, 0, 0, 0])\n\t17: Abort\nB2:\n\t18: ImmBorrowLoc[2](Arg2: vector<u8>)\n\t19: Call[7](is_name_correct(&vector<u8>): bool)\n\t20: BrTrue(31)\nB3:\n\t21: MoveLoc[4](Arg4: &mut Coin<SUI>)\n\t22: Pop\n\t23: MoveLoc[0](Arg0: &mut NamesGroup)\n\t24: Pop\n\t25: MoveLoc[1](Arg1: &GroupsInfo)\n\t26: Pop\n\t27: MoveLoc[5](Arg5: &mut TxContext)\n\t28: Pop\n\t29: LdConst[2](U64: [100, 0, 0, 0, 0, 0, 0, 0])\n\t30: Abort\nB4:\n\t31: ImmBorrowLoc[2](Arg2: vector<u8>)\n\t32: Call[4](get_type(&vector<u8>): u8)\n\t33: StLoc[11](loc5: u8)\n\t34: CopyLoc[11](loc5: u8)\n\t35: LdU8(0)\n\t36: Gt\n\t37: BrTrue(48)\nB5:\n\t38: MoveLoc[4](Arg4: &mut Coin<SUI>)\n\t39: Pop\n\t40: MoveLoc[0](Arg0: &mut NamesGroup)\n\t41: Pop\n\t42: MoveLoc[1](Arg1: &GroupsInfo)\n\t43: Pop\n\t44: MoveLoc[5](Arg5: &mut TxContext)\n\t45: Pop\n\t46: LdConst[6](U64: [104, 0, 0, 0, 0, 0, 0, 0])\n\t47: Abort\nB6:\n\t48: MoveLoc[1](Arg1: &GroupsInfo)\n\t49: ImmBorrowField[3](GroupsInfo.data: VecMap<u8, ID>)\n\t50: ImmBorrowLoc[11](loc5: u8)\n\t51: Call[11](get<u8, ID>(&VecMap<u8, ID>, &u8): &ID)\n\t52: CopyLoc[0](Arg0: &mut NamesGroup)\n\t53: ImmBorrowField[4](NamesGroup.id: UID)\n\t54: Call[22](uid_as_inner(&UID): &ID)\n\t55: Eq\n\t56: BrTrue(65)\nB7:\n\t57: MoveLoc[4](Arg4: &mut Coin<SUI>)\n\t58: Pop\n\t59: MoveLoc[0](Arg0: &mut NamesGroup)\n\t60: Pop\n\t61: MoveLoc[5](Arg5: &mut TxContext)\n\t62: Pop\n\t63: LdConst[5](U64: [105, 0, 0, 0, 0, 0, 0, 0])\n\t64: Abort\nB8:\n\t65: CopyLoc[2](Arg2: vector<u8>)\n\t66: Call[23](string_unsafe(vector<u8>): String)\n\t67: StLoc[10](loc4: String)\n\t68: CopyLoc[0](Arg0: &mut NamesGroup)\n\t69: ImmBorrowField[5](NamesGroup.names: VecMap<String, ID>)\n\t70: ImmBorrowLoc[10](loc4: String)\n\t71: Call[6](is_name_available(&VecMap<String, ID>, &String): bool)\n\t72: BrTrue(81)\nB9:\n\t73: MoveLoc[4](Arg4: &mut Coin<SUI>)\n\t74: Pop\n\t75: MoveLoc[0](Arg0: &mut NamesGroup)\n\t76: Pop\n\t77: MoveLoc[5](Arg5: &mut TxContext)\n\t78: Pop\n\t79: LdConst[3](U64: [101, 0, 0, 0, 0, 0, 0, 0])\n\t80: Abort\nB10:\n\t81: ImmBorrowLoc[2](Arg2: vector<u8>)\n\t82: Call[3](get_price(&vector<u8>): u64)\n\t83: StLoc[8](loc2: u64)\n\t84: CopyLoc[8](loc2: u64)\n\t85: CopyLoc[4](Arg4: &mut Coin<SUI>)\n\t86: FreezeRef\n\t87: Call[12](value<SUI>(&Coin<SUI>): u64)\n\t88: Le\n\t89: BrTrue(98)\nB11:\n\t90: MoveLoc[4](Arg4: &mut Coin<SUI>)\n\t91: Pop\n\t92: MoveLoc[0](Arg0: &mut NamesGroup)\n\t93: Pop\n\t94: MoveLoc[5](Arg5: &mut TxContext)\n\t95: Pop\n\t96: LdConst[0](U64: [103, 0, 0, 0, 0, 0, 0, 0])\n\t97: Abort\nB12:\n\t98: MoveLoc[4](Arg4: &mut Coin<SUI>)\n\t99: Call[13](balance_mut<SUI>(&mut Coin<SUI>): &mut Balance<SUI>)\n\t100: StLoc[6](loc0: &mut Balance<SUI>)\n\t101: CopyLoc[0](Arg0: &mut NamesGroup)\n\t102: MutBorrowField[1](NamesGroup.balance: Balance<SUI>)\n\t103: MoveLoc[6](loc0: &mut Balance<SUI>)\n\t104: MoveLoc[8](loc2: u64)\n\t105: Call[14](split<SUI>(&mut Balance<SUI>, u64): Balance<SUI>)\n\t106: Call[15](join<SUI>(&mut Balance<SUI>, Balance<SUI>): u64)\n\t107: Pop\n\t108: MoveLoc[5](Arg5: &mut TxContext)\n\t109: Call[14](new(&mut TxContext): UID)\n\t110: CopyLoc[10](loc4: String)\n\t111: MoveLoc[3](Arg3: vector<u8>)\n\t112: Call[28](new_unsafe_from_bytes(vector<u8>): Url)\n\t113: LdFalse\n\t114: Pack[4](SuiNameNFT)\n\t115: StLoc[7](loc1: SuiNameNFT)\n\t116: ImmBorrowLoc[7](loc1: SuiNameNFT)\n\t117: ImmBorrowField[6](SuiNameNFT.id: UID)\n\t118: Call[16](uid_to_inner(&UID): ID)\n\t119: CopyLoc[9](loc3: address)\n\t120: ImmBorrowLoc[7](loc1: SuiNameNFT)\n\t121: ImmBorrowField[2](SuiNameNFT.name: String)\n\t122: ReadRef\n\t123: Pack[2](NFTMinted)\n\t124: Call[16](emit<NFTMinted>(NFTMinted))\n\t125: MoveLoc[0](Arg0: &mut NamesGroup)\n\t126: MutBorrowField[5](NamesGroup.names: VecMap<String, ID>)\n\t127: MoveLoc[10](loc4: String)\n\t128: ImmBorrowLoc[7](loc1: SuiNameNFT)\n\t129: ImmBorrowField[6](SuiNameNFT.id: UID)\n\t130: Call[16](uid_to_inner(&UID): ID)\n\t131: Call[17](insert<String, ID>(&mut VecMap<String, ID>, String, ID))\n\t132: MoveLoc[7](loc1: SuiNameNFT)\n\t133: MoveLoc[9](loc3: address)\n\t134: Call[18](transfer<SuiNameNFT>(SuiNameNFT, address))\n\t135: Ret\n}\nentry public transfer(Arg0: SuiNameNFT, Arg1: address) {\nB0:\n\t0: MoveLoc[0](Arg0: SuiNameNFT)\n\t1: MoveLoc[1](Arg1: address)\n\t2: Call[18](transfer<SuiNameNFT>(SuiNameNFT, address))\n\t3: Ret\n}\n}"
-	exp1 := map[string]interface{}{
-		"deployTx": "xVFZ7KO5uMrBSLtwLku4TMLZaIEMmhob0G/erUmTa6U=",
-		"id":       "0xa41ca8645474a1cacc08ce4559275ba07136c412",
-		"bytecode": map[string]interface{}{
+	exp1 := Package{
+		DeployTX: "xVFZ7KO5uMrBSLtwLku4TMLZaIEMmhob0G/erUmTa6U=",
+		ID:       "0xa41ca8645474a1cacc08ce4559275ba07136c412",
+		Bytecode: map[string]interface{}{
 			"suiname_nft": suiname_nft,
 		},
 	}
@@ -1004,10 +1008,10 @@ func TestGetGetContractDeploy(t *testing.T) {
 	pool := "// Move bytecode v5\nmodule 0.pool {\nstruct LSP<phantom Ty0, phantom Ty1> has drop {\n\tdummy_field: bool\n}\nstruct Pool<phantom Ty0, phantom Ty1> has key {\n\tid: UID,\n\tbase: Balance<Ty0>,\n\tquote: Balance<Ty1>,\n\tlsp_supply: Supply<LSP<Ty0, Ty1>>,\n\tfee_percent: u64\n}\n\npublic add_liquidity<Ty0, Ty1>(Arg0: &mut Pool<Ty0, Ty1>, Arg1: Coin<Ty0>, Arg2: Coin<Ty1>, Arg3: &mut TxContext): Coin<LSP<Ty0, Ty1>> {\nL0:\tloc4: u64\nL1:\tloc5: u64\nL2:\tloc6: u64\nL3:\tloc7: u64\nL4:\tloc8: u64\nL5:\tloc9: Balance<Ty1>\nL6:\tloc10: u64\nB0:\n\t0: ImmBorrowLoc[1](Arg1: Coin<Ty0>)\n\t1: Call[0](value<Ty0>(&Coin<Ty0>): u64)\n\t2: LdU64(0)\n\t3: Gt\n\t4: BrTrue(11)\nB1:\n\t5: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t6: Pop\n\t7: MoveLoc[3](Arg3: &mut TxContext)\n\t8: Pop\n\t9: LdConst[4](U64: [0, 0, 0, 0, 0, 0, 0, 0])\n\t10: Abort\nB2:\n\t11: ImmBorrowLoc[2](Arg2: Coin<Ty1>)\n\t12: Call[1](value<Ty1>(&Coin<Ty1>): u64)\n\t13: LdU64(0)\n\t14: Gt\n\t15: BrTrue(22)\nB3:\n\t16: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t17: Pop\n\t18: MoveLoc[3](Arg3: &mut TxContext)\n\t19: Pop\n\t20: LdConst[4](U64: [0, 0, 0, 0, 0, 0, 0, 0])\n\t21: Abort\nB4:\n\t22: MoveLoc[1](Arg1: Coin<Ty0>)\n\t23: Call[2](into_balance<Ty0>(Coin<Ty0>): Balance<Ty0>)\n\t24: StLoc[7](loc3: Balance<Ty0>)\n\t25: MoveLoc[2](Arg2: Coin<Ty1>)\n\t26: Call[3](into_balance<Ty1>(Coin<Ty1>): Balance<Ty1>)\n\t27: StLoc[13](loc9: Balance<Ty1>)\n\t28: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t29: FreezeRef\n\t30: Call[4](get_amounts<Ty0, Ty1>(&Pool<Ty0, Ty1>): u64 * u64 * u64)\n\t31: StLoc[10](loc6: u64)\n\t32: StLoc[12](loc8: u64)\n\t33: StLoc[6](loc2: u64)\n\t34: ImmBorrowLoc[7](loc3: Balance<Ty0>)\n\t35: Call[5](value<Ty0>(&Balance<Ty0>): u64)\n\t36: StLoc[5](loc1: u64)\n\t37: ImmBorrowLoc[13](loc9: Balance<Ty1>)\n\t38: Call[6](value<Ty1>(&Balance<Ty1>): u64)\n\t39: StLoc[11](loc7: u64)\n\t40: MoveLoc[5](loc1: u64)\n\t41: CopyLoc[10](loc6: u64)\n\t42: Mul\n\t43: MoveLoc[6](loc2: u64)\n\t44: Div\n\t45: MoveLoc[11](loc7: u64)\n\t46: MoveLoc[10](loc6: u64)\n\t47: Mul\n\t48: MoveLoc[12](loc8: u64)\n\t49: Div\n\t50: Call[18](min(u64, u64): u64)\n\t51: StLoc[14](loc10: u64)\n\t52: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t53: MutBorrowFieldGeneric[0](Pool.base: Balance<Ty0>)\n\t54: MoveLoc[7](loc3: Balance<Ty0>)\n\t55: Call[7](join<Ty0>(&mut Balance<Ty0>, Balance<Ty0>): u64)\n\t56: StLoc[8](loc4: u64)\n\t57: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t58: MutBorrowFieldGeneric[1](Pool.quote: Balance<Ty1>)\n\t59: MoveLoc[13](loc9: Balance<Ty1>)\n\t60: Call[8](join<Ty1>(&mut Balance<Ty1>, Balance<Ty1>): u64)\n\t61: StLoc[9](loc5: u64)\n\t62: MoveLoc[8](loc4: u64)\n\t63: LdConst[6](U64: [203, 16, 199, 186, 184, 141, 6, 0])\n\t64: Lt\n\t65: BrTrue(72)\nB5:\n\t66: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t67: Pop\n\t68: MoveLoc[3](Arg3: &mut TxContext)\n\t69: Pop\n\t70: LdConst[0](U64: [4, 0, 0, 0, 0, 0, 0, 0])\n\t71: Abort\nB6:\n\t72: MoveLoc[9](loc5: u64)\n\t73: LdConst[6](U64: [203, 16, 199, 186, 184, 141, 6, 0])\n\t74: Lt\n\t75: BrTrue(82)\nB7:\n\t76: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t77: Pop\n\t78: MoveLoc[3](Arg3: &mut TxContext)\n\t79: Pop\n\t80: LdConst[0](U64: [4, 0, 0, 0, 0, 0, 0, 0])\n\t81: Abort\nB8:\n\t82: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t83: MutBorrowFieldGeneric[2](Pool.lsp_supply: Supply<LSP<Ty0, Ty1>>)\n\t84: MoveLoc[14](loc10: u64)\n\t85: Call[9](increase_supply<LSP<Ty0, Ty1>>(&mut Supply<LSP<Ty0, Ty1>>, u64): Balance<LSP<Ty0, Ty1>>)\n\t86: StLoc[4](loc0: Balance<LSP<Ty0, Ty1>>)\n\t87: MoveLoc[4](loc0: Balance<LSP<Ty0, Ty1>>)\n\t88: MoveLoc[3](Arg3: &mut TxContext)\n\t89: Call[10](from_balance<LSP<Ty0, Ty1>>(Balance<LSP<Ty0, Ty1>>, &mut TxContext): Coin<LSP<Ty0, Ty1>>)\n\t90: Ret\n}\nentry add_liquidity_<Ty0, Ty1>(Arg0: &mut Pool<Ty0, Ty1>, Arg1: Coin<Ty0>, Arg2: Coin<Ty1>, Arg3: &mut TxContext) {\nB0:\n\t0: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t1: MoveLoc[1](Arg1: Coin<Ty0>)\n\t2: MoveLoc[2](Arg2: Coin<Ty1>)\n\t3: CopyLoc[3](Arg3: &mut TxContext)\n\t4: Call[11](add_liquidity<Ty0, Ty1>(&mut Pool<Ty0, Ty1>, Coin<Ty0>, Coin<Ty1>, &mut TxContext): Coin<LSP<Ty0, Ty1>>)\n\t5: MoveLoc[3](Arg3: &mut TxContext)\n\t6: FreezeRef\n\t7: Call[22](sender(&TxContext): address)\n\t8: Call[12](transfer<Coin<LSP<Ty0, Ty1>>>(Coin<LSP<Ty0, Ty1>>, address))\n\t9: Ret\n}\npublic base_price<Ty0, Ty1>(Arg0: &Pool<Ty0, Ty1>, Arg1: u64): u64 {\nB0:\n\t0: CopyLoc[0](Arg0: &Pool<Ty0, Ty1>)\n\t1: Call[4](get_amounts<Ty0, Ty1>(&Pool<Ty0, Ty1>): u64 * u64 * u64)\n\t2: Pop\n\t3: StLoc[3](loc1: u64)\n\t4: StLoc[2](loc0: u64)\n\t5: MoveLoc[1](Arg1: u64)\n\t6: MoveLoc[3](loc1: u64)\n\t7: MoveLoc[2](loc0: u64)\n\t8: MoveLoc[0](Arg0: &Pool<Ty0, Ty1>)\n\t9: ImmBorrowFieldGeneric[3](Pool.fee_percent: u64)\n\t10: ReadRef\n\t11: Call[8](get_input_price(u64, u64, u64, u64): u64)\n\t12: Ret\n}\npublic buy<Ty0, Ty1>(Arg0: &mut Pool<Ty0, Ty1>, Arg1: Coin<Ty1>, Arg2: &mut TxContext): Coin<Ty0> {\nL0:\tloc3: Balance<Ty1>\nL1:\tloc4: u64\nB0:\n\t0: ImmBorrowLoc[1](Arg1: Coin<Ty1>)\n\t1: Call[1](value<Ty1>(&Coin<Ty1>): u64)\n\t2: LdU64(0)\n\t3: Gt\n\t4: BrTrue(11)\nB1:\n\t5: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t6: Pop\n\t7: MoveLoc[2](Arg2: &mut TxContext)\n\t8: Pop\n\t9: LdConst[4](U64: [0, 0, 0, 0, 0, 0, 0, 0])\n\t10: Abort\nB2:\n\t11: MoveLoc[1](Arg1: Coin<Ty1>)\n\t12: Call[3](into_balance<Ty1>(Coin<Ty1>): Balance<Ty1>)\n\t13: StLoc[6](loc3: Balance<Ty1>)\n\t14: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t15: FreezeRef\n\t16: Call[4](get_amounts<Ty0, Ty1>(&Pool<Ty0, Ty1>): u64 * u64 * u64)\n\t17: Pop\n\t18: StLoc[7](loc4: u64)\n\t19: StLoc[4](loc1: u64)\n\t20: CopyLoc[4](loc1: u64)\n\t21: LdU64(0)\n\t22: Gt\n\t23: BrTrue(25)\nB3:\n\t24: Branch(30)\nB4:\n\t25: CopyLoc[7](loc4: u64)\n\t26: LdU64(0)\n\t27: Gt\n\t28: StLoc[3](loc0: bool)\n\t29: Branch(32)\nB5:\n\t30: LdFalse\n\t31: StLoc[3](loc0: bool)\nB6:\n\t32: MoveLoc[3](loc0: bool)\n\t33: BrTrue(40)\nB7:\n\t34: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t35: Pop\n\t36: MoveLoc[2](Arg2: &mut TxContext)\n\t37: Pop\n\t38: LdConst[1](U64: [2, 0, 0, 0, 0, 0, 0, 0])\n\t39: Abort\nB8:\n\t40: ImmBorrowLoc[6](loc3: Balance<Ty1>)\n\t41: Call[6](value<Ty1>(&Balance<Ty1>): u64)\n\t42: MoveLoc[7](loc4: u64)\n\t43: MoveLoc[4](loc1: u64)\n\t44: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t45: ImmBorrowFieldGeneric[3](Pool.fee_percent: u64)\n\t46: ReadRef\n\t47: Call[8](get_input_price(u64, u64, u64, u64): u64)\n\t48: StLoc[5](loc2: u64)\n\t49: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t50: MutBorrowFieldGeneric[1](Pool.quote: Balance<Ty1>)\n\t51: MoveLoc[6](loc3: Balance<Ty1>)\n\t52: Call[8](join<Ty1>(&mut Balance<Ty1>, Balance<Ty1>): u64)\n\t53: Pop\n\t54: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t55: MutBorrowFieldGeneric[0](Pool.base: Balance<Ty0>)\n\t56: MoveLoc[5](loc2: u64)\n\t57: MoveLoc[2](Arg2: &mut TxContext)\n\t58: Call[13](take<Ty0>(&mut Balance<Ty0>, u64, &mut TxContext): Coin<Ty0>)\n\t59: Ret\n}\nentry buy_<Ty0, Ty1>(Arg0: &mut Pool<Ty0, Ty1>, Arg1: Coin<Ty1>, Arg2: &mut TxContext) {\nB0:\n\t0: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t1: MoveLoc[1](Arg1: Coin<Ty1>)\n\t2: CopyLoc[2](Arg2: &mut TxContext)\n\t3: Call[14](buy<Ty0, Ty1>(&mut Pool<Ty0, Ty1>, Coin<Ty1>, &mut TxContext): Coin<Ty0>)\n\t4: MoveLoc[2](Arg2: &mut TxContext)\n\t5: FreezeRef\n\t6: Call[22](sender(&TxContext): address)\n\t7: Call[15](transfer<Coin<Ty0>>(Coin<Ty0>, address))\n\t8: Ret\n}\npublic create_pool<Ty0, Ty1>(Arg0: Coin<Ty0>, Arg1: Coin<Ty1>, Arg2: u64, Arg3: &mut TxContext): Coin<LSP<Ty0, Ty1>> {\nL0:\tloc4: Balance<LSP<Ty0, Ty1>>\nL1:\tloc5: Supply<LSP<Ty0, Ty1>>\nL2:\tloc6: u64\nL3:\tloc7: u64\nB0:\n\t0: ImmBorrowLoc[1](Arg1: Coin<Ty1>)\n\t1: Call[1](value<Ty1>(&Coin<Ty1>): u64)\n\t2: StLoc[10](loc6: u64)\n\t3: ImmBorrowLoc[0](Arg0: Coin<Ty0>)\n\t4: Call[0](value<Ty0>(&Coin<Ty0>): u64)\n\t5: StLoc[7](loc3: u64)\n\t6: CopyLoc[7](loc3: u64)\n\t7: LdU64(0)\n\t8: Gt\n\t9: BrTrue(11)\nB1:\n\t10: Branch(16)\nB2:\n\t11: CopyLoc[10](loc6: u64)\n\t12: LdU64(0)\n\t13: Gt\n\t14: StLoc[4](loc0: bool)\n\t15: Branch(18)\nB3:\n\t16: LdFalse\n\t17: StLoc[4](loc0: bool)\nB4:\n\t18: MoveLoc[4](loc0: bool)\n\t19: BrTrue(24)\nB5:\n\t20: MoveLoc[3](Arg3: &mut TxContext)\n\t21: Pop\n\t22: LdConst[4](U64: [0, 0, 0, 0, 0, 0, 0, 0])\n\t23: Abort\nB6:\n\t24: CopyLoc[7](loc3: u64)\n\t25: LdConst[6](U64: [203, 16, 199, 186, 184, 141, 6, 0])\n\t26: Lt\n\t27: BrTrue(29)\nB7:\n\t28: Branch(34)\nB8:\n\t29: CopyLoc[10](loc6: u64)\n\t30: LdConst[6](U64: [203, 16, 199, 186, 184, 141, 6, 0])\n\t31: Lt\n\t32: StLoc[5](loc1: bool)\n\t33: Branch(36)\nB9:\n\t34: LdFalse\n\t35: StLoc[5](loc1: bool)\nB10:\n\t36: MoveLoc[5](loc1: bool)\n\t37: BrTrue(42)\nB11:\n\t38: MoveLoc[3](Arg3: &mut TxContext)\n\t39: Pop\n\t40: LdConst[0](U64: [4, 0, 0, 0, 0, 0, 0, 0])\n\t41: Abort\nB12:\n\t42: CopyLoc[2](Arg2: u64)\n\t43: LdU64(0)\n\t44: Ge\n\t45: BrTrue(47)\nB13:\n\t46: Branch(52)\nB14:\n\t47: CopyLoc[2](Arg2: u64)\n\t48: LdU64(10000)\n\t49: Lt\n\t50: StLoc[6](loc2: bool)\n\t51: Branch(54)\nB15:\n\t52: LdFalse\n\t53: StLoc[6](loc2: bool)\nB16:\n\t54: MoveLoc[6](loc2: bool)\n\t55: BrTrue(60)\nB17:\n\t56: MoveLoc[3](Arg3: &mut TxContext)\n\t57: Pop\n\t58: LdConst[3](U64: [1, 0, 0, 0, 0, 0, 0, 0])\n\t59: Abort\nB18:\n\t60: MoveLoc[10](loc6: u64)\n\t61: Call[25](sqrt(u64): u64)\n\t62: MoveLoc[7](loc3: u64)\n\t63: Call[25](sqrt(u64): u64)\n\t64: Mul\n\t65: StLoc[11](loc7: u64)\n\t66: LdFalse\n\t67: PackGeneric[0](LSP<Ty0, Ty1>)\n\t68: Call[16](create_supply<LSP<Ty0, Ty1>>(LSP<Ty0, Ty1>): Supply<LSP<Ty0, Ty1>>)\n\t69: StLoc[9](loc5: Supply<LSP<Ty0, Ty1>>)\n\t70: MutBorrowLoc[9](loc5: Supply<LSP<Ty0, Ty1>>)\n\t71: MoveLoc[11](loc7: u64)\n\t72: Call[9](increase_supply<LSP<Ty0, Ty1>>(&mut Supply<LSP<Ty0, Ty1>>, u64): Balance<LSP<Ty0, Ty1>>)\n\t73: StLoc[8](loc4: Balance<LSP<Ty0, Ty1>>)\n\t74: CopyLoc[3](Arg3: &mut TxContext)\n\t75: Call[27](new(&mut TxContext): UID)\n\t76: MoveLoc[0](Arg0: Coin<Ty0>)\n\t77: Call[2](into_balance<Ty0>(Coin<Ty0>): Balance<Ty0>)\n\t78: MoveLoc[1](Arg1: Coin<Ty1>)\n\t79: Call[3](into_balance<Ty1>(Coin<Ty1>): Balance<Ty1>)\n\t80: MoveLoc[9](loc5: Supply<LSP<Ty0, Ty1>>)\n\t81: MoveLoc[2](Arg2: u64)\n\t82: PackGeneric[1](Pool<Ty0, Ty1>)\n\t83: Call[17](share_object<Pool<Ty0, Ty1>>(Pool<Ty0, Ty1>))\n\t84: MoveLoc[8](loc4: Balance<LSP<Ty0, Ty1>>)\n\t85: MoveLoc[3](Arg3: &mut TxContext)\n\t86: Call[10](from_balance<LSP<Ty0, Ty1>>(Balance<LSP<Ty0, Ty1>>, &mut TxContext): Coin<LSP<Ty0, Ty1>>)\n\t87: Ret\n}\nentry create_pool_<Ty0, Ty1>(Arg0: Coin<Ty0>, Arg1: Coin<Ty1>, Arg2: u64, Arg3: &mut TxContext) {\nB0:\n\t0: MoveLoc[0](Arg0: Coin<Ty0>)\n\t1: MoveLoc[1](Arg1: Coin<Ty1>)\n\t2: MoveLoc[2](Arg2: u64)\n\t3: CopyLoc[3](Arg3: &mut TxContext)\n\t4: Call[18](create_pool<Ty0, Ty1>(Coin<Ty0>, Coin<Ty1>, u64, &mut TxContext): Coin<LSP<Ty0, Ty1>>)\n\t5: MoveLoc[3](Arg3: &mut TxContext)\n\t6: FreezeRef\n\t7: Call[22](sender(&TxContext): address)\n\t8: Call[12](transfer<Coin<LSP<Ty0, Ty1>>>(Coin<LSP<Ty0, Ty1>>, address))\n\t9: Ret\n}\npublic get_amounts<Ty0, Ty1>(Arg0: &Pool<Ty0, Ty1>): u64 * u64 * u64 {\nB0:\n\t0: CopyLoc[0](Arg0: &Pool<Ty0, Ty1>)\n\t1: ImmBorrowFieldGeneric[0](Pool.base: Balance<Ty0>)\n\t2: Call[5](value<Ty0>(&Balance<Ty0>): u64)\n\t3: CopyLoc[0](Arg0: &Pool<Ty0, Ty1>)\n\t4: ImmBorrowFieldGeneric[1](Pool.quote: Balance<Ty1>)\n\t5: Call[6](value<Ty1>(&Balance<Ty1>): u64)\n\t6: MoveLoc[0](Arg0: &Pool<Ty0, Ty1>)\n\t7: ImmBorrowFieldGeneric[2](Pool.lsp_supply: Supply<LSP<Ty0, Ty1>>)\n\t8: Call[19](supply_value<LSP<Ty0, Ty1>>(&Supply<LSP<Ty0, Ty1>>): u64)\n\t9: Ret\n}\npublic get_input_price(Arg0: u64, Arg1: u64, Arg2: u64, Arg3: u64): u64 {\nL0:\tloc4: u128\nL1:\tloc5: u128\nL2:\tloc6: u128\nB0:\n\t0: MoveLoc[0](Arg0: u64)\n\t1: CastU128\n\t2: MoveLoc[1](Arg1: u64)\n\t3: CastU128\n\t4: MoveLoc[2](Arg2: u64)\n\t5: CastU128\n\t6: MoveLoc[3](Arg3: u64)\n\t7: CastU128\n\t8: StLoc[5](loc1: u128)\n\t9: StLoc[10](loc6: u128)\n\t10: StLoc[8](loc4: u128)\n\t11: StLoc[6](loc2: u128)\n\t12: MoveLoc[6](loc2: u128)\n\t13: LdConst[5](U128: [16, 39, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])\n\t14: MoveLoc[5](loc1: u128)\n\t15: Sub\n\t16: Mul\n\t17: StLoc[7](loc3: u128)\n\t18: CopyLoc[7](loc3: u128)\n\t19: MoveLoc[10](loc6: u128)\n\t20: Mul\n\t21: StLoc[9](loc5: u128)\n\t22: MoveLoc[8](loc4: u128)\n\t23: LdConst[5](U128: [16, 39, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])\n\t24: Mul\n\t25: MoveLoc[7](loc3: u128)\n\t26: Add\n\t27: StLoc[4](loc0: u128)\n\t28: MoveLoc[9](loc5: u128)\n\t29: MoveLoc[4](loc0: u128)\n\t30: Div\n\t31: CastU64\n\t32: Ret\n}\ninit(Arg0: &mut TxContext) {\nB0:\n\t0: Ret\n}\npublic remove_liquidity<Ty0, Ty1>(Arg0: &mut Pool<Ty0, Ty1>, Arg1: Coin<LSP<Ty0, Ty1>>, Arg2: &mut TxContext): Coin<Ty0> * Coin<Ty1> {\nL0:\tloc3: u64\nL1:\tloc4: u64\nL2:\tloc5: u64\nB0:\n\t0: ImmBorrowLoc[1](Arg1: Coin<LSP<Ty0, Ty1>>)\n\t1: Call[20](value<LSP<Ty0, Ty1>>(&Coin<LSP<Ty0, Ty1>>): u64)\n\t2: StLoc[5](loc2: u64)\n\t3: CopyLoc[5](loc2: u64)\n\t4: LdU64(0)\n\t5: Gt\n\t6: BrTrue(13)\nB1:\n\t7: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t8: Pop\n\t9: MoveLoc[2](Arg2: &mut TxContext)\n\t10: Pop\n\t11: LdConst[4](U64: [0, 0, 0, 0, 0, 0, 0, 0])\n\t12: Abort\nB2:\n\t13: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t14: FreezeRef\n\t15: Call[4](get_amounts<Ty0, Ty1>(&Pool<Ty0, Ty1>): u64 * u64 * u64)\n\t16: StLoc[6](loc3: u64)\n\t17: StLoc[7](loc4: u64)\n\t18: StLoc[3](loc0: u64)\n\t19: MoveLoc[3](loc0: u64)\n\t20: CopyLoc[5](loc2: u64)\n\t21: Mul\n\t22: CopyLoc[6](loc3: u64)\n\t23: Div\n\t24: StLoc[4](loc1: u64)\n\t25: MoveLoc[7](loc4: u64)\n\t26: MoveLoc[5](loc2: u64)\n\t27: Mul\n\t28: MoveLoc[6](loc3: u64)\n\t29: Div\n\t30: StLoc[8](loc5: u64)\n\t31: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t32: MutBorrowFieldGeneric[2](Pool.lsp_supply: Supply<LSP<Ty0, Ty1>>)\n\t33: MoveLoc[1](Arg1: Coin<LSP<Ty0, Ty1>>)\n\t34: Call[21](into_balance<LSP<Ty0, Ty1>>(Coin<LSP<Ty0, Ty1>>): Balance<LSP<Ty0, Ty1>>)\n\t35: Call[22](decrease_supply<LSP<Ty0, Ty1>>(&mut Supply<LSP<Ty0, Ty1>>, Balance<LSP<Ty0, Ty1>>): u64)\n\t36: Pop\n\t37: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t38: MutBorrowFieldGeneric[0](Pool.base: Balance<Ty0>)\n\t39: MoveLoc[4](loc1: u64)\n\t40: CopyLoc[2](Arg2: &mut TxContext)\n\t41: Call[13](take<Ty0>(&mut Balance<Ty0>, u64, &mut TxContext): Coin<Ty0>)\n\t42: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t43: MutBorrowFieldGeneric[1](Pool.quote: Balance<Ty1>)\n\t44: MoveLoc[8](loc5: u64)\n\t45: MoveLoc[2](Arg2: &mut TxContext)\n\t46: Call[23](take<Ty1>(&mut Balance<Ty1>, u64, &mut TxContext): Coin<Ty1>)\n\t47: Ret\n}\nentry remove_liquidity_<Ty0, Ty1>(Arg0: &mut Pool<Ty0, Ty1>, Arg1: Coin<LSP<Ty0, Ty1>>, Arg2: &mut TxContext) {\nB0:\n\t0: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t1: MoveLoc[1](Arg1: Coin<LSP<Ty0, Ty1>>)\n\t2: CopyLoc[2](Arg2: &mut TxContext)\n\t3: Call[24](remove_liquidity<Ty0, Ty1>(&mut Pool<Ty0, Ty1>, Coin<LSP<Ty0, Ty1>>, &mut TxContext): Coin<Ty0> * Coin<Ty1>)\n\t4: StLoc[4](loc1: Coin<Ty1>)\n\t5: StLoc[3](loc0: Coin<Ty0>)\n\t6: MoveLoc[2](Arg2: &mut TxContext)\n\t7: FreezeRef\n\t8: Call[22](sender(&TxContext): address)\n\t9: StLoc[5](loc2: address)\n\t10: MoveLoc[3](loc0: Coin<Ty0>)\n\t11: CopyLoc[5](loc2: address)\n\t12: Call[15](transfer<Coin<Ty0>>(Coin<Ty0>, address))\n\t13: MoveLoc[4](loc1: Coin<Ty1>)\n\t14: MoveLoc[5](loc2: address)\n\t15: Call[25](transfer<Coin<Ty1>>(Coin<Ty1>, address))\n\t16: Ret\n}\npublic sell<Ty0, Ty1>(Arg0: &mut Pool<Ty0, Ty1>, Arg1: Coin<Ty0>, Arg2: &mut TxContext): Coin<Ty1> {\nL0:\tloc3: u64\nL1:\tloc4: u64\nB0:\n\t0: ImmBorrowLoc[1](Arg1: Coin<Ty0>)\n\t1: Call[0](value<Ty0>(&Coin<Ty0>): u64)\n\t2: LdU64(0)\n\t3: Gt\n\t4: BrTrue(11)\nB1:\n\t5: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t6: Pop\n\t7: MoveLoc[2](Arg2: &mut TxContext)\n\t8: Pop\n\t9: LdConst[4](U64: [0, 0, 0, 0, 0, 0, 0, 0])\n\t10: Abort\nB2:\n\t11: MoveLoc[1](Arg1: Coin<Ty0>)\n\t12: Call[2](into_balance<Ty0>(Coin<Ty0>): Balance<Ty0>)\n\t13: StLoc[4](loc1: Balance<Ty0>)\n\t14: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t15: FreezeRef\n\t16: Call[4](get_amounts<Ty0, Ty1>(&Pool<Ty0, Ty1>): u64 * u64 * u64)\n\t17: Pop\n\t18: StLoc[7](loc4: u64)\n\t19: StLoc[5](loc2: u64)\n\t20: CopyLoc[5](loc2: u64)\n\t21: LdU64(0)\n\t22: Gt\n\t23: BrTrue(25)\nB3:\n\t24: Branch(30)\nB4:\n\t25: CopyLoc[7](loc4: u64)\n\t26: LdU64(0)\n\t27: Gt\n\t28: StLoc[3](loc0: bool)\n\t29: Branch(32)\nB5:\n\t30: LdFalse\n\t31: StLoc[3](loc0: bool)\nB6:\n\t32: MoveLoc[3](loc0: bool)\n\t33: BrTrue(40)\nB7:\n\t34: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t35: Pop\n\t36: MoveLoc[2](Arg2: &mut TxContext)\n\t37: Pop\n\t38: LdConst[1](U64: [2, 0, 0, 0, 0, 0, 0, 0])\n\t39: Abort\nB8:\n\t40: ImmBorrowLoc[4](loc1: Balance<Ty0>)\n\t41: Call[5](value<Ty0>(&Balance<Ty0>): u64)\n\t42: MoveLoc[5](loc2: u64)\n\t43: MoveLoc[7](loc4: u64)\n\t44: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t45: ImmBorrowFieldGeneric[3](Pool.fee_percent: u64)\n\t46: ReadRef\n\t47: Call[8](get_input_price(u64, u64, u64, u64): u64)\n\t48: StLoc[6](loc3: u64)\n\t49: CopyLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t50: MutBorrowFieldGeneric[0](Pool.base: Balance<Ty0>)\n\t51: MoveLoc[4](loc1: Balance<Ty0>)\n\t52: Call[7](join<Ty0>(&mut Balance<Ty0>, Balance<Ty0>): u64)\n\t53: Pop\n\t54: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t55: MutBorrowFieldGeneric[1](Pool.quote: Balance<Ty1>)\n\t56: MoveLoc[6](loc3: u64)\n\t57: MoveLoc[2](Arg2: &mut TxContext)\n\t58: Call[23](take<Ty1>(&mut Balance<Ty1>, u64, &mut TxContext): Coin<Ty1>)\n\t59: Ret\n}\nentry sell_<Ty0, Ty1>(Arg0: &mut Pool<Ty0, Ty1>, Arg1: Coin<Ty0>, Arg2: &mut TxContext) {\nB0:\n\t0: MoveLoc[0](Arg0: &mut Pool<Ty0, Ty1>)\n\t1: MoveLoc[1](Arg1: Coin<Ty0>)\n\t2: CopyLoc[2](Arg2: &mut TxContext)\n\t3: Call[26](sell<Ty0, Ty1>(&mut Pool<Ty0, Ty1>, Coin<Ty0>, &mut TxContext): Coin<Ty1>)\n\t4: MoveLoc[2](Arg2: &mut TxContext)\n\t5: FreezeRef\n\t6: Call[22](sender(&TxContext): address)\n\t7: Call[25](transfer<Coin<Ty1>>(Coin<Ty1>, address))\n\t8: Ret\n}\npublic token_price<Ty0, Ty1>(Arg0: &Pool<Ty0, Ty1>, Arg1: u64): u64 {\nB0:\n\t0: CopyLoc[0](Arg0: &Pool<Ty0, Ty1>)\n\t1: Call[4](get_amounts<Ty0, Ty1>(&Pool<Ty0, Ty1>): u64 * u64 * u64)\n\t2: Pop\n\t3: StLoc[3](loc1: u64)\n\t4: StLoc[2](loc0: u64)\n\t5: MoveLoc[1](Arg1: u64)\n\t6: MoveLoc[2](loc0: u64)\n\t7: MoveLoc[3](loc1: u64)\n\t8: MoveLoc[0](Arg0: &Pool<Ty0, Ty1>)\n\t9: ImmBorrowFieldGeneric[3](Pool.fee_percent: u64)\n\t10: ReadRef\n\t11: Call[8](get_input_price(u64, u64, u64, u64): u64)\n\t12: Ret\n}\n}"
 	quote_coin := "// Move bytecode v5\nmodule 0.quote_coin {\nstruct QUOTE_COIN has drop {\n\tdummy_field: bool\n}\n\ninit(Arg0: QUOTE_COIN, Arg1: &mut TxContext) {\nB0:\n\t0: MoveLoc[0](Arg0: QUOTE_COIN)\n\t1: MoveLoc[1](Arg1: &mut TxContext)\n\t2: Call[0](create_currency<QUOTE_COIN>(QUOTE_COIN, &mut TxContext): TreasuryCap<QUOTE_COIN>)\n\t3: StLoc[2](loc0: TreasuryCap<QUOTE_COIN>)\n\t4: MoveLoc[2](loc0: TreasuryCap<QUOTE_COIN>)\n\t5: Call[1](share_object<TreasuryCap<QUOTE_COIN>>(TreasuryCap<QUOTE_COIN>))\n\t6: Ret\n}\nentry public mint(Arg0: &mut TreasuryCap<QUOTE_COIN>, Arg1: u64, Arg2: &mut TxContext) {\nB0:\n\t0: MoveLoc[0](Arg0: &mut TreasuryCap<QUOTE_COIN>)\n\t1: MoveLoc[1](Arg1: u64)\n\t2: CopyLoc[2](Arg2: &mut TxContext)\n\t3: Call[2](mint<QUOTE_COIN>(&mut TreasuryCap<QUOTE_COIN>, u64, &mut TxContext): Coin<QUOTE_COIN>)\n\t4: StLoc[3](loc0: Coin<QUOTE_COIN>)\n\t5: MoveLoc[3](loc0: Coin<QUOTE_COIN>)\n\t6: MoveLoc[2](Arg2: &mut TxContext)\n\t7: FreezeRef\n\t8: Call[6](sender(&TxContext): address)\n\t9: Call[3](transfer<QUOTE_COIN>(Coin<QUOTE_COIN>, address))\n\t10: Ret\n}\nentry public mint_zero(Arg0: &mut TxContext) {\nB0:\n\t0: CopyLoc[0](Arg0: &mut TxContext)\n\t1: Call[4](zero<QUOTE_COIN>(&mut TxContext): Coin<QUOTE_COIN>)\n\t2: StLoc[1](loc0: Coin<QUOTE_COIN>)\n\t3: MoveLoc[1](loc0: Coin<QUOTE_COIN>)\n\t4: MoveLoc[0](Arg0: &mut TxContext)\n\t5: FreezeRef\n\t6: Call[6](sender(&TxContext): address)\n\t7: Call[3](transfer<QUOTE_COIN>(Coin<QUOTE_COIN>, address))\n\t8: Ret\n}\n}"
 	util := "// Move bytecode v5\nmodule 0.util {\n\n\npublic u64_saturating_sub(Arg0: u64, Arg1: u64): u64 {\nB0:\n\t0: CopyLoc[0](Arg0: u64)\n\t1: CopyLoc[1](Arg1: u64)\n\t2: Ge\n\t3: BrTrue(5)\nB1:\n\t4: Branch(10)\nB2:\n\t5: MoveLoc[0](Arg0: u64)\n\t6: MoveLoc[1](Arg1: u64)\n\t7: Sub\n\t8: StLoc[2](loc0: u64)\n\t9: Branch(12)\nB3:\n\t10: LdU64(0)\n\t11: StLoc[2](loc0: u64)\nB4:\n\t12: MoveLoc[2](loc0: u64)\n\t13: Ret\n}\n}"
-	exp2 := map[string]interface{}{
-		"deployTx": "AXVQbp46p/THvGhkEoP4/fIFdnnFyNHxYccBJqACzs8=",
-		"id":       "0x6774c132abf5521bf9bd8e8c6948c03f0f0cb3f4",
-		"bytecode": map[string]interface{}{
+	exp2 := Package{
+		DeployTX: "AXVQbp46p/THvGhkEoP4/fIFdnnFyNHxYccBJqACzs8=",
+		ID:       "0x6774c132abf5521bf9bd8e8c6948c03f0f0cb3f4",
+		Bytecode: map[string]interface{}{
 			"base_coin":  base_coin,
 			"critbit":    critbit,
 			"fp_math":    fp_math,
@@ -1026,10 +1030,10 @@ func TestGetGetContractDeploy(t *testing.T) {
 	result3, _ := tc.GetTransaction("NKfaECvNnkH/hx3OvJeWYAhIgaRJwA2U1zobtkpiAoY=")
 	got3, _ := result3.GetContractDeploy()
 	rgb := "// Move bytecode v5\nmodule 0.rgb {\nstruct ColorObject has key {\n\tid: UID,\n\tred: u8,\n\tgreen: u8,\n\tblue: u8\n}\n\nentry public copy_into(Arg0: &ColorObject, Arg1: &mut ColorObject) {\nB0:\n\t0: CopyLoc[0](Arg0: &ColorObject)\n\t1: ImmBorrowField[0](ColorObject.red: u8)\n\t2: ReadRef\n\t3: CopyLoc[1](Arg1: &mut ColorObject)\n\t4: MutBorrowField[0](ColorObject.red: u8)\n\t5: WriteRef\n\t6: CopyLoc[0](Arg0: &ColorObject)\n\t7: ImmBorrowField[1](ColorObject.green: u8)\n\t8: ReadRef\n\t9: CopyLoc[1](Arg1: &mut ColorObject)\n\t10: MutBorrowField[1](ColorObject.green: u8)\n\t11: WriteRef\n\t12: MoveLoc[0](Arg0: &ColorObject)\n\t13: ImmBorrowField[2](ColorObject.blue: u8)\n\t14: ReadRef\n\t15: MoveLoc[1](Arg1: &mut ColorObject)\n\t16: MutBorrowField[2](ColorObject.blue: u8)\n\t17: WriteRef\n\t18: Ret\n}\nentry public create(Arg0: u8, Arg1: u8, Arg2: u8, Arg3: &mut TxContext) {\nB0:\n\t0: MoveLoc[0](Arg0: u8)\n\t1: MoveLoc[1](Arg1: u8)\n\t2: MoveLoc[2](Arg2: u8)\n\t3: CopyLoc[3](Arg3: &mut TxContext)\n\t4: Call[4](new(u8, u8, u8, &mut TxContext): ColorObject)\n\t5: StLoc[4](loc0: ColorObject)\n\t6: MoveLoc[4](loc0: ColorObject)\n\t7: MoveLoc[3](Arg3: &mut TxContext)\n\t8: FreezeRef\n\t9: Call[6](sender(&TxContext): address)\n\t10: Call[0](transfer<ColorObject>(ColorObject, address))\n\t11: Ret\n}\nentry public delete(Arg0: ColorObject) {\nB0:\n\t0: MoveLoc[0](Arg0: ColorObject)\n\t1: Unpack[0](ColorObject)\n\t2: Pop\n\t3: Pop\n\t4: Pop\n\t5: StLoc[1](loc0: UID)\n\t6: MoveLoc[1](loc0: UID)\n\t7: Call[8](delete(UID))\n\t8: Ret\n}\npublic get_color(Arg0: &ColorObject): u8 * u8 * u8 {\nB0:\n\t0: CopyLoc[0](Arg0: &ColorObject)\n\t1: ImmBorrowField[0](ColorObject.red: u8)\n\t2: ReadRef\n\t3: CopyLoc[0](Arg0: &ColorObject)\n\t4: ImmBorrowField[1](ColorObject.green: u8)\n\t5: ReadRef\n\t6: MoveLoc[0](Arg0: &ColorObject)\n\t7: ImmBorrowField[2](ColorObject.blue: u8)\n\t8: ReadRef\n\t9: Ret\n}\nnew(Arg0: u8, Arg1: u8, Arg2: u8, Arg3: &mut TxContext): ColorObject {\nB0:\n\t0: MoveLoc[3](Arg3: &mut TxContext)\n\t1: Call[9](new(&mut TxContext): UID)\n\t2: MoveLoc[0](Arg0: u8)\n\t3: MoveLoc[1](Arg1: u8)\n\t4: MoveLoc[2](Arg2: u8)\n\t5: Pack[0](ColorObject)\n\t6: Ret\n}\nentry public transfer(Arg0: ColorObject, Arg1: address, Arg2: &mut TxContext) {\nB0:\n\t0: MoveLoc[0](Arg0: ColorObject)\n\t1: MoveLoc[1](Arg1: address)\n\t2: Call[0](transfer<ColorObject>(ColorObject, address))\n\t3: Ret\n}\n}"
-	exp3 := map[string]interface{}{
-		"deployTx": "NKfaECvNnkH/hx3OvJeWYAhIgaRJwA2U1zobtkpiAoY=",
-		"id":       "0xb82c2e33acecc71f2b2b742c366d902bd640a1bf",
-		"bytecode": map[string]interface{}{
+	exp3 := Package{
+		DeployTX: "NKfaECvNnkH/hx3OvJeWYAhIgaRJwA2U1zobtkpiAoY=",
+		ID:       "0xb82c2e33acecc71f2b2b742c366d902bd640a1bf",
+		Bytecode: map[string]interface{}{
 			"rgb": rgb,
 		},
 	}

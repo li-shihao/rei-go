@@ -106,49 +106,49 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 	// Part 2: Get nicely formatted events
 
 	// Placeholder to store our nicely formatted events
-	s := []map[string]interface{}{}
+	s := []Event{}
 
 	// Loop through all events
 	for i := range x.Result.Effects.Events {
-		tmp := map[string]interface{}{}
+		for z, _ := range x.Result.Effects.Events[i] {
+			if z == "newObject" || z == "deleteObject" || z == "transferObject" {
+				tmp := Event{}
 
-		// Set event transaction to current transaction
-		tmp["tx"] = id
-		for j, k := range x.Result.Effects.Events[i] {
-			switch j {
-			case "newObject":
-				tmp["type"] = "mint"
-				tmp["sender"] = k.(map[string]interface{})["sender"].(string)
-				if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf(map[string]interface{}{}) {
-					tmp["recipient"] = k.(map[string]interface{})["recipient"].(map[string]interface{})["AddressOwner"].(string)
-				} else if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf("") {
-					tmp["recipient"] = k.(map[string]interface{})["recipient"].(string)
-				} else {
-					tmp["recipient"] = nil
+				// Set event transaction to current transaction
+				tmp.TX = id
+				for j, k := range x.Result.Effects.Events[i] {
+					switch j {
+					case "newObject":
+						tmp.Type = "mint"
+						tmp.Sender = k.(map[string]interface{})["sender"].(string)
+						if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf(map[string]interface{}{}) {
+							for _, v := range k.(map[string]interface{})["recipient"].(map[string]interface{}) {
+								tmp.Recipient = v.(string)
+							}
+						} else if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf("") {
+							tmp.Recipient = k.(map[string]interface{})["recipient"].(string)
+						}
+						tmp.ObjectId = k.(map[string]interface{})["objectId"].(string)
+						tmp.Version = uint32(0)
+					case "deleteObject":
+						tmp.Type = "burn"
+						tmp.Sender = k.(map[string]interface{})["sender"].(string)
+						tmp.ObjectId = k.(map[string]interface{})["objectId"].(string)
+					case "transferObject":
+						tmp.Type = "transfer"
+						tmp.Sender = k.(map[string]interface{})["sender"].(string)
+						if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf(map[string]interface{}{}) {
+							tmp.Recipient = k.(map[string]interface{})["recipient"].(map[string]interface{})["AddressOwner"].(string)
+						} else if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf("") {
+							tmp.Recipient = k.(map[string]interface{})["recipient"].(string)
+						}
+						tmp.ObjectId = k.(map[string]interface{})["objectId"].(string)
+						tmp.Version = uint32(k.(map[string]interface{})["version"].(float64))
+					}
 				}
-				tmp["objectId"] = k.(map[string]interface{})["objectId"].(string)
-				tmp["version"] = uint32(0)
-			case "deleteObject":
-				tmp["type"] = "burn"
-				tmp["sender"] = k.(map[string]interface{})["sender"].(string)
-				tmp["recipient"] = nil
-				tmp["objectId"] = k.(map[string]interface{})["objectId"].(string)
-				tmp["version"] = nil
-			case "transferObject":
-				tmp["type"] = "transfer"
-				tmp["sender"] = k.(map[string]interface{})["sender"].(string)
-				if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf(map[string]interface{}{}) {
-					tmp["recipient"] = k.(map[string]interface{})["recipient"].(map[string]interface{})["AddressOwner"].(string)
-				} else if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf("") {
-					tmp["recipient"] = k.(map[string]interface{})["recipient"].(string)
-				} else {
-					tmp["recipient"] = nil
-				}
-				tmp["objectId"] = k.(map[string]interface{})["objectId"].(string)
-				tmp["version"] = uint32(k.(map[string]interface{})["version"].(float64))
+				s = append(s, tmp)
 			}
 		}
-		s = append(s, tmp)
 	}
 
 	x.Events = &s
@@ -159,88 +159,93 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 	***********************************/
 
 	if x.GetType() == "Call" {
-
-		pkg, err := x.GetContractPackage()
-		check(err)
-		mod, err := x.GetContractModule()
-		check(err)
-		fn, err := x.GetContractFunction()
+		arg, err := x.GetRawContractArguments()
 		check(err)
 
-		body = []byte(fmt.Sprintf(`{"jsonrpc":"2.0", "id":1, "method": "sui_getNormalizedMoveFunction", "params": ["%s", "%s", "%s"]}`, pkg, mod, fn))
+		if arg != nil {
+			pkg := x.GetContractPackage()
+			check(err)
+			mod := x.GetContractModule()
+			check(err)
+			fn := x.GetContractFunction()
+			check(err)
 
-		// Placeholder for temporary unmarshalling
-		z := make(map[string]interface{})
+			body = []byte(fmt.Sprintf(`{"jsonrpc":"2.0", "id":1, "method": "sui_getNormalizedMoveFunction", "params": ["%s", "%s", "%s"]}`, *pkg, *mod, *fn))
 
-		// Creates new POST request with body
-		req, err := http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
-		check(err)
-		req.Header.Set("Content-Type", "application/json")
+			// Placeholder for temporary unmarshalling
+			z := make(map[string]interface{})
 
-		// Dispatches request
-		res, err := sc.client.Do(req)
-		check(err)
-		defer res.Body.Close()
+			// Creates new POST request with body
+			req, err := http.NewRequest(http.MethodPost, sc.ip, bytes.NewBuffer(body))
+			check(err)
+			req.Header.Set("Content-Type", "application/json")
 
-		// Converting Response body to byte array
-		arr, err := io.ReadAll(res.Body)
-		check(err)
+			// Dispatches request
+			res, err := sc.client.Do(req)
+			check(err)
+			defer res.Body.Close()
 
-		/*
-			Decodes entire transaction into placeholder
-			This has to be done as golang cannot automatically decode unknown json field keys and structures
-			We decode first then set fields
-		*/
-		err = json.Unmarshal(arr, &z)
-		check(err)
+			// Converting Response body to byte array
+			arr, err := io.ReadAll(res.Body)
+			check(err)
 
-		tmp := []map[string]interface{}{}
+			/*
+				Decodes entire transaction into placeholder
+				This has to be done as golang cannot automatically decode unknown json field keys and structures
+				We decode first then set fields
+			*/
+			err = json.Unmarshal(arr, &z)
+			check(err)
 
-		// Get raw arguments data from transaction for later indexing use
-		raw, err := x.GetRawContractArguments()
-		check(err)
+			tmp := []Arg{}
 
-		// Loop through all the parameters that the function call takes
-		for i, v := range z["result"].(map[string]interface{})["parameters"].([]interface{}) {
-
-			// Skip last item in parameters list (gas: tx_context)
-			if i == len(raw.([]interface{})) {
-				break
+			// Get raw arguments data from transaction for later indexing use
+			raw, err := x.GetRawContractArguments()
+			if err != nil {
+				fmt.Println(id)
 			}
-			tmp = append(tmp, map[string]interface{}{})
+			check(err)
 
-			// Create placeholder structure for arguments
-			tmp[i]["id"] = id
+			// Loop through all the parameters that the function call takes
+			for i, v := range z["result"].(map[string]interface{})["parameters"].([]interface{}) {
 
-			// If the parameter is an object, recursively get the value
-			if reflect.TypeOf(v) == reflect.TypeOf(map[string]interface{}{}) {
-
-				// If parameter object is a reference
-				if helpers.RecurseKey(v.(map[string]interface{}), "name") != nil && helpers.RecurseKey(v.(map[string]interface{}), "address") != nil && helpers.RecurseKey(v.(map[string]interface{}), "module") != nil {
-					tmp[i]["name"] = helpers.RecurseKey(v.(map[string]interface{}), "name").(string)
-					tmp[i]["type"] = helpers.RecurseKey(v.(map[string]interface{}), "address").(string) +
-						"::" +
-						helpers.RecurseKey(v.(map[string]interface{}), "module").(string) +
-						"::" +
-						helpers.RecurseKey(v.(map[string]interface{}), "name").(string)
-
-					// If parameter object is something else (vector)
-				} else {
-					for k, j := range v.(map[string]interface{}) {
-						tmp[i]["name"] = nil
-						tmp[i]["type"] = k + "<" + j.(string) + ">"
-					}
+				// Skip last item in parameters list (gas: tx_context)
+				if i == len(raw.([]interface{})) {
+					break
 				}
+				tmp = append(tmp, Arg{})
 
-				// Just a string with type inside
-			} else {
-				tmp[i]["name"] = nil
-				tmp[i]["type"] = v.(string)
+				// Create placeholder structure for arguments
+				tmp[i].ID = id
+
+				// If the parameter is an object, recursively get the value
+				if reflect.TypeOf(v) == reflect.TypeOf(map[string]interface{}{}) {
+
+					// If parameter object is a reference
+					if helpers.RecurseKey(v.(map[string]interface{}), "name") != nil && helpers.RecurseKey(v.(map[string]interface{}), "address") != nil && helpers.RecurseKey(v.(map[string]interface{}), "module") != nil {
+						tmp[i].Name = helpers.RecurseKey(v.(map[string]interface{}), "name").(string)
+						tmp[i].Type = helpers.RecurseKey(v.(map[string]interface{}), "address").(string) +
+							"::" +
+							helpers.RecurseKey(v.(map[string]interface{}), "module").(string) +
+							"::" +
+							helpers.RecurseKey(v.(map[string]interface{}), "name").(string)
+
+						// If parameter object is something else (vector)
+					} else {
+						for k, j := range v.(map[string]interface{}) {
+							tmp[i].Type = fmt.Sprintf("%s<%v>", k, j)
+						}
+					}
+
+					// Just a string with type inside
+				} else {
+					tmp[i].Type = v.(string)
+				}
+				tmp[i].Data = raw.([]interface{})[i]
 			}
-			tmp[i]["data"] = raw.([]interface{})[i]
-		}
 
-		x.Arguments = &tmp
+			x.Arguments = &tmp
+		}
 	}
 
 	return x, nil
@@ -445,11 +450,9 @@ func (sc *SUIClient) GetAccount(id string) (Acc, error) {
 	}
 
 	// Set objects of returned account to be the response from request
-	x.Objects = []struct {
-		ObjectId string
-		Type     string
-		Metadata map[string]interface{}
-	}(y.Result)
+	for i := range y.Result {
+		x.Objects = append(x.Objects, AccObject(y.Result[i]))
+	}
 
 	// Set balance of account
 	for i, v := range y.Result {

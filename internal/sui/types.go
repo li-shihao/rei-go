@@ -2,8 +2,10 @@ package sui
 
 import (
 	"errors"
+	"math"
 	"reflect"
 	"strings"
+	"time"
 )
 
 // Transaction Structure
@@ -84,8 +86,8 @@ type TX struct {
 		} `json:"effects"`
 		Timestamp_ms float64 `json:"timestamp_ms"`
 	} `json:"result"`
-	Arguments *[]map[string]interface{}
-	Events    *[]map[string]interface{}
+	Arguments *[]Arg
+	Events    *[]Event
 }
 
 // Object Structure
@@ -121,14 +123,38 @@ type AccResponse struct {
 
 // Account Structure
 type Acc struct {
-	ID      string
-	Balance uint64
-	Objects []struct {
-		ObjectId string
-		Type     string
-		Metadata map[string]interface{}
-	}
+	ID           string
+	Balance      uint64
+	Objects      []AccObject
 	Transactions []string
+}
+
+type Arg struct {
+	Name string
+	Type string
+	ID   string
+	Data interface{}
+}
+
+type Event struct {
+	Type      string
+	Sender    string
+	Recipient string
+	TX        string
+	ObjectId  string
+	Version   uint32
+}
+
+type AccObject struct {
+	ObjectId string
+	Type     string
+	Metadata map[string]interface{}
+}
+
+type Package struct {
+	DeployTX string
+	ID       string
+	Bytecode map[string]interface{}
 }
 
 // Get the type of a transaction (e.g. Call, TransferSui, TransferObject)
@@ -146,8 +172,9 @@ func (tx *TX) GetType() string {
 }
 
 // Get the time in ms epoch of a transaction
-func (tx *TX) GetTime() float64 {
-	return tx.Result.Timestamp_ms
+func (tx *TX) GetTime() time.Time {
+	integ, decim := math.Modf(tx.Result.Timestamp_ms / 1000)
+	return time.Unix(int64(integ), int64(decim*(1e9))).UTC()
 }
 
 // Get the digest of a transaction
@@ -171,91 +198,96 @@ func (tx *TX) GetSender() string {
 }
 
 // Get the recipient of a transaction, returns error if there is no recipient
-func (tx *TX) GetRecipient() (string, error) {
+func (tx *TX) GetRecipient() *string {
 
 	// First get the transaction type so we can go straight into transaction data
 	tp := tx.GetType()
 	if rec := tx.Result.Certificate.Data.Transactions[0][tp].(map[string]interface{})["recipient"]; rec != nil {
-		return rec.(string), nil
+		temp := rec.(string)
+		return &temp
 	} else {
-		return "", errors.New("no recipient")
+		return nil
 	}
 }
 
 // Get the amount transferred in a transaction, strictly referring to SUI
-func (tx *TX) GetTransferAmount() (float64, error) {
+func (tx *TX) GetTransferAmount() *float64 {
 
 	// First get the transaction type so we can go straight into transaction data
 	tp := tx.GetType()
 
 	if amt := tx.Result.Certificate.Data.Transactions[0][tp].(map[string]interface{})["amount"]; amt != nil {
-		return amt.(float64), nil
+		temp := amt.(float64)
+		return &temp
 	} else {
-		return 0, errors.New("no recipient")
+		return nil
 	}
 }
 
 // Get the package of a Call transaction
-func (tx *TX) GetContractPackage() (string, error) {
+func (tx *TX) GetContractPackage() *string {
 
 	// First get the transaction type so we can go straight into transaction data
 	tp := tx.GetType()
 	if tp != "Call" {
-		return "", errors.New("no contract call")
+		return nil
 	}
 	if id := tx.Result.Certificate.Data.Transactions[0][tp].(map[string]interface{})["package"].(map[string]interface{})["objectId"]; id != nil {
-		return id.(string), nil
+		temp := id.(string)
+		return &temp
 	} else {
-		return "", errors.New("no contract call")
+		return nil
 	}
 }
 
 // Get the module of a Call transaction
-func (tx *TX) GetContractModule() (string, error) {
+func (tx *TX) GetContractModule() *string {
 
 	// First get the transaction type so we can go straight into transaction data
 	tp := tx.GetType()
 	if tp != "Call" {
-		return "", errors.New("no contract call")
+		return nil
 	}
 	if mod := tx.Result.Certificate.Data.Transactions[0][tp].(map[string]interface{})["module"]; mod != nil {
-		return mod.(string), nil
+		temp := mod.(string)
+		return &temp
 	} else {
-		return "", errors.New("no contract call")
+		return nil
 	}
 }
 
 // Get the function of a Call transaction
-func (tx *TX) GetContractFunction() (string, error) {
+func (tx *TX) GetContractFunction() *string {
 
 	// First get the transaction type so we can go straight into transaction data
 	tp := tx.GetType()
 	if tp != "Call" {
-		return "", errors.New("no contract call")
+		return nil
 	}
 	if fn := tx.Result.Certificate.Data.Transactions[0][tp].(map[string]interface{})["function"]; fn != nil {
-		return fn.(string), nil
+		temp := fn.(string)
+		return &temp
 	} else {
-		return "", errors.New("no contract call")
+		return nil
 	}
 }
 
 // Get data on a package deploy
-func (tx *TX) GetContractDeploy() (map[string]interface{}, error) {
+func (tx *TX) GetContractDeploy() (Package, error) {
 
 	// First get the transaction type so we can go straight into transaction data
 	tp := tx.GetType()
 
 	// If transaction is not publish throw error
 	if tp != "Publish" {
-		return map[string]interface{}{}, errors.New("no package publish")
+		return Package{}, errors.New("no package publish")
 	}
 
 	// Create returned map string interface object
-	result := map[string]interface{}{}
+	result := Package{}
 
 	// Set the deployment contract
-	result["deployTx"] = tx.GetID()
+	result.DeployTX = tx.GetID()
 
 	// Find the deployed package id
 	for _, v := range tx.Result.Effects.Events {
@@ -263,17 +295,17 @@ func (tx *TX) GetContractDeploy() (map[string]interface{}, error) {
 		// Loop through each key of each event (there's only one key)
 		for k, n := range v {
 			if k == "publish" {
-				result["id"] = n.(map[string]interface{})["packageId"]
+				result.ID = n.(map[string]interface{})["packageId"].(string)
 			}
 		}
 	}
 
 	// Set the bytecode to be the bytecode from transaction
-	result["bytecode"] = tx.Result.Certificate.Data.Transactions[0][tp].(map[string]interface{})["disassembled"].(map[string]interface{})
+	result.Bytecode = tx.Result.Certificate.Data.Transactions[0][tp].(map[string]interface{})["disassembled"].(map[string]interface{})
 
 	// If any of the fields isn't filled throw error
-	if result["id"] == nil || result["bytecode"] == nil {
-		return map[string]interface{}{}, errors.New("no package publish")
+	if result.ID == "" || result.Bytecode == nil {
+		return Package{}, errors.New("no package publish")
 	}
 
 	return result, nil
@@ -285,12 +317,12 @@ func (tx *TX) GetRawContractArguments() (interface{}, error) {
 	// First get the transaction type so we can go straight into transaction data
 	tp := tx.GetType()
 	if tp != "Call" {
-		return "", errors.New("no contract call")
+		return nil, errors.New("no contract call")
 	}
 	if fn := tx.Result.Certificate.Data.Transactions[0][tp].(map[string]interface{})["arguments"]; fn != nil {
 		return fn, nil
 	} else {
-		return "", errors.New("no contract call")
+		return nil, nil
 	}
 }
 
@@ -356,18 +388,18 @@ func (obj *Obj) GetObjectMetadata() map[string]interface{} {
 }
 
 // Get NFTs owned by account
-func (acc *Acc) GetAccountNFTs() []map[string]interface{} {
+func (acc *Acc) GetAccountNFTs() []AccObject {
 
 	// Placeholder empty map string interface slice
-	result := []map[string]interface{}{}
+	result := []AccObject{}
 
 	// Iterate through all account objects
 	for _, v := range acc.Objects {
 		if v.Type != "0x2::coin::Coin<0x2::sui::SUI>" {
-			obj := map[string]interface{}{
-				"ObjectId": v.ObjectId,
-				"Type":     v.Type,
-				"Metadata": v.Metadata,
+			obj := AccObject{
+				ObjectId: v.ObjectId,
+				Type:     v.Type,
+				Metadata: v.Metadata,
 			}
 			result = append(result, obj)
 		}

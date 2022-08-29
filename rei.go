@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"time"
 
+	database "rei.io/rei/internal/db"
 	"rei.io/rei/internal/helpers"
 	"rei.io/rei/internal/sui"
 )
@@ -61,6 +62,9 @@ func main() {
 	sc := new(sui.SUIClient)
 	sc.Init("http://127.0.0.1:9000")
 
+	db := new(database.EntClient)
+	db.Init("postgres", "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable")
+
 	// Listener to kill
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, os.Interrupt)
@@ -102,7 +106,7 @@ func main() {
 			check(err)
 
 			// We are listening for signal during *every transaction read*
-			for range list {
+			for _, v := range list {
 
 				select {
 
@@ -112,10 +116,16 @@ func main() {
 
 				// If ctrl-c not triggered, process the transaction
 				default:
+					cnt++
+					tx, err := sc.GetTransaction(v)
+					check(err)
+					db.CreateTransaction(tx)
+					for _, k := range *tx.Events {
+						db.CreateEvent(k)
+					}
 
 					// count always before print so we don't skip transactions
-					cnt++
-					fmt.Printf("Finished processing %d\n", cnt)
+					fmt.Printf("%s: Finished processing %d\n", tx.GetID(), cnt)
 				}
 			}
 		}
