@@ -157,7 +157,7 @@ func main() {
 
 	// Create new SUI client instance
 	sc := new(sui.SUIClient)
-	sc.Init("http://158.140.129.74:9000")
+	sc.Init("http://127.0.0.1:9000")
 
 	// New db instance
 	db := new(database.EntClient)

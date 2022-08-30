@@ -34,7 +34,7 @@ func TestCreateTransaction(t *testing.T) {
 	)
 
 	sc := new(sui.SUIClient)
-	sc.Init("http://127.0.0.1:9000")
+	sc.Init("http://158.140.129.74:9000")
 
 	db := new(EntClient)
 	db.Init("postgres", connStr)
@@ -72,7 +72,7 @@ func TestCreateEvent(t *testing.T) {
 	)
 
 	sc := new(sui.SUIClient)
-	sc.Init("http://127.0.0.1:9000")
+	sc.Init("http://158.140.129.74:9000")
 
 	db := new(EntClient)
 	db.Init("postgres", connStr)
@@ -112,7 +112,7 @@ func TestCreateAccount(t *testing.T) {
 	)
 
 	sc := new(sui.SUIClient)
-	sc.Init("http://127.0.0.1:9000")
+	sc.Init("http://158.140.129.74:9000")
 
 	db := new(EntClient)
 	db.Init("postgres", connStr)
@@ -150,7 +150,7 @@ func TestCreateArgument(t *testing.T) {
 	)
 
 	sc := new(sui.SUIClient)
-	sc.Init("http://127.0.0.1:9000")
+	sc.Init("http://158.140.129.74:9000")
 
 	db := new(EntClient)
 	db.Init("postgres", connStr)
@@ -194,7 +194,7 @@ func TestCreateNFT(t *testing.T) {
 	)
 
 	sc := new(sui.SUIClient)
-	sc.Init("http://127.0.0.1:9000")
+	sc.Init("http://158.140.129.74:9000")
 
 	db := new(EntClient)
 	db.Init("postgres", connStr)
@@ -238,7 +238,7 @@ func TestCreateObject(t *testing.T) {
 	)
 
 	sc := new(sui.SUIClient)
-	sc.Init("http://127.0.0.1:9000")
+	sc.Init("http://158.140.129.74:9000")
 
 	db := new(EntClient)
 	db.Init("postgres", connStr)
@@ -276,7 +276,7 @@ func TestCreatePackage(t *testing.T) {
 	)
 
 	sc := new(sui.SUIClient)
-	sc.Init("http://127.0.0.1:9000")
+	sc.Init("http://158.140.129.74:9000")
 
 	db := new(EntClient)
 	db.Init("postgres", connStr)
