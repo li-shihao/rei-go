@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -38,9 +37,9 @@ func (ntc *NFTsCreate) SetMetadata(m map[string]interface{}) *NFTsCreate {
 	return ntc
 }
 
-// SetTime sets the "Time" field.
-func (ntc *NFTsCreate) SetTime(t time.Time) *NFTsCreate {
-	ntc.mutation.SetTime(t)
+// SetSequenceID sets the "SequenceID" field.
+func (ntc *NFTsCreate) SetSequenceID(u uint64) *NFTsCreate {
+	ntc.mutation.SetSequenceID(u)
 	return ntc
 }
 
@@ -129,8 +128,8 @@ func (ntc *NFTsCreate) check() error {
 	if _, ok := ntc.mutation.Metadata(); !ok {
 		return &ValidationError{Name: "Metadata", err: errors.New(`ent: missing required field "NFTs.Metadata"`)}
 	}
-	if _, ok := ntc.mutation.Time(); !ok {
-		return &ValidationError{Name: "Time", err: errors.New(`ent: missing required field "NFTs.Time"`)}
+	if _, ok := ntc.mutation.SequenceID(); !ok {
+		return &ValidationError{Name: "SequenceID", err: errors.New(`ent: missing required field "NFTs.SequenceID"`)}
 	}
 	return nil
 }
@@ -183,13 +182,13 @@ func (ntc *NFTsCreate) createSpec() (*NFTs, *sqlgraph.CreateSpec) {
 		})
 		_node.Metadata = value
 	}
-	if value, ok := ntc.mutation.Time(); ok {
+	if value, ok := ntc.mutation.SequenceID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
+			Type:   field.TypeUint64,
 			Value:  value,
-			Column: nfts.FieldTime,
+			Column: nfts.FieldSequenceID,
 		})
-		_node.Time = value
+		_node.SequenceID = value
 	}
 	return _node, _spec
 }

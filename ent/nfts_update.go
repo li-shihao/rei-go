@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -46,9 +45,16 @@ func (ntu *NFTsUpdate) SetMetadata(m map[string]interface{}) *NFTsUpdate {
 	return ntu
 }
 
-// SetTime sets the "Time" field.
-func (ntu *NFTsUpdate) SetTime(t time.Time) *NFTsUpdate {
-	ntu.mutation.SetTime(t)
+// SetSequenceID sets the "SequenceID" field.
+func (ntu *NFTsUpdate) SetSequenceID(u uint64) *NFTsUpdate {
+	ntu.mutation.ResetSequenceID()
+	ntu.mutation.SetSequenceID(u)
+	return ntu
+}
+
+// AddSequenceID adds u to the "SequenceID" field.
+func (ntu *NFTsUpdate) AddSequenceID(u int64) *NFTsUpdate {
+	ntu.mutation.AddSequenceID(u)
 	return ntu
 }
 
@@ -150,11 +156,18 @@ func (ntu *NFTsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: nfts.FieldMetadata,
 		})
 	}
-	if value, ok := ntu.mutation.Time(); ok {
+	if value, ok := ntu.mutation.SequenceID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
+			Type:   field.TypeUint64,
 			Value:  value,
-			Column: nfts.FieldTime,
+			Column: nfts.FieldSequenceID,
+		})
+	}
+	if value, ok := ntu.mutation.AddedSequenceID(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: nfts.FieldSequenceID,
 		})
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ntu.driver, _spec); err != nil {
@@ -194,9 +207,16 @@ func (ntuo *NFTsUpdateOne) SetMetadata(m map[string]interface{}) *NFTsUpdateOne 
 	return ntuo
 }
 
-// SetTime sets the "Time" field.
-func (ntuo *NFTsUpdateOne) SetTime(t time.Time) *NFTsUpdateOne {
-	ntuo.mutation.SetTime(t)
+// SetSequenceID sets the "SequenceID" field.
+func (ntuo *NFTsUpdateOne) SetSequenceID(u uint64) *NFTsUpdateOne {
+	ntuo.mutation.ResetSequenceID()
+	ntuo.mutation.SetSequenceID(u)
+	return ntuo
+}
+
+// AddSequenceID adds u to the "SequenceID" field.
+func (ntuo *NFTsUpdateOne) AddSequenceID(u int64) *NFTsUpdateOne {
+	ntuo.mutation.AddSequenceID(u)
 	return ntuo
 }
 
@@ -328,11 +348,18 @@ func (ntuo *NFTsUpdateOne) sqlSave(ctx context.Context) (_node *NFTs, err error)
 			Column: nfts.FieldMetadata,
 		})
 	}
-	if value, ok := ntuo.mutation.Time(); ok {
+	if value, ok := ntuo.mutation.SequenceID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
+			Type:   field.TypeUint64,
 			Value:  value,
-			Column: nfts.FieldTime,
+			Column: nfts.FieldSequenceID,
+		})
+	}
+	if value, ok := ntuo.mutation.AddedSequenceID(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: nfts.FieldSequenceID,
 		})
 	}
 	_node = &NFTs{config: ntuo.config}

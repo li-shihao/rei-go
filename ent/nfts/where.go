@@ -3,8 +3,6 @@
 package nfts
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"rei.io/rei/ent/predicate"
 )
@@ -94,10 +92,10 @@ func Type(v string) predicate.NFTs {
 	})
 }
 
-// Time applies equality check predicate on the "Time" field. It's identical to TimeEQ.
-func Time(v time.Time) predicate.NFTs {
+// SequenceID applies equality check predicate on the "SequenceID" field. It's identical to SequenceIDEQ.
+func SequenceID(v uint64) predicate.NFTs {
 	return predicate.NFTs(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldTime), v))
+		s.Where(sql.EQ(s.C(FieldSequenceID), v))
 	})
 }
 
@@ -299,67 +297,67 @@ func TypeContainsFold(v string) predicate.NFTs {
 	})
 }
 
-// TimeEQ applies the EQ predicate on the "Time" field.
-func TimeEQ(v time.Time) predicate.NFTs {
+// SequenceIDEQ applies the EQ predicate on the "SequenceID" field.
+func SequenceIDEQ(v uint64) predicate.NFTs {
 	return predicate.NFTs(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldTime), v))
+		s.Where(sql.EQ(s.C(FieldSequenceID), v))
 	})
 }
 
-// TimeNEQ applies the NEQ predicate on the "Time" field.
-func TimeNEQ(v time.Time) predicate.NFTs {
+// SequenceIDNEQ applies the NEQ predicate on the "SequenceID" field.
+func SequenceIDNEQ(v uint64) predicate.NFTs {
 	return predicate.NFTs(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldTime), v))
+		s.Where(sql.NEQ(s.C(FieldSequenceID), v))
 	})
 }
 
-// TimeIn applies the In predicate on the "Time" field.
-func TimeIn(vs ...time.Time) predicate.NFTs {
+// SequenceIDIn applies the In predicate on the "SequenceID" field.
+func SequenceIDIn(vs ...uint64) predicate.NFTs {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.NFTs(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldTime), v...))
+		s.Where(sql.In(s.C(FieldSequenceID), v...))
 	})
 }
 
-// TimeNotIn applies the NotIn predicate on the "Time" field.
-func TimeNotIn(vs ...time.Time) predicate.NFTs {
+// SequenceIDNotIn applies the NotIn predicate on the "SequenceID" field.
+func SequenceIDNotIn(vs ...uint64) predicate.NFTs {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.NFTs(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldTime), v...))
+		s.Where(sql.NotIn(s.C(FieldSequenceID), v...))
 	})
 }
 
-// TimeGT applies the GT predicate on the "Time" field.
-func TimeGT(v time.Time) predicate.NFTs {
+// SequenceIDGT applies the GT predicate on the "SequenceID" field.
+func SequenceIDGT(v uint64) predicate.NFTs {
 	return predicate.NFTs(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldTime), v))
+		s.Where(sql.GT(s.C(FieldSequenceID), v))
 	})
 }
 
-// TimeGTE applies the GTE predicate on the "Time" field.
-func TimeGTE(v time.Time) predicate.NFTs {
+// SequenceIDGTE applies the GTE predicate on the "SequenceID" field.
+func SequenceIDGTE(v uint64) predicate.NFTs {
 	return predicate.NFTs(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldTime), v))
+		s.Where(sql.GTE(s.C(FieldSequenceID), v))
 	})
 }
 
-// TimeLT applies the LT predicate on the "Time" field.
-func TimeLT(v time.Time) predicate.NFTs {
+// SequenceIDLT applies the LT predicate on the "SequenceID" field.
+func SequenceIDLT(v uint64) predicate.NFTs {
 	return predicate.NFTs(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldTime), v))
+		s.Where(sql.LT(s.C(FieldSequenceID), v))
 	})
 }
 
-// TimeLTE applies the LTE predicate on the "Time" field.
-func TimeLTE(v time.Time) predicate.NFTs {
+// SequenceIDLTE applies the LTE predicate on the "SequenceID" field.
+func SequenceIDLTE(v uint64) predicate.NFTs {
 	return predicate.NFTs(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldTime), v))
+		s.Where(sql.LTE(s.C(FieldSequenceID), v))
 	})
 }
 

@@ -19,11 +19,11 @@ type AccObject struct {
 // Fields of the Accounts.
 func (Accounts) Fields() []ent.Field {
 	return []ent.Field{
+		field.Uint64("SequenceID"),
 		field.String("AccountID"),
 		field.Uint64("Balance"),
 		field.JSON("Objects", []AccObject{}),
 		field.Strings("Transactions"),
-		field.Time("Time"),
 	}
 }
 

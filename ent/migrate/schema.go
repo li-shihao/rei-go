@@ -11,11 +11,11 @@ var (
 	// AccountsColumns holds the columns for the "accounts" table.
 	AccountsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "sequence_id", Type: field.TypeUint64},
 		{Name: "account_id", Type: field.TypeString},
 		{Name: "balance", Type: field.TypeUint64},
 		{Name: "objects", Type: field.TypeJSON},
 		{Name: "transactions", Type: field.TypeJSON},
-		{Name: "time", Type: field.TypeTime},
 	}
 	// AccountsTable holds the schema information for the "accounts" table.
 	AccountsTable = &schema.Table{
@@ -59,7 +59,7 @@ var (
 		{Name: "object_id", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
 		{Name: "metadata", Type: field.TypeJSON},
-		{Name: "time", Type: field.TypeTime},
+		{Name: "sequence_id", Type: field.TypeUint64},
 	}
 	// NfTsTable holds the schema information for the "nf_ts" table.
 	NfTsTable = &schema.Table{
@@ -77,6 +77,7 @@ var (
 		{Name: "fields", Type: field.TypeJSON},
 		{Name: "owner", Type: field.TypeString},
 		{Name: "object_id", Type: field.TypeString},
+		{Name: "sequence", Type: field.TypeUint64},
 	}
 	// ObjectsTable holds the schema information for the "objects" table.
 	ObjectsTable = &schema.Table{
@@ -102,7 +103,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "type", Type: field.TypeString},
 		{Name: "time", Type: field.TypeTime},
-		{Name: "transaction_id", Type: field.TypeString, Unique: true},
+		{Name: "transaction_id", Type: field.TypeString},
 		{Name: "status", Type: field.TypeBool},
 		{Name: "sender", Type: field.TypeString},
 		{Name: "recipient", Type: field.TypeString, Nullable: true},

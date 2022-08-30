@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	_ "github.com/lib/pq"
 	"rei.io/rei/ent"
+	"rei.io/rei/ent/accounts"
+	"rei.io/rei/ent/objects"
 	"rei.io/rei/ent/schema"
 	"rei.io/rei/internal/sui"
 )
@@ -74,7 +75,7 @@ func (c *EntClient) CreateEvent(evt sui.Event) (*ent.Events, error) {
 	return evtc, nil
 }
 
-func (c *EntClient) CreateAccount(acc sui.Acc) (*ent.Accounts, error) {
+func (c *EntClient) CreateAccount(acc sui.Acc, sequence uint64) (*ent.Accounts, error) {
 
 	// Type conversion from AccObj struct to ent version
 	var obj []schema.AccObject
@@ -91,7 +92,7 @@ func (c *EntClient) CreateAccount(acc sui.Acc) (*ent.Accounts, error) {
 		SetBalance(acc.Balance).
 		SetObjects(obj).
 		SetTransactions(acc.Transactions).
-		SetTime(time.Now()).
+		SetSequenceID(sequence).
 		Save(context.Background())
 
 	if err != nil {
@@ -114,12 +115,12 @@ func (c *EntClient) CreateArgument(arg sui.Arg) (*ent.Arguments, error) {
 	return argc, nil
 }
 
-func (c *EntClient) CreateNFT(obj sui.AccObject) (*ent.NFTs, error) {
+func (c *EntClient) CreateNFT(obj sui.AccObject, sequence uint64) (*ent.NFTs, error) {
 	nftc, err := c.client.NFTs.Create().
 		SetType(obj.Type).
 		SetMetadata(obj.Metadata).
+		SetSequenceID(sequence).
 		SetObjectID(obj.ObjectId).
-		SetTime(time.Now()).
 		Save(context.Background())
 
 	if err != nil {
@@ -128,7 +129,7 @@ func (c *EntClient) CreateNFT(obj sui.AccObject) (*ent.NFTs, error) {
 	return nftc, nil
 }
 
-func (c *EntClient) CreateObject(obj sui.Obj) (*ent.Objects, error) {
+func (c *EntClient) CreateObject(obj sui.Obj, sequence uint64) (*ent.Objects, error) {
 	objc, err := c.client.Objects.Create().
 		SetDataType(obj.GetObjectDataType()).
 		SetFields(obj.GetObjectMetadata()).
@@ -137,6 +138,7 @@ func (c *EntClient) CreateObject(obj sui.Obj) (*ent.Objects, error) {
 		SetOwner(obj.GetOwner()).
 		SetStatus(obj.GetObjectStatus()).
 		SetType(obj.GetObjectType()).
+		SetSequence(sequence).
 		Save(context.Background())
 
 	if err != nil {
@@ -156,4 +158,40 @@ func (c *EntClient) CreatePackage(pkg sui.Package) (*ent.Packages, error) {
 		return nil, fmt.Errorf("failed creating package: %w", err)
 	}
 	return pkgc, nil
+}
+
+func (c *EntClient) QueryAccountFirstLoad(accId string) bool {
+	accc, err := c.client.Accounts.
+		Query().
+		Where(
+			accounts.And(
+				accounts.AccountID(accId),
+				accounts.SequenceIDLTE(78000),
+			),
+		).
+		All(context.Background())
+
+	if err != nil || len(accc) == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (c *EntClient) QueryObjectFirstLoad(objId string) bool {
+	objc, err := c.client.Objects.
+		Query().
+		Where(
+			objects.And(
+				objects.ObjectID(objId),
+				objects.SequenceLTE(78000),
+			),
+		).
+		All(context.Background())
+
+	if err != nil || len(objc) == 0 {
+		return false
+	} else {
+		return true
+	}
 }

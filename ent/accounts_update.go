@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +25,19 @@ type AccountsUpdate struct {
 // Where appends a list predicates to the AccountsUpdate builder.
 func (au *AccountsUpdate) Where(ps ...predicate.Accounts) *AccountsUpdate {
 	au.mutation.Where(ps...)
+	return au
+}
+
+// SetSequenceID sets the "SequenceID" field.
+func (au *AccountsUpdate) SetSequenceID(u uint64) *AccountsUpdate {
+	au.mutation.ResetSequenceID()
+	au.mutation.SetSequenceID(u)
+	return au
+}
+
+// AddSequenceID adds u to the "SequenceID" field.
+func (au *AccountsUpdate) AddSequenceID(u int64) *AccountsUpdate {
+	au.mutation.AddSequenceID(u)
 	return au
 }
 
@@ -57,12 +69,6 @@ func (au *AccountsUpdate) SetObjects(so []schema.AccObject) *AccountsUpdate {
 // SetTransactions sets the "Transactions" field.
 func (au *AccountsUpdate) SetTransactions(s []string) *AccountsUpdate {
 	au.mutation.SetTransactions(s)
-	return au
-}
-
-// SetTime sets the "Time" field.
-func (au *AccountsUpdate) SetTime(t time.Time) *AccountsUpdate {
-	au.mutation.SetTime(t)
 	return au
 }
 
@@ -143,6 +149,20 @@ func (au *AccountsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := au.mutation.SequenceID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: accounts.FieldSequenceID,
+		})
+	}
+	if value, ok := au.mutation.AddedSequenceID(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: accounts.FieldSequenceID,
+		})
+	}
 	if value, ok := au.mutation.AccountID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -178,13 +198,6 @@ func (au *AccountsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: accounts.FieldTransactions,
 		})
 	}
-	if value, ok := au.mutation.Time(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: accounts.FieldTime,
-		})
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{accounts.Label}
@@ -202,6 +215,19 @@ type AccountsUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *AccountsMutation
+}
+
+// SetSequenceID sets the "SequenceID" field.
+func (auo *AccountsUpdateOne) SetSequenceID(u uint64) *AccountsUpdateOne {
+	auo.mutation.ResetSequenceID()
+	auo.mutation.SetSequenceID(u)
+	return auo
+}
+
+// AddSequenceID adds u to the "SequenceID" field.
+func (auo *AccountsUpdateOne) AddSequenceID(u int64) *AccountsUpdateOne {
+	auo.mutation.AddSequenceID(u)
+	return auo
 }
 
 // SetAccountID sets the "AccountID" field.
@@ -232,12 +258,6 @@ func (auo *AccountsUpdateOne) SetObjects(so []schema.AccObject) *AccountsUpdateO
 // SetTransactions sets the "Transactions" field.
 func (auo *AccountsUpdateOne) SetTransactions(s []string) *AccountsUpdateOne {
 	auo.mutation.SetTransactions(s)
-	return auo
-}
-
-// SetTime sets the "Time" field.
-func (auo *AccountsUpdateOne) SetTime(t time.Time) *AccountsUpdateOne {
-	auo.mutation.SetTime(t)
 	return auo
 }
 
@@ -348,6 +368,20 @@ func (auo *AccountsUpdateOne) sqlSave(ctx context.Context) (_node *Accounts, err
 			}
 		}
 	}
+	if value, ok := auo.mutation.SequenceID(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: accounts.FieldSequenceID,
+		})
+	}
+	if value, ok := auo.mutation.AddedSequenceID(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: accounts.FieldSequenceID,
+		})
+	}
 	if value, ok := auo.mutation.AccountID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -381,13 +415,6 @@ func (auo *AccountsUpdateOne) sqlSave(ctx context.Context) (_node *Accounts, err
 			Type:   field.TypeJSON,
 			Value:  value,
 			Column: accounts.FieldTransactions,
-		})
-	}
-	if value, ok := auo.mutation.Time(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: accounts.FieldTime,
 		})
 	}
 	_node = &Accounts{config: auo.config}

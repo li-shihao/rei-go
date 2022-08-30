@@ -3,10 +3,9 @@
 package ent
 
 import (
-	"encoding/json"
+	"github.com/goccy/go-json"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"rei.io/rei/ent/nfts"
@@ -23,8 +22,8 @@ type NFTs struct {
 	Type string `json:"Type,omitempty"`
 	// Metadata holds the value of the "Metadata" field.
 	Metadata map[string]interface{} `json:"Metadata,omitempty"`
-	// Time holds the value of the "Time" field.
-	Time time.Time `json:"Time,omitempty"`
+	// SequenceID holds the value of the "SequenceID" field.
+	SequenceID uint64 `json:"SequenceID,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -34,12 +33,10 @@ func (*NFTs) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case nfts.FieldMetadata:
 			values[i] = new([]byte)
-		case nfts.FieldID:
+		case nfts.FieldID, nfts.FieldSequenceID:
 			values[i] = new(sql.NullInt64)
 		case nfts.FieldObjectID, nfts.FieldType:
 			values[i] = new(sql.NullString)
-		case nfts.FieldTime:
-			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type NFTs", columns[i])
 		}
@@ -81,11 +78,11 @@ func (nt *NFTs) assignValues(columns []string, values []interface{}) error {
 					return fmt.Errorf("unmarshal field Metadata: %w", err)
 				}
 			}
-		case nfts.FieldTime:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field Time", values[i])
+		case nfts.FieldSequenceID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field SequenceID", values[i])
 			} else if value.Valid {
-				nt.Time = value.Time
+				nt.SequenceID = uint64(value.Int64)
 			}
 		}
 	}
@@ -124,8 +121,8 @@ func (nt *NFTs) String() string {
 	builder.WriteString("Metadata=")
 	builder.WriteString(fmt.Sprintf("%v", nt.Metadata))
 	builder.WriteString(", ")
-	builder.WriteString("Time=")
-	builder.WriteString(nt.Time.Format(time.ANSIC))
+	builder.WriteString("SequenceID=")
+	builder.WriteString(fmt.Sprintf("%v", nt.SequenceID))
 	builder.WriteByte(')')
 	return builder.String()
 }

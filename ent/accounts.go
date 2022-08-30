@@ -3,10 +3,9 @@
 package ent
 
 import (
-	"encoding/json"
+	"github.com/goccy/go-json"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"rei.io/rei/ent/accounts"
@@ -18,6 +17,8 @@ type Accounts struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// SequenceID holds the value of the "SequenceID" field.
+	SequenceID uint64 `json:"SequenceID,omitempty"`
 	// AccountID holds the value of the "AccountID" field.
 	AccountID string `json:"AccountID,omitempty"`
 	// Balance holds the value of the "Balance" field.
@@ -26,8 +27,6 @@ type Accounts struct {
 	Objects []schema.AccObject `json:"Objects,omitempty"`
 	// Transactions holds the value of the "Transactions" field.
 	Transactions []string `json:"Transactions,omitempty"`
-	// Time holds the value of the "Time" field.
-	Time time.Time `json:"Time,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -37,12 +36,10 @@ func (*Accounts) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case accounts.FieldObjects, accounts.FieldTransactions:
 			values[i] = new([]byte)
-		case accounts.FieldID, accounts.FieldBalance:
+		case accounts.FieldID, accounts.FieldSequenceID, accounts.FieldBalance:
 			values[i] = new(sql.NullInt64)
 		case accounts.FieldAccountID:
 			values[i] = new(sql.NullString)
-		case accounts.FieldTime:
-			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Accounts", columns[i])
 		}
@@ -64,6 +61,12 @@ func (a *Accounts) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			a.ID = int(value.Int64)
+		case accounts.FieldSequenceID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field SequenceID", values[i])
+			} else if value.Valid {
+				a.SequenceID = uint64(value.Int64)
+			}
 		case accounts.FieldAccountID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field AccountID", values[i])
@@ -91,12 +94,6 @@ func (a *Accounts) assignValues(columns []string, values []interface{}) error {
 				if err := json.Unmarshal(*value, &a.Transactions); err != nil {
 					return fmt.Errorf("unmarshal field Transactions: %w", err)
 				}
-			}
-		case accounts.FieldTime:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field Time", values[i])
-			} else if value.Valid {
-				a.Time = value.Time
 			}
 		}
 	}
@@ -126,6 +123,9 @@ func (a *Accounts) String() string {
 	var builder strings.Builder
 	builder.WriteString("Accounts(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
+	builder.WriteString("SequenceID=")
+	builder.WriteString(fmt.Sprintf("%v", a.SequenceID))
+	builder.WriteString(", ")
 	builder.WriteString("AccountID=")
 	builder.WriteString(a.AccountID)
 	builder.WriteString(", ")
@@ -137,9 +137,6 @@ func (a *Accounts) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("Transactions=")
 	builder.WriteString(fmt.Sprintf("%v", a.Transactions))
-	builder.WriteString(", ")
-	builder.WriteString("Time=")
-	builder.WriteString(a.Time.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

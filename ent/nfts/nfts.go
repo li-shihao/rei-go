@@ -13,8 +13,8 @@ const (
 	FieldType = "type"
 	// FieldMetadata holds the string denoting the metadata field in the database.
 	FieldMetadata = "metadata"
-	// FieldTime holds the string denoting the time field in the database.
-	FieldTime = "time"
+	// FieldSequenceID holds the string denoting the sequenceid field in the database.
+	FieldSequenceID = "sequence_id"
 	// Table holds the table name of the nfts in the database.
 	Table = "nf_ts"
 )
@@ -25,7 +25,7 @@ var Columns = []string{
 	FieldObjectID,
 	FieldType,
 	FieldMetadata,
-	FieldTime,
+	FieldSequenceID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

@@ -69,6 +69,19 @@ func (ou *ObjectsUpdate) SetObjectID(s string) *ObjectsUpdate {
 	return ou
 }
 
+// SetSequence sets the "Sequence" field.
+func (ou *ObjectsUpdate) SetSequence(u uint64) *ObjectsUpdate {
+	ou.mutation.ResetSequence()
+	ou.mutation.SetSequence(u)
+	return ou
+}
+
+// AddSequence adds u to the "Sequence" field.
+func (ou *ObjectsUpdate) AddSequence(u int64) *ObjectsUpdate {
+	ou.mutation.AddSequence(u)
+	return ou
+}
+
 // Mutation returns the ObjectsMutation object of the builder.
 func (ou *ObjectsUpdate) Mutation() *ObjectsMutation {
 	return ou.mutation
@@ -195,6 +208,20 @@ func (ou *ObjectsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: objects.FieldObjectID,
 		})
 	}
+	if value, ok := ou.mutation.Sequence(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: objects.FieldSequence,
+		})
+	}
+	if value, ok := ou.mutation.AddedSequence(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: objects.FieldSequence,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ou.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{objects.Label}
@@ -253,6 +280,19 @@ func (ouo *ObjectsUpdateOne) SetOwner(s string) *ObjectsUpdateOne {
 // SetObjectID sets the "ObjectID" field.
 func (ouo *ObjectsUpdateOne) SetObjectID(s string) *ObjectsUpdateOne {
 	ouo.mutation.SetObjectID(s)
+	return ouo
+}
+
+// SetSequence sets the "Sequence" field.
+func (ouo *ObjectsUpdateOne) SetSequence(u uint64) *ObjectsUpdateOne {
+	ouo.mutation.ResetSequence()
+	ouo.mutation.SetSequence(u)
+	return ouo
+}
+
+// AddSequence adds u to the "Sequence" field.
+func (ouo *ObjectsUpdateOne) AddSequence(u int64) *ObjectsUpdateOne {
+	ouo.mutation.AddSequence(u)
 	return ouo
 }
 
@@ -410,6 +450,20 @@ func (ouo *ObjectsUpdateOne) sqlSave(ctx context.Context) (_node *Objects, err e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: objects.FieldObjectID,
+		})
+	}
+	if value, ok := ouo.mutation.Sequence(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: objects.FieldSequence,
+		})
+	}
+	if value, ok := ouo.mutation.AddedSequence(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: objects.FieldSequence,
 		})
 	}
 	_node = &Objects{config: ouo.config}

@@ -2,7 +2,10 @@ module rei.io/rei
 
 go 1.19
 
-require github.com/mitchellh/mapstructure v1.5.0
+require (
+	github.com/goccy/go-json v0.9.11
+	github.com/mitchellh/mapstructure v1.5.0
+)
 
 require github.com/stretchr/testify v1.8.0 // indirect
 

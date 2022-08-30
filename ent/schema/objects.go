@@ -20,6 +20,7 @@ func (Objects) Fields() []ent.Field {
 		field.JSON("Fields", map[string]interface{}{}),
 		field.String("Owner"),
 		field.String("ObjectID"),
+		field.Uint64("Sequence"),
 	}
 }
 

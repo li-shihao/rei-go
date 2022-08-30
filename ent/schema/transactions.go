@@ -15,7 +15,7 @@ func (Transactions) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("Type"),
 		field.Time("Time"),
-		field.String("TransactionID").Unique(),
+		field.String("TransactionID"),
 		field.Bool("Status"),
 		field.String("Sender"),
 		field.String("Recipient").Optional(),

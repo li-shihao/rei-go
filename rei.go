@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"strings"
@@ -32,6 +35,20 @@ func initResume(name string) uint64 {
 	return cnt
 }
 
+func save(name string, cnt uint64) {
+	file, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE, 0755)
+	check(err)
+
+	err = file.Truncate(0)
+	check(err)
+
+	_, err = file.Seek(0, 0)
+	check(err)
+
+	_, err = fmt.Fprintf(file, "%d", cnt)
+	check(err)
+}
+
 func cleanUp(name string, cnt uint64) {
 
 	file, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE, 0755)
@@ -50,10 +67,11 @@ func cleanUp(name string, cnt uint64) {
 	os.Exit(0)
 }
 
-func processTX(transactionId string, sc *sui.SUIClient, db *database.EntClient, cnt uint64) {
+func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *database.EntClient, cnt uint64) {
+
 	tx, err := sc.GetTransaction(transactionId)
 	check(err)
-	db.CreateTransaction(tx)
+	//db.CreateTransaction(tx)
 
 	// If call has arguments insert arguments
 	if tx.Arguments != nil && tx.GetStatus() {
@@ -75,42 +93,60 @@ func processTX(transactionId string, sc *sui.SUIClient, db *database.EntClient, 
 			// Insert event
 			db.CreateEvent(k)
 
-			// Insert sender account
-			sdr, err := sc.GetAccount(k.Sender)
-			check(err)
-			db.CreateAccount(sdr)
-
-			// Insert sender NFTs
-			if sdr.GetAccountNFTs() != nil {
-				for _, k := range sdr.GetAccountNFTs() {
-					db.CreateNFT(k)
-				}
-			}
-
-			// Check if recipient exist && recipient is actually an address (not 'shared' or smth else)
-			if k.Recipient != nil && strings.HasPrefix(*k.Recipient, "0x") {
-				rcp, err := sc.GetAccount(*k.Recipient)
+			// First 78k dont need multiple insertions for accounts
+			if cnt > 78000 || !db.QueryAccountFirstLoad(k.Sender) {
+				// Insert sender account
+				sdr, err := sc.GetAccount(k.Sender)
 				check(err)
-				db.CreateAccount(rcp)
+				db.CreateAccount(sdr, cnt)
 
-				if rcp.GetAccountNFTs() != nil {
-					for _, k := range rcp.GetAccountNFTs() {
-						db.CreateNFT(k)
+				// Insert sender NFTs
+
+				if sdr.GetAccountNFTs() != nil {
+					for _, k := range sdr.GetAccountNFTs() {
+						db.CreateNFT(k, cnt)
 					}
 				}
 			}
 
-			obj, err := sc.GetObject(k.ObjectId)
-			check(err)
-			db.CreateObject(obj)
+			if cnt > 78000 || !db.QueryAccountFirstLoad(k.Sender) {
+				// Check if recipient exist && recipient is actually an address (not 'shared' or smth else)
+				if k.Recipient != nil && strings.HasPrefix(*k.Recipient, "0x") {
+					rcp, err := sc.GetAccount(*k.Recipient)
+					check(err)
+					db.CreateAccount(rcp, cnt)
+
+					if rcp.GetAccountNFTs() != nil {
+						for _, k := range rcp.GetAccountNFTs() {
+							db.CreateNFT(k, cnt)
+						}
+					}
+				}
+			}
+
+			if cnt > 78000 || !db.QueryObjectFirstLoad(k.ObjectId) {
+				obj, err := sc.GetObject(k.ObjectId)
+				check(err)
+				db.CreateObject(obj, cnt)
+			}
 		}
 	}
 
 	// count always before print so we don't skip transactions
 	fmt.Printf("%s: Finished processing %d\n", tx.GetID(), cnt)
+	<-thread
 }
 
 func main() {
+
+	/*
+		pprof profiling endpoint
+		To use, go tool pprof http://localhost:6060/debug/pprof/profile\?seconds\=60
+		Flags for heap include inuse_space, inuse_objects, alloc_space, alloc_objects
+	*/
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 
 	// File for count record
 	file := "count.conf"
@@ -123,12 +159,13 @@ func main() {
 	sc := new(sui.SUIClient)
 	sc.Init("http://127.0.0.1:9000")
 
-	db := new(database.EntClient)
-	db.Init("postgres", "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable")
-
 	// Listener to kill
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, os.Interrupt)
+
+	// Goroutine settings
+	const MAX = 2
+	thread := make(chan int, MAX)
 
 	// Mimic a do while loop... Always execute at least once
 	for {
@@ -166,6 +203,9 @@ func main() {
 			list, err := sc.GetTransactionsInRange(cnt, cnt+add())
 			check(err)
 
+			db := new(database.EntClient)
+			db.Init("postgres", "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable")
+
 			// We are listening for signal during *every transaction read*
 			for _, v := range list {
 
@@ -177,10 +217,14 @@ func main() {
 
 				// If ctrl-c not triggered, process the transaction
 				default:
+					thread <- 1
 					cnt++
-					processTX(v, sc, db, cnt)
+					go processTX(thread, v, sc, db, cnt)
 				}
 			}
+
+			// Intermediate saving
+			save(file, cnt)
 		}
 	}
 }

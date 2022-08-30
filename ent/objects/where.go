@@ -120,6 +120,13 @@ func ObjectID(v string) predicate.Objects {
 	})
 }
 
+// Sequence applies equality check predicate on the "Sequence" field. It's identical to SequenceEQ.
+func Sequence(v uint64) predicate.Objects {
+	return predicate.Objects(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSequence), v))
+	})
+}
+
 // StatusEQ applies the EQ predicate on the "Status" field.
 func StatusEQ(v string) predicate.Objects {
 	return predicate.Objects(func(s *sql.Selector) {
@@ -626,6 +633,70 @@ func ObjectIDEqualFold(v string) predicate.Objects {
 func ObjectIDContainsFold(v string) predicate.Objects {
 	return predicate.Objects(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldObjectID), v))
+	})
+}
+
+// SequenceEQ applies the EQ predicate on the "Sequence" field.
+func SequenceEQ(v uint64) predicate.Objects {
+	return predicate.Objects(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSequence), v))
+	})
+}
+
+// SequenceNEQ applies the NEQ predicate on the "Sequence" field.
+func SequenceNEQ(v uint64) predicate.Objects {
+	return predicate.Objects(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldSequence), v))
+	})
+}
+
+// SequenceIn applies the In predicate on the "Sequence" field.
+func SequenceIn(vs ...uint64) predicate.Objects {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Objects(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldSequence), v...))
+	})
+}
+
+// SequenceNotIn applies the NotIn predicate on the "Sequence" field.
+func SequenceNotIn(vs ...uint64) predicate.Objects {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Objects(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldSequence), v...))
+	})
+}
+
+// SequenceGT applies the GT predicate on the "Sequence" field.
+func SequenceGT(v uint64) predicate.Objects {
+	return predicate.Objects(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldSequence), v))
+	})
+}
+
+// SequenceGTE applies the GTE predicate on the "Sequence" field.
+func SequenceGTE(v uint64) predicate.Objects {
+	return predicate.Objects(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldSequence), v))
+	})
+}
+
+// SequenceLT applies the LT predicate on the "Sequence" field.
+func SequenceLT(v uint64) predicate.Objects {
+	return predicate.Objects(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldSequence), v))
+	})
+}
+
+// SequenceLTE applies the LTE predicate on the "Sequence" field.
+func SequenceLTE(v uint64) predicate.Objects {
+	return predicate.Objects(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldSequence), v))
 	})
 }
 

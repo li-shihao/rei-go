@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -19,6 +18,12 @@ type AccountsCreate struct {
 	config
 	mutation *AccountsMutation
 	hooks    []Hook
+}
+
+// SetSequenceID sets the "SequenceID" field.
+func (ac *AccountsCreate) SetSequenceID(u uint64) *AccountsCreate {
+	ac.mutation.SetSequenceID(u)
+	return ac
 }
 
 // SetAccountID sets the "AccountID" field.
@@ -42,12 +47,6 @@ func (ac *AccountsCreate) SetObjects(so []schema.AccObject) *AccountsCreate {
 // SetTransactions sets the "Transactions" field.
 func (ac *AccountsCreate) SetTransactions(s []string) *AccountsCreate {
 	ac.mutation.SetTransactions(s)
-	return ac
-}
-
-// SetTime sets the "Time" field.
-func (ac *AccountsCreate) SetTime(t time.Time) *AccountsCreate {
-	ac.mutation.SetTime(t)
 	return ac
 }
 
@@ -127,6 +126,9 @@ func (ac *AccountsCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ac *AccountsCreate) check() error {
+	if _, ok := ac.mutation.SequenceID(); !ok {
+		return &ValidationError{Name: "SequenceID", err: errors.New(`ent: missing required field "Accounts.SequenceID"`)}
+	}
 	if _, ok := ac.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "AccountID", err: errors.New(`ent: missing required field "Accounts.AccountID"`)}
 	}
@@ -138,9 +140,6 @@ func (ac *AccountsCreate) check() error {
 	}
 	if _, ok := ac.mutation.Transactions(); !ok {
 		return &ValidationError{Name: "Transactions", err: errors.New(`ent: missing required field "Accounts.Transactions"`)}
-	}
-	if _, ok := ac.mutation.Time(); !ok {
-		return &ValidationError{Name: "Time", err: errors.New(`ent: missing required field "Accounts.Time"`)}
 	}
 	return nil
 }
@@ -169,6 +168,14 @@ func (ac *AccountsCreate) createSpec() (*Accounts, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if value, ok := ac.mutation.SequenceID(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeUint64,
+			Value:  value,
+			Column: accounts.FieldSequenceID,
+		})
+		_node.SequenceID = value
+	}
 	if value, ok := ac.mutation.AccountID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -200,14 +207,6 @@ func (ac *AccountsCreate) createSpec() (*Accounts, *sqlgraph.CreateSpec) {
 			Column: accounts.FieldTransactions,
 		})
 		_node.Transactions = value
-	}
-	if value, ok := ac.mutation.Time(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: accounts.FieldTime,
-		})
-		_node.Time = value
 	}
 	return _node, _spec
 }

@@ -7,6 +7,8 @@ const (
 	Label = "accounts"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldSequenceID holds the string denoting the sequenceid field in the database.
+	FieldSequenceID = "sequence_id"
 	// FieldAccountID holds the string denoting the accountid field in the database.
 	FieldAccountID = "account_id"
 	// FieldBalance holds the string denoting the balance field in the database.
@@ -15,8 +17,6 @@ const (
 	FieldObjects = "objects"
 	// FieldTransactions holds the string denoting the transactions field in the database.
 	FieldTransactions = "transactions"
-	// FieldTime holds the string denoting the time field in the database.
-	FieldTime = "time"
 	// Table holds the table name of the accounts in the database.
 	Table = "accounts"
 )
@@ -24,11 +24,11 @@ const (
 // Columns holds all SQL columns for accounts fields.
 var Columns = []string{
 	FieldID,
+	FieldSequenceID,
 	FieldAccountID,
 	FieldBalance,
 	FieldObjects,
 	FieldTransactions,
-	FieldTime,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

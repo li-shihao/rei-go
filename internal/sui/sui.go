@@ -2,7 +2,6 @@ package sui
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +10,8 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 	"rei.io/rei/internal/helpers"
+
+	"github.com/goccy/go-json"
 )
 
 var check = helpers.Check
