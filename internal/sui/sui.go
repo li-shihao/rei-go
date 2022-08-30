@@ -462,7 +462,6 @@ func (sc *SUIClient) GetAccount(id string) (Acc, error) {
 
 		// check if object is of SUI Type
 		if v.Type == "0x2::coin::Coin<0x2::sui::SUI>" {
-
 			// Grab a copy of the object
 			tmp, _ := sc.GetObject(v.ObjectId)
 

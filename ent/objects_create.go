@@ -61,9 +61,9 @@ func (oc *ObjectsCreate) SetObjectID(s string) *ObjectsCreate {
 	return oc
 }
 
-// SetSequence sets the "Sequence" field.
-func (oc *ObjectsCreate) SetSequence(u uint64) *ObjectsCreate {
-	oc.mutation.SetSequence(u)
+// SetSequenceID sets the "SequenceID" field.
+func (oc *ObjectsCreate) SetSequenceID(u uint64) *ObjectsCreate {
+	oc.mutation.SetSequenceID(u)
 	return oc
 }
 
@@ -164,8 +164,8 @@ func (oc *ObjectsCreate) check() error {
 	if _, ok := oc.mutation.ObjectID(); !ok {
 		return &ValidationError{Name: "ObjectID", err: errors.New(`ent: missing required field "Objects.ObjectID"`)}
 	}
-	if _, ok := oc.mutation.Sequence(); !ok {
-		return &ValidationError{Name: "Sequence", err: errors.New(`ent: missing required field "Objects.Sequence"`)}
+	if _, ok := oc.mutation.SequenceID(); !ok {
+		return &ValidationError{Name: "SequenceID", err: errors.New(`ent: missing required field "Objects.SequenceID"`)}
 	}
 	return nil
 }
@@ -250,13 +250,13 @@ func (oc *ObjectsCreate) createSpec() (*Objects, *sqlgraph.CreateSpec) {
 		})
 		_node.ObjectID = value
 	}
-	if value, ok := oc.mutation.Sequence(); ok {
+	if value, ok := oc.mutation.SequenceID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeUint64,
 			Value:  value,
-			Column: objects.FieldSequence,
+			Column: objects.FieldSequenceID,
 		})
-		_node.Sequence = value
+		_node.SequenceID = value
 	}
 	return _node, _spec
 }

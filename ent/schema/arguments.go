@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Argumentss holds the schema definition for the Argumentss entity.
@@ -23,4 +24,10 @@ func (Arguments) Fields() []ent.Field {
 // Edges of the Argumentss.
 func (Arguments) Edges() []ent.Edge {
 	return nil
+}
+
+func (Arguments) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("Name", "Type", "TransactionID").Unique(),
+	}
 }

@@ -67,11 +67,11 @@ func cleanUp(name string, cnt uint64) {
 	os.Exit(0)
 }
 
-func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *database.EntClient, cnt uint64) {
+func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *database.EntClient, cnt uint64, firstLoadLimit uint64) {
 
 	tx, err := sc.GetTransaction(transactionId)
 	check(err)
-	//db.CreateTransaction(tx)
+	db.CreateTransaction(tx)
 
 	// If call has arguments insert arguments
 	if tx.Arguments != nil && tx.GetStatus() {
@@ -94,7 +94,7 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 			db.CreateEvent(k)
 
 			// First 78k dont need multiple insertions for accounts
-			if cnt > 78000 || !db.QueryAccountFirstLoad(k.Sender) {
+			if cnt > firstLoadLimit || !db.QueryAccountFirstLoad(k.Sender, firstLoadLimit) {
 				// Insert sender account
 				sdr, err := sc.GetAccount(k.Sender)
 				check(err)
@@ -109,7 +109,7 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 				}
 			}
 
-			if cnt > 78000 || !db.QueryAccountFirstLoad(k.Sender) {
+			if cnt > firstLoadLimit || !db.QueryAccountFirstLoad(k.Sender, firstLoadLimit) {
 				// Check if recipient exist && recipient is actually an address (not 'shared' or smth else)
 				if k.Recipient != nil && strings.HasPrefix(*k.Recipient, "0x") {
 					rcp, err := sc.GetAccount(*k.Recipient)
@@ -124,7 +124,7 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 				}
 			}
 
-			if cnt > 78000 || !db.QueryObjectFirstLoad(k.ObjectId) {
+			if cnt > firstLoadLimit || !db.QueryObjectFirstLoad(k.ObjectId, firstLoadLimit) {
 				obj, err := sc.GetObject(k.ObjectId)
 				check(err)
 				db.CreateObject(obj, cnt)
@@ -159,13 +159,20 @@ func main() {
 	sc := new(sui.SUIClient)
 	sc.Init("http://127.0.0.1:9000")
 
+	// New db instance
+	db := new(database.EntClient)
+	db.Init("postgres", "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable")
+
 	// Listener to kill
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, os.Interrupt)
 
 	// Goroutine settings
-	const MAX = 2
+	const MAX = 8
 	thread := make(chan int, MAX)
+
+	// Only used as a limit
+	firstLoadLimit := sc.GetTotalTransactionNumber()
 
 	// Mimic a do while loop... Always execute at least once
 	for {
@@ -203,9 +210,6 @@ func main() {
 			list, err := sc.GetTransactionsInRange(cnt, cnt+add())
 			check(err)
 
-			db := new(database.EntClient)
-			db.Init("postgres", "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable")
-
 			// We are listening for signal during *every transaction read*
 			for _, v := range list {
 
@@ -219,7 +223,7 @@ func main() {
 				default:
 					thread <- 1
 					cnt++
-					go processTX(thread, v, sc, db, cnt)
+					go processTX(thread, v, sc, db, cnt, firstLoadLimit)
 				}
 			}
 

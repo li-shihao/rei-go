@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Events holds the schema definition for the Events entity.
@@ -25,4 +26,10 @@ func (Events) Fields() []ent.Field {
 // Edges of the Events.
 func (Events) Edges() []ent.Edge {
 	return nil
+}
+
+func (Events) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("TransactionID", "Type", "ObjectID", "Version").Unique(),
+	}
 }

@@ -69,16 +69,16 @@ func (ou *ObjectsUpdate) SetObjectID(s string) *ObjectsUpdate {
 	return ou
 }
 
-// SetSequence sets the "Sequence" field.
-func (ou *ObjectsUpdate) SetSequence(u uint64) *ObjectsUpdate {
-	ou.mutation.ResetSequence()
-	ou.mutation.SetSequence(u)
+// SetSequenceID sets the "SequenceID" field.
+func (ou *ObjectsUpdate) SetSequenceID(u uint64) *ObjectsUpdate {
+	ou.mutation.ResetSequenceID()
+	ou.mutation.SetSequenceID(u)
 	return ou
 }
 
-// AddSequence adds u to the "Sequence" field.
-func (ou *ObjectsUpdate) AddSequence(u int64) *ObjectsUpdate {
-	ou.mutation.AddSequence(u)
+// AddSequenceID adds u to the "SequenceID" field.
+func (ou *ObjectsUpdate) AddSequenceID(u int64) *ObjectsUpdate {
+	ou.mutation.AddSequenceID(u)
 	return ou
 }
 
@@ -208,18 +208,18 @@ func (ou *ObjectsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: objects.FieldObjectID,
 		})
 	}
-	if value, ok := ou.mutation.Sequence(); ok {
+	if value, ok := ou.mutation.SequenceID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeUint64,
 			Value:  value,
-			Column: objects.FieldSequence,
+			Column: objects.FieldSequenceID,
 		})
 	}
-	if value, ok := ou.mutation.AddedSequence(); ok {
+	if value, ok := ou.mutation.AddedSequenceID(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeUint64,
 			Value:  value,
-			Column: objects.FieldSequence,
+			Column: objects.FieldSequenceID,
 		})
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ou.driver, _spec); err != nil {
@@ -283,16 +283,16 @@ func (ouo *ObjectsUpdateOne) SetObjectID(s string) *ObjectsUpdateOne {
 	return ouo
 }
 
-// SetSequence sets the "Sequence" field.
-func (ouo *ObjectsUpdateOne) SetSequence(u uint64) *ObjectsUpdateOne {
-	ouo.mutation.ResetSequence()
-	ouo.mutation.SetSequence(u)
+// SetSequenceID sets the "SequenceID" field.
+func (ouo *ObjectsUpdateOne) SetSequenceID(u uint64) *ObjectsUpdateOne {
+	ouo.mutation.ResetSequenceID()
+	ouo.mutation.SetSequenceID(u)
 	return ouo
 }
 
-// AddSequence adds u to the "Sequence" field.
-func (ouo *ObjectsUpdateOne) AddSequence(u int64) *ObjectsUpdateOne {
-	ouo.mutation.AddSequence(u)
+// AddSequenceID adds u to the "SequenceID" field.
+func (ouo *ObjectsUpdateOne) AddSequenceID(u int64) *ObjectsUpdateOne {
+	ouo.mutation.AddSequenceID(u)
 	return ouo
 }
 
@@ -452,18 +452,18 @@ func (ouo *ObjectsUpdateOne) sqlSave(ctx context.Context) (_node *Objects, err e
 			Column: objects.FieldObjectID,
 		})
 	}
-	if value, ok := ouo.mutation.Sequence(); ok {
+	if value, ok := ouo.mutation.SequenceID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeUint64,
 			Value:  value,
-			Column: objects.FieldSequence,
+			Column: objects.FieldSequenceID,
 		})
 	}
-	if value, ok := ouo.mutation.AddedSequence(); ok {
+	if value, ok := ouo.mutation.AddedSequenceID(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
 			Type:   field.TypeUint64,
 			Value:  value,
-			Column: objects.FieldSequence,
+			Column: objects.FieldSequenceID,
 		})
 	}
 	_node = &Objects{config: ouo.config}

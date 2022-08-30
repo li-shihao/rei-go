@@ -138,7 +138,7 @@ func (c *EntClient) CreateObject(obj sui.Obj, sequence uint64) (*ent.Objects, er
 		SetOwner(obj.GetOwner()).
 		SetStatus(obj.GetObjectStatus()).
 		SetType(obj.GetObjectType()).
-		SetSequence(sequence).
+		SetSequenceID(sequence).
 		Save(context.Background())
 
 	if err != nil {
@@ -160,36 +160,36 @@ func (c *EntClient) CreatePackage(pkg sui.Package) (*ent.Packages, error) {
 	return pkgc, nil
 }
 
-func (c *EntClient) QueryAccountFirstLoad(accId string) bool {
+func (c *EntClient) QueryAccountFirstLoad(accId string, until uint64) bool {
 	accc, err := c.client.Accounts.
 		Query().
 		Where(
 			accounts.And(
 				accounts.AccountID(accId),
-				accounts.SequenceIDLTE(78000),
+				accounts.SequenceIDLTE(until),
 			),
 		).
-		All(context.Background())
+		Exist(context.Background())
 
-	if err != nil || len(accc) == 0 {
+	if err != nil || !accc {
 		return false
 	} else {
 		return true
 	}
 }
 
-func (c *EntClient) QueryObjectFirstLoad(objId string) bool {
+func (c *EntClient) QueryObjectFirstLoad(objId string, until uint64) bool {
 	objc, err := c.client.Objects.
 		Query().
 		Where(
 			objects.And(
 				objects.ObjectID(objId),
-				objects.SequenceLTE(78000),
+				objects.SequenceIDLTE(until),
 			),
 		).
-		All(context.Background())
+		Exist(context.Background())
 
-	if err != nil || len(objc) == 0 {
+	if err != nil || !objc {
 		return false
 	} else {
 		return true

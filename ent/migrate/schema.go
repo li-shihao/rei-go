@@ -22,6 +22,13 @@ var (
 		Name:       "accounts",
 		Columns:    AccountsColumns,
 		PrimaryKey: []*schema.Column{AccountsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "accounts_sequence_id_account_id",
+				Unique:  true,
+				Columns: []*schema.Column{AccountsColumns[1], AccountsColumns[2]},
+			},
+		},
 	}
 	// ArgumentsColumns holds the columns for the "arguments" table.
 	ArgumentsColumns = []*schema.Column{
@@ -36,6 +43,13 @@ var (
 		Name:       "arguments",
 		Columns:    ArgumentsColumns,
 		PrimaryKey: []*schema.Column{ArgumentsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "arguments_name_type_transaction_id",
+				Unique:  true,
+				Columns: []*schema.Column{ArgumentsColumns[1], ArgumentsColumns[2], ArgumentsColumns[3]},
+			},
+		},
 	}
 	// EventsColumns holds the columns for the "events" table.
 	EventsColumns = []*schema.Column{
@@ -52,6 +66,13 @@ var (
 		Name:       "events",
 		Columns:    EventsColumns,
 		PrimaryKey: []*schema.Column{EventsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "events_transaction_id_type_object_id_version",
+				Unique:  true,
+				Columns: []*schema.Column{EventsColumns[4], EventsColumns[1], EventsColumns[5], EventsColumns[6]},
+			},
+		},
 	}
 	// NfTsColumns holds the columns for the "nf_ts" table.
 	NfTsColumns = []*schema.Column{
@@ -66,6 +87,13 @@ var (
 		Name:       "nf_ts",
 		Columns:    NfTsColumns,
 		PrimaryKey: []*schema.Column{NfTsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "nfts_object_id_sequence_id",
+				Unique:  true,
+				Columns: []*schema.Column{NfTsColumns[1], NfTsColumns[4]},
+			},
+		},
 	}
 	// ObjectsColumns holds the columns for the "objects" table.
 	ObjectsColumns = []*schema.Column{
@@ -77,13 +105,20 @@ var (
 		{Name: "fields", Type: field.TypeJSON},
 		{Name: "owner", Type: field.TypeString},
 		{Name: "object_id", Type: field.TypeString},
-		{Name: "sequence", Type: field.TypeUint64},
+		{Name: "sequence_id", Type: field.TypeUint64},
 	}
 	// ObjectsTable holds the schema information for the "objects" table.
 	ObjectsTable = &schema.Table{
 		Name:       "objects",
 		Columns:    ObjectsColumns,
 		PrimaryKey: []*schema.Column{ObjectsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "objects_sequence_id_object_id",
+				Unique:  true,
+				Columns: []*schema.Column{ObjectsColumns[8], ObjectsColumns[7]},
+			},
+		},
 	}
 	// PackagesColumns holds the columns for the "packages" table.
 	PackagesColumns = []*schema.Column{
@@ -97,13 +132,20 @@ var (
 		Name:       "packages",
 		Columns:    PackagesColumns,
 		PrimaryKey: []*schema.Column{PackagesColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "packages_transaction_id_object_id",
+				Unique:  true,
+				Columns: []*schema.Column{PackagesColumns[1], PackagesColumns[2]},
+			},
+		},
 	}
 	// TransactionsColumns holds the columns for the "transactions" table.
 	TransactionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "type", Type: field.TypeString},
 		{Name: "time", Type: field.TypeTime},
-		{Name: "transaction_id", Type: field.TypeString},
+		{Name: "transaction_id", Type: field.TypeString, Unique: true},
 		{Name: "status", Type: field.TypeBool},
 		{Name: "sender", Type: field.TypeString},
 		{Name: "recipient", Type: field.TypeString, Nullable: true},

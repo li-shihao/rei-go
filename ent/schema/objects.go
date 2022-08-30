@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 // Objects holds the schema definition for the Objects entity.
@@ -20,11 +21,17 @@ func (Objects) Fields() []ent.Field {
 		field.JSON("Fields", map[string]interface{}{}),
 		field.String("Owner"),
 		field.String("ObjectID"),
-		field.Uint64("Sequence"),
+		field.Uint64("SequenceID"),
 	}
 }
 
 // Edges of the Objects.
 func (Objects) Edges() []ent.Edge {
 	return nil
+}
+
+func (Objects) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("SequenceID", "ObjectID").Unique(),
+	}
 }

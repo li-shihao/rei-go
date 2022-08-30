@@ -2270,8 +2270,8 @@ type ObjectsMutation struct {
 	_Fields              *map[string]interface{}
 	_Owner               *string
 	_ObjectID            *string
-	_Sequence            *uint64
-	add_Sequence         *int64
+	_SequenceID          *uint64
+	add_SequenceID       *int64
 	clearedFields        map[string]struct{}
 	done                 bool
 	oldValue             func(context.Context) (*Objects, error)
@@ -2628,60 +2628,60 @@ func (m *ObjectsMutation) ResetObjectID() {
 	m._ObjectID = nil
 }
 
-// SetSequence sets the "Sequence" field.
-func (m *ObjectsMutation) SetSequence(u uint64) {
-	m._Sequence = &u
-	m.add_Sequence = nil
+// SetSequenceID sets the "SequenceID" field.
+func (m *ObjectsMutation) SetSequenceID(u uint64) {
+	m._SequenceID = &u
+	m.add_SequenceID = nil
 }
 
-// Sequence returns the value of the "Sequence" field in the mutation.
-func (m *ObjectsMutation) Sequence() (r uint64, exists bool) {
-	v := m._Sequence
+// SequenceID returns the value of the "SequenceID" field in the mutation.
+func (m *ObjectsMutation) SequenceID() (r uint64, exists bool) {
+	v := m._SequenceID
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSequence returns the old "Sequence" field's value of the Objects entity.
+// OldSequenceID returns the old "SequenceID" field's value of the Objects entity.
 // If the Objects object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ObjectsMutation) OldSequence(ctx context.Context) (v uint64, err error) {
+func (m *ObjectsMutation) OldSequenceID(ctx context.Context) (v uint64, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSequence is only allowed on UpdateOne operations")
+		return v, errors.New("OldSequenceID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSequence requires an ID field in the mutation")
+		return v, errors.New("OldSequenceID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSequence: %w", err)
+		return v, fmt.Errorf("querying old value for OldSequenceID: %w", err)
 	}
-	return oldValue.Sequence, nil
+	return oldValue.SequenceID, nil
 }
 
-// AddSequence adds u to the "Sequence" field.
-func (m *ObjectsMutation) AddSequence(u int64) {
-	if m.add_Sequence != nil {
-		*m.add_Sequence += u
+// AddSequenceID adds u to the "SequenceID" field.
+func (m *ObjectsMutation) AddSequenceID(u int64) {
+	if m.add_SequenceID != nil {
+		*m.add_SequenceID += u
 	} else {
-		m.add_Sequence = &u
+		m.add_SequenceID = &u
 	}
 }
 
-// AddedSequence returns the value that was added to the "Sequence" field in this mutation.
-func (m *ObjectsMutation) AddedSequence() (r int64, exists bool) {
-	v := m.add_Sequence
+// AddedSequenceID returns the value that was added to the "SequenceID" field in this mutation.
+func (m *ObjectsMutation) AddedSequenceID() (r int64, exists bool) {
+	v := m.add_SequenceID
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetSequence resets all changes to the "Sequence" field.
-func (m *ObjectsMutation) ResetSequence() {
-	m._Sequence = nil
-	m.add_Sequence = nil
+// ResetSequenceID resets all changes to the "SequenceID" field.
+func (m *ObjectsMutation) ResetSequenceID() {
+	m._SequenceID = nil
+	m.add_SequenceID = nil
 }
 
 // Where appends a list predicates to the ObjectsMutation builder.
@@ -2725,8 +2725,8 @@ func (m *ObjectsMutation) Fields() []string {
 	if m._ObjectID != nil {
 		fields = append(fields, objects.FieldObjectID)
 	}
-	if m._Sequence != nil {
-		fields = append(fields, objects.FieldSequence)
+	if m._SequenceID != nil {
+		fields = append(fields, objects.FieldSequenceID)
 	}
 	return fields
 }
@@ -2750,8 +2750,8 @@ func (m *ObjectsMutation) Field(name string) (ent.Value, bool) {
 		return m.Owner()
 	case objects.FieldObjectID:
 		return m.ObjectID()
-	case objects.FieldSequence:
-		return m.Sequence()
+	case objects.FieldSequenceID:
+		return m.SequenceID()
 	}
 	return nil, false
 }
@@ -2775,8 +2775,8 @@ func (m *ObjectsMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldOwner(ctx)
 	case objects.FieldObjectID:
 		return m.OldObjectID(ctx)
-	case objects.FieldSequence:
-		return m.OldSequence(ctx)
+	case objects.FieldSequenceID:
+		return m.OldSequenceID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Objects field %s", name)
 }
@@ -2835,12 +2835,12 @@ func (m *ObjectsMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetObjectID(v)
 		return nil
-	case objects.FieldSequence:
+	case objects.FieldSequenceID:
 		v, ok := value.(uint64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSequence(v)
+		m.SetSequenceID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Objects field %s", name)
@@ -2850,8 +2850,8 @@ func (m *ObjectsMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *ObjectsMutation) AddedFields() []string {
 	var fields []string
-	if m.add_Sequence != nil {
-		fields = append(fields, objects.FieldSequence)
+	if m.add_SequenceID != nil {
+		fields = append(fields, objects.FieldSequenceID)
 	}
 	return fields
 }
@@ -2861,8 +2861,8 @@ func (m *ObjectsMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *ObjectsMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case objects.FieldSequence:
-		return m.AddedSequence()
+	case objects.FieldSequenceID:
+		return m.AddedSequenceID()
 	}
 	return nil, false
 }
@@ -2872,12 +2872,12 @@ func (m *ObjectsMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ObjectsMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case objects.FieldSequence:
+	case objects.FieldSequenceID:
 		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddSequence(v)
+		m.AddSequenceID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Objects numeric field %s", name)
@@ -2927,8 +2927,8 @@ func (m *ObjectsMutation) ResetField(name string) error {
 	case objects.FieldObjectID:
 		m.ResetObjectID()
 		return nil
-	case objects.FieldSequence:
-		m.ResetSequence()
+	case objects.FieldSequenceID:
+		m.ResetSequenceID()
 		return nil
 	}
 	return fmt.Errorf("unknown Objects field %s", name)

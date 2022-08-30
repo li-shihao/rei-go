@@ -30,8 +30,8 @@ type Objects struct {
 	Owner string `json:"Owner,omitempty"`
 	// ObjectID holds the value of the "ObjectID" field.
 	ObjectID string `json:"ObjectID,omitempty"`
-	// Sequence holds the value of the "Sequence" field.
-	Sequence uint64 `json:"Sequence,omitempty"`
+	// SequenceID holds the value of the "SequenceID" field.
+	SequenceID uint64 `json:"SequenceID,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -43,7 +43,7 @@ func (*Objects) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new([]byte)
 		case objects.FieldHasPublicTransfer:
 			values[i] = new(sql.NullBool)
-		case objects.FieldID, objects.FieldSequence:
+		case objects.FieldID, objects.FieldSequenceID:
 			values[i] = new(sql.NullInt64)
 		case objects.FieldStatus, objects.FieldDataType, objects.FieldType, objects.FieldOwner, objects.FieldObjectID:
 			values[i] = new(sql.NullString)
@@ -112,11 +112,11 @@ func (o *Objects) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				o.ObjectID = value.String
 			}
-		case objects.FieldSequence:
+		case objects.FieldSequenceID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field Sequence", values[i])
+				return fmt.Errorf("unexpected type %T for field SequenceID", values[i])
 			} else if value.Valid {
-				o.Sequence = uint64(value.Int64)
+				o.SequenceID = uint64(value.Int64)
 			}
 		}
 	}
@@ -167,8 +167,8 @@ func (o *Objects) String() string {
 	builder.WriteString("ObjectID=")
 	builder.WriteString(o.ObjectID)
 	builder.WriteString(", ")
-	builder.WriteString("Sequence=")
-	builder.WriteString(fmt.Sprintf("%v", o.Sequence))
+	builder.WriteString("SequenceID=")
+	builder.WriteString(fmt.Sprintf("%v", o.SequenceID))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -21,8 +21,8 @@ const (
 	FieldOwner = "owner"
 	// FieldObjectID holds the string denoting the objectid field in the database.
 	FieldObjectID = "object_id"
-	// FieldSequence holds the string denoting the sequence field in the database.
-	FieldSequence = "sequence"
+	// FieldSequenceID holds the string denoting the sequenceid field in the database.
+	FieldSequenceID = "sequence_id"
 	// Table holds the table name of the objects in the database.
 	Table = "objects"
 )
@@ -37,7 +37,7 @@ var Columns = []string{
 	FieldFields,
 	FieldOwner,
 	FieldObjectID,
-	FieldSequence,
+	FieldSequenceID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
