@@ -109,9 +109,12 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	// Set cookie on user
 	http.SetCookie(w, &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: expirationTime,
+		Name:     "jwt",
+		Value:    tokenString,
+		Expires:  expirationTime,
+		SameSite: http.SameSiteStrictMode,
+		HttpOnly: true,
+		Secure:   true,
 	})
 
 	// Rendering json repsonse
@@ -192,9 +195,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// Set cookie on user
 	http.SetCookie(w, &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: expirationTime,
+		Name:     "jwt",
+		Value:    tokenString,
+		Expires:  expirationTime,
+		SameSite: http.SameSiteStrictMode,
+		HttpOnly: true,
+		Secure:   true,
 	})
 
 	// Rendering json repsonse
