@@ -26,7 +26,6 @@ func (c *EntClient) Init(dbType string, dbOption string) {
 	if err := cl.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
-	fmt.Println("Connected to database successfully")
 	c.client = cl
 }
 
@@ -194,4 +193,13 @@ func (c *EntClient) QueryObjectFirstLoad(objId string, until uint64) bool {
 	} else {
 		return true
 	}
+}
+
+func (c *EntClient) QueryTotalTransactionCount() (*int, error) {
+	count, err := c.client.Transactions.Query().Count(context.Background())
+
+	if err != nil {
+		return nil, fmt.Errorf("failed getting transaction count %w", err)
+	}
+	return &count, nil
 }

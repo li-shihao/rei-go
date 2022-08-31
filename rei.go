@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"strings"
 	"time"
 
-	database "rei.io/rei/internal/db"
+	"github.com/orlangure/gnomock"
+	"github.com/orlangure/gnomock/preset/postgres"
+	"rei.io/rei/api"
+	"rei.io/rei/internal/database"
 	"rei.io/rei/internal/helpers"
 	"rei.io/rei/internal/sui"
 )
@@ -139,15 +141,6 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 
 func main() {
 
-	/*
-		pprof profiling endpoint
-		To use, go tool pprof http://localhost:6060/debug/pprof/profile\?seconds\=60
-		Flags for heap include inuse_space, inuse_objects, alloc_space, alloc_objects
-	*/
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
 	// File for count record
 	file := "count.conf"
 
@@ -161,20 +154,43 @@ func main() {
 
 	// New db instance
 	db := new(database.EntClient)
-	db.Init("postgres", "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable")
+	//db.Init("postgres", "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable")
+
+	p := postgres.Preset(
+		postgres.WithUser("gnomock", "gnomick"),
+		postgres.WithDatabase("mydb"),
+	)
+
+	log.Println("Starting docker....")
+	container, _ := gnomock.Start(p)
+
+	connStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
+		container.Host, container.DefaultPort(),
+		"gnomock", "gnomick", "mydb",
+	)
+
+	db.Init("postgres", connStr)
+
+	// API server set-up
+	r := api.CreateServer(connStr)
+
+	go func() {
+		http.ListenAndServe(":6060", r)
+	}()
 
 	// Listener to kill
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, os.Interrupt)
 
 	// Goroutine settings
-	const MAX = 8
+	const MAX = 2
 	thread := make(chan int, MAX)
 
 	// Only used as a limit
 	firstLoadLimit := sc.GetTotalTransactionNumber()
 
-	// Mimic a do while loop... Always execute at least once
+	// Main loop
 	for {
 		max = sc.GetTotalTransactionNumber()
 
