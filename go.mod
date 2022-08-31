@@ -6,6 +6,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/goccy/go-json v0.9.11
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/gorilla/csrf v1.7.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/orlangure/gnomock v0.21.1
 	github.com/unrolled/render v1.5.0
@@ -15,22 +16,13 @@ require (
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
-	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.0-20210816181553-5444fa50b93d // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker v20.10.17+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/go-chi/jwtauth/v5 v5.0.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/gorilla/csrf v1.7.1 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
-	github.com/lestrrat-go/backoff/v2 v2.0.8 // indirect
-	github.com/lestrrat-go/blackmagic v1.0.0 // indirect
-	github.com/lestrrat-go/httpcc v1.0.0 // indirect
-	github.com/lestrrat-go/iter v1.0.1 // indirect
-	github.com/lestrrat-go/jwx v1.2.6 // indirect
-	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
