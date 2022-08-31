@@ -31,6 +31,7 @@ type hooks struct {
 	Objects      []ent.Hook
 	Packages     []ent.Hook
 	Transactions []ent.Hook
+	Users        []ent.Hook
 }
 
 // Options applies the options on the config object.

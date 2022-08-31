@@ -17,6 +17,7 @@ import (
 	"rei.io/rei/ent/objects"
 	"rei.io/rei/ent/packages"
 	"rei.io/rei/ent/transactions"
+	"rei.io/rei/ent/users"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -44,6 +45,7 @@ func columnChecker(table string) func(string) error {
 		objects.Table:      objects.ValidColumn,
 		packages.Table:     packages.ValidColumn,
 		transactions.Table: transactions.ValidColumn,
+		users.Table:        users.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

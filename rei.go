@@ -11,10 +11,10 @@ import (
 
 	"github.com/orlangure/gnomock"
 	"github.com/orlangure/gnomock/preset/postgres"
-	"rei.io/rei/api"
 	"rei.io/rei/internal/database"
 	"rei.io/rei/internal/helpers"
 	"rei.io/rei/internal/sui"
+	api "rei.io/rei/server"
 )
 
 var check = helpers.Check
@@ -184,7 +184,7 @@ func main() {
 	signal.Notify(sigchan, os.Interrupt)
 
 	// Goroutine settings
-	const MAX = 2
+	const MAX = 4
 	thread := make(chan int, MAX)
 
 	// Only used as a limit

@@ -10,6 +10,8 @@ import (
 	"rei.io/rei/ent/accounts"
 	"rei.io/rei/ent/objects"
 	"rei.io/rei/ent/schema"
+	"rei.io/rei/ent/users"
+	"rei.io/rei/internal/crypto"
 	"rei.io/rei/internal/sui"
 )
 
@@ -202,4 +204,39 @@ func (c *EntClient) QueryTotalTransactionCount() (*int, error) {
 		return nil, fmt.Errorf("failed getting transaction count %w", err)
 	}
 	return &count, nil
+}
+
+func (c *EntClient) QueryUserExist(username string) (*bool, error) {
+	exist, err := c.client.Users.Query().Where(users.UsernameEQ(username)).Exist(context.Background())
+
+	if err != nil {
+		return nil, fmt.Errorf("failed querying for user %w", err)
+	}
+	return &exist, nil
+}
+
+func (c *EntClient) QueryUserLogin(username string, password string) (*bool, error) {
+	user, err := c.client.Users.Query().Where(users.UsernameEQ(username)).Only(context.Background())
+
+	if err != nil {
+		return nil, fmt.Errorf("failed getting user %w", err)
+	}
+
+	canDecrypt := crypto.CheckEncryptPwdMatch(password, user.Hash)
+	return &canDecrypt, nil
+}
+
+func (c *EntClient) CreateUser(username string, password string) (*ent.Users, error) {
+	hashString, err := crypto.EncryptPwd(password)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed creating hash string %w", err)
+	}
+
+	user, err := c.client.Users.Create().SetUsername(username).SetHash(*hashString).Save(context.Background())
+
+	if err != nil {
+		return nil, fmt.Errorf("failed creating user %w", err)
+	}
+	return user, nil
 }

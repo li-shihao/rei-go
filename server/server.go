@@ -1,4 +1,4 @@
-package api
+package server
 
 import (
 	"context"
@@ -6,9 +6,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	api "rei.io/rei/server/API"
+	"rei.io/rei/server/auth"
 )
 
-type key struct{}
+type ConnectionString struct{}
 
 // Holder for db connection string
 var connStr string
@@ -28,8 +30,15 @@ func CreateServer(str string) *chi.Mux {
 	r.Mount("/debug", middleware.Profiler())
 
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Use(middleware.Logger)
 		r.Use(setDB)
-		r.Get("/txcount", TotalTransactionCount)
+		r.Get("/txcount", api.TotalTransactionCount)
+	})
+
+	r.Route("/signup", func(r chi.Router) {
+		r.Use(setDB)
+		r.Post("/", auth.Signup)
+		r.Post("/", auth.Login)
 	})
 
 	return r
@@ -38,7 +47,7 @@ func CreateServer(str string) *chi.Mux {
 // Middleware to pack correct db connection string to our handlers
 func setDB(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), key{}, connStr)
+		ctx := context.WithValue(r.Context(), ConnectionString{}, connStr)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

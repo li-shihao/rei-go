@@ -26,6 +26,8 @@ type Tx struct {
 	Packages *PackagesClient
 	// Transactions is the client for interacting with the Transactions builders.
 	Transactions *TransactionsClient
+	// Users is the client for interacting with the Users builders.
+	Users *UsersClient
 
 	// lazily loaded.
 	client     *Client
@@ -168,6 +170,7 @@ func (tx *Tx) init() {
 	tx.Objects = NewObjectsClient(tx.config)
 	tx.Packages = NewPackagesClient(tx.config)
 	tx.Transactions = NewTransactionsClient(tx.config)
+	tx.Users = NewUsersClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

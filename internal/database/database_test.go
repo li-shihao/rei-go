@@ -299,3 +299,29 @@ func TestCreatePackage(t *testing.T) {
 		t.Errorf("Result was incorrect, got %t, want %t.", got2, true)
 	}
 }
+
+func TestQueryUserExist(t *testing.T) {
+	p := postgres.Preset(
+		postgres.WithUser("gnomock", "gnomick"),
+		postgres.WithDatabase("mydb"),
+	)
+
+	container, _ := gnomock.Start(p)
+	t.Cleanup(func() { _ = gnomock.Stop(container) })
+
+	connStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
+		container.Host, container.DefaultPort(),
+		"gnomock", "gnomick", "mydb",
+	)
+
+	db := new(EntClient)
+	db.Init("postgres", connStr)
+
+	_, _ = db.CreateUser("123", "12345")
+	got1, _ := db.QueryUserExist("123")
+
+	if !*got1 {
+		t.Errorf("Result was incorrect, got %t, want %t.", *got1, true)
+	}
+}

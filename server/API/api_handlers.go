@@ -7,6 +7,8 @@ import (
 	"rei.io/rei/internal/database"
 )
 
+type ConnectionString struct{}
+
 // For homepage display
 func TotalTransactionCount(w http.ResponseWriter, r *http.Request) {
 
@@ -17,7 +19,7 @@ func TotalTransactionCount(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	// Assert type string
-	connStr := ctx.Value(key{}).(string)
+	connStr := ctx.Value(ConnectionString{}).(string)
 
 	// Initialise db
 	db := new(database.EntClient)
@@ -25,7 +27,7 @@ func TotalTransactionCount(w http.ResponseWriter, r *http.Request) {
 
 	count, err := db.QueryTotalTransactionCount()
 	if err != nil {
-		http.Error(w, http.StatusText(500), 500)
+		render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong."})
 		return
 	}
 

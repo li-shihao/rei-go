@@ -17,6 +17,7 @@ import (
 	"rei.io/rei/ent/objects"
 	"rei.io/rei/ent/packages"
 	"rei.io/rei/ent/transactions"
+	"rei.io/rei/ent/users"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -41,6 +42,8 @@ type Client struct {
 	Packages *PackagesClient
 	// Transactions is the client for interacting with the Transactions builders.
 	Transactions *TransactionsClient
+	// Users is the client for interacting with the Users builders.
+	Users *UsersClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -61,6 +64,7 @@ func (c *Client) init() {
 	c.Objects = NewObjectsClient(c.config)
 	c.Packages = NewPackagesClient(c.config)
 	c.Transactions = NewTransactionsClient(c.config)
+	c.Users = NewUsersClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -101,6 +105,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Objects:      NewObjectsClient(cfg),
 		Packages:     NewPackagesClient(cfg),
 		Transactions: NewTransactionsClient(cfg),
+		Users:        NewUsersClient(cfg),
 	}, nil
 }
 
@@ -127,6 +132,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Objects:      NewObjectsClient(cfg),
 		Packages:     NewPackagesClient(cfg),
 		Transactions: NewTransactionsClient(cfg),
+		Users:        NewUsersClient(cfg),
 	}, nil
 }
 
@@ -162,6 +168,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Objects.Use(hooks...)
 	c.Packages.Use(hooks...)
 	c.Transactions.Use(hooks...)
+	c.Users.Use(hooks...)
 }
 
 // AccountsClient is a client for the Accounts schema.
@@ -792,4 +799,94 @@ func (c *TransactionsClient) GetX(ctx context.Context, id int) *Transactions {
 // Hooks returns the client hooks.
 func (c *TransactionsClient) Hooks() []Hook {
 	return c.hooks.Transactions
+}
+
+// UsersClient is a client for the Users schema.
+type UsersClient struct {
+	config
+}
+
+// NewUsersClient returns a client for the Users from the given config.
+func NewUsersClient(c config) *UsersClient {
+	return &UsersClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `users.Hooks(f(g(h())))`.
+func (c *UsersClient) Use(hooks ...Hook) {
+	c.hooks.Users = append(c.hooks.Users, hooks...)
+}
+
+// Create returns a builder for creating a Users entity.
+func (c *UsersClient) Create() *UsersCreate {
+	mutation := newUsersMutation(c.config, OpCreate)
+	return &UsersCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Users entities.
+func (c *UsersClient) CreateBulk(builders ...*UsersCreate) *UsersCreateBulk {
+	return &UsersCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Users.
+func (c *UsersClient) Update() *UsersUpdate {
+	mutation := newUsersMutation(c.config, OpUpdate)
+	return &UsersUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UsersClient) UpdateOne(u *Users) *UsersUpdateOne {
+	mutation := newUsersMutation(c.config, OpUpdateOne, withUsers(u))
+	return &UsersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UsersClient) UpdateOneID(id int) *UsersUpdateOne {
+	mutation := newUsersMutation(c.config, OpUpdateOne, withUsersID(id))
+	return &UsersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Users.
+func (c *UsersClient) Delete() *UsersDelete {
+	mutation := newUsersMutation(c.config, OpDelete)
+	return &UsersDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UsersClient) DeleteOne(u *Users) *UsersDeleteOne {
+	return c.DeleteOneID(u.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *UsersClient) DeleteOneID(id int) *UsersDeleteOne {
+	builder := c.Delete().Where(users.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UsersDeleteOne{builder}
+}
+
+// Query returns a query builder for Users.
+func (c *UsersClient) Query() *UsersQuery {
+	return &UsersQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Users entity by its id.
+func (c *UsersClient) Get(ctx context.Context, id int) (*Users, error) {
+	return c.Query().Where(users.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UsersClient) GetX(ctx context.Context, id int) *Users {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *UsersClient) Hooks() []Hook {
+	return c.hooks.Users
 }
