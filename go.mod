@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/go-chi/chi/v5 v5.0.7
+	github.com/go-chi/cors v1.2.1
 	github.com/goccy/go-json v0.9.11
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/csrf v1.7.1

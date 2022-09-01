@@ -222,3 +222,41 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// Rendering json repsonse
 	render.New().JSON(w, 201, map[string]string{"Status": "Login succeeded"})
 }
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+
+	// Unwrap context to obtain correct db connection string
+	ctx := r.Context()
+
+	// Assert type string
+	connStr := ctx.Value(helpers.ConnectionString{}).(string)
+	user := ctx.Value(helpers.UsernameClaim{}).(string)
+
+	// Initialise db
+	db := new(database.EntClient)
+	db.Init("postgres", connStr)
+
+	if loggedIn, _, err := db.QuerySession(user); err != nil || loggedIn == nil || !*loggedIn {
+
+		// If db query goes wrong
+		render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong"})
+		return
+
+		// If already logged in, delete previous session
+	} else if *loggedIn {
+		db.DeleteSession(user)
+	}
+
+	// Set cookie on user
+	http.SetCookie(w, &http.Cookie{
+		Name:  "jwt",
+		Path:  "/",
+		Value: "",
+		//SameSite: http.SameSiteStrictMode,
+		//HttpOnly: true,
+		//Secure: true,
+	})
+
+	// Rendering json repsonse
+	render.New().JSON(w, 201, map[string]string{"Status": "Logout successful"})
+}
