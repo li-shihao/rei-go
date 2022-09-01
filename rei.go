@@ -19,56 +19,6 @@ import (
 
 var check = helpers.Check
 
-func initResume(name string) uint64 {
-	cnt := uint64(0)
-
-	// If count file exists
-	if _, err := os.Stat(name); err == nil {
-
-		// Open count file
-		file, err := os.Open(name)
-		check(err)
-
-		// Read into cnt
-		_, err = fmt.Fscanf(file, "%d", &cnt)
-		check(err)
-		file.Close()
-	}
-	return cnt
-}
-
-func save(name string, cnt uint64) {
-	file, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE, 0755)
-	check(err)
-
-	err = file.Truncate(0)
-	check(err)
-
-	_, err = file.Seek(0, 0)
-	check(err)
-
-	_, err = fmt.Fprintf(file, "%d", cnt)
-	check(err)
-}
-
-func cleanUp(name string, cnt uint64) {
-
-	file, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE, 0755)
-	check(err)
-
-	err = file.Truncate(0)
-	check(err)
-
-	_, err = file.Seek(0, 0)
-	check(err)
-
-	_, err = fmt.Fprintf(file, "%d", cnt)
-	check(err)
-
-	fmt.Println("Program killed !")
-	os.Exit(0)
-}
-
 func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *database.EntClient, cnt uint64, firstLoadLimit uint64) {
 
 	tx, err := sc.GetTransaction(transactionId)
@@ -145,7 +95,7 @@ func main() {
 	file := "count.conf"
 
 	// Get last stopped transaction count
-	cnt := initResume(file)
+	cnt := helpers.InitResume(file)
 	var max uint64
 
 	// Create new SUI client instance
@@ -202,7 +152,7 @@ func main() {
 			// This loop runs every 10 seconds
 			select {
 			case <-sigchan:
-				cleanUp(file, cnt)
+				helpers.CleanUp(file, cnt)
 
 			// This basically allows us to wait for signal for 10 seconds
 			case <-time.After(10 * time.Second):
@@ -233,7 +183,7 @@ func main() {
 
 				// Graceful shutdown next transaction read
 				case <-sigchan:
-					cleanUp(file, cnt)
+					helpers.CleanUp(file, cnt)
 
 				// If ctrl-c not triggered, process the transaction
 				default:
@@ -244,7 +194,7 @@ func main() {
 			}
 
 			// Intermediate saving
-			save(file, cnt)
+			helpers.Save(file, cnt)
 		}
 	}
 }

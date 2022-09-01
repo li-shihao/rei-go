@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/gorilla/csrf"
 	"rei.io/rei/internal/helpers"
 	"rei.io/rei/server/api"
 	"rei.io/rei/server/auth"
@@ -22,19 +21,19 @@ func CreateServer(str string) *chi.Mux {
 	// Set db connection string from parameter
 	connStr = str
 
-	csrfMiddleware := csrf.Protect([]byte("ir0LFQIIHiWbwGZlbkAqFGPcCGJi0U8k"))
+	// TODO: CSRF
+	//csrfMiddleware := csrf.Protect([]byte("ir0LFQIIHiWbwGZlbkAqFGPcCGJi0U8k"))
 
 	r := chi.NewRouter()
 
+	// CORS (I need this for anything to work)
 	r.Use(cors.Handler(cors.Options{
-		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
-		AllowedOrigins: []string{"https://*", "http://*"},
-		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"GET", "POST"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: false,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
+		AllowCredentials: true,
+		MaxAge:           300,
 	}))
 
 	/*
@@ -44,23 +43,24 @@ func CreateServer(str string) *chi.Mux {
 	*/
 	r.Mount("/debug", middleware.Profiler())
 
-	r.Route("/", func(r chi.Router) {
+	// Public Routes
+	r.Group(func(r chi.Router) {
 		r.Use(setDB)
 		r.Post("/signup", auth.Signup)
 		r.Post("/login", auth.Login)
 	})
 
-	r.Route("/api/v1", func(r chi.Router) {
+	// Private Routes (Requires Auth)
+	r.Group(func(r chi.Router) {
 		r.Use(setDB)
-		r.Use(csrfMiddleware)
 		r.Use(auth.Authenticate)
-		r.Get("/txcount", api.TotalTransactionCount)
-		r.Post("/mock", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
-	})
-
-	r.Route("/admin", func(r chi.Router) {
-		r.Use(setDB)
-		r.Use(auth.AdminOnly)
+		r.Route("/api/v1", func(r chi.Router) {
+			r.Get("/txcount", api.TotalTransactionCount)
+		})
+		r.Route("/admin", func(r chi.Router) {
+			r.Use(auth.AdminOnly)
+		})
+		r.Post("/logout", auth.Logout)
 	})
 
 	return r

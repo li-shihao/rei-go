@@ -7,7 +7,6 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/goccy/go-json v0.9.11
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/gorilla/csrf v1.7.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/orlangure/gnomock v0.21.1
 	github.com/unrolled/render v1.5.0
@@ -23,7 +22,6 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

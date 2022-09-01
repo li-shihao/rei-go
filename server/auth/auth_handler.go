@@ -247,7 +247,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		db.DeleteSession(user)
 	}
 
-	// Set cookie on user
+	// Clear cookie on user
 	http.SetCookie(w, &http.Cookie{
 		Name:  "jwt",
 		Path:  "/",

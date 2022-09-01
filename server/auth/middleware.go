@@ -41,41 +41,57 @@ func Authenticate(next http.Handler) http.Handler {
 		db.Init("postgres", connStr)
 
 		loggedIn, ip, err := db.QuerySession(any["username"].(string))
+
+		/*
+			Error, login state not found (technically only having one of these two is enough since return value
+			causes both state, but left it so its more clear
+		*/
 		if err != nil || loggedIn == nil {
 			render.New().JSON(w, 500, map[string]string{"Error": "something went wrong"})
 			return
+
+			// If logged in but current registered session on another ip
 		} else if *loggedIn && *ip != r.RemoteAddr {
+
+			// Clear cookie
 			http.SetCookie(w, &http.Cookie{
 				Name:  "jwt",
 				Value: "",
 				Path:  "/"})
 			render.New().JSON(w, 500, map[string]string{"Error": "Other session active. Please login again"})
 			return
+
+			// Not logged in (very old expired cookie?)
 		} else if !*loggedIn {
+
+			// Clear cookie
 			http.SetCookie(w, &http.Cookie{
 				Name:  "jwt",
 				Value: "",
 				Path:  "/"})
 			render.New().JSON(w, 500, map[string]string{"Error": "Try logging in again"})
 			return
-		}
 
-		// Renew jwt expiration
-		tokenString, err = crypto.GenerateJWT(any["username"].(string))
-		if err != nil {
-			render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong"})
-			return
-		}
+			// If logged in and on correct ip
+		} else if *loggedIn && *ip == r.RemoteAddr {
 
-		// Set cookie on user
-		http.SetCookie(w, &http.Cookie{
-			Name:  "jwt",
-			Path:  "/",
-			Value: tokenString,
-			//SameSite: http.SameSiteStrictMode,
-			//HttpOnly: true,
-			//Secure: true,
-		})
+			// Renew jwt expiration
+			tokenString, err = crypto.GenerateJWT(any["username"].(string))
+			if err != nil {
+				render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong"})
+				return
+			}
+
+			// Set cookie on user
+			http.SetCookie(w, &http.Cookie{
+				Name:  "jwt",
+				Path:  "/",
+				Value: tokenString,
+				//SameSite: http.SameSiteStrictMode,
+				//HttpOnly: true,
+				//Secure: true,
+			})
+		}
 
 		// Finally pass the claim into our next handler
 		ctx = context.WithValue(r.Context(), helpers.UsernameClaim{}, any["username"])

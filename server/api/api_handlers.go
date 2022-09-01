@@ -3,7 +3,6 @@ package api
 import (
 	"net/http"
 
-	"github.com/gorilla/csrf"
 	"github.com/unrolled/render"
 	"rei.io/rei/internal/database"
 	"rei.io/rei/internal/helpers"
@@ -14,7 +13,6 @@ func TotalTransactionCount(w http.ResponseWriter, r *http.Request) {
 
 	// Set response type header for json
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-CSRF-Token", csrf.Token(r))
 
 	// Unwrap context to obtain correct db connection string
 	ctx := r.Context()

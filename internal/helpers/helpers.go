@@ -2,12 +2,14 @@ package helpers
 
 import "reflect"
 
+// If error panic
 func Check(e error) {
 	if e != nil {
 		panic(e)
 	}
 }
 
+// Recursively looks for a value for a given key inside a map
 func RecurseKey(m map[string]interface{}, key string) interface{} {
 	for k, v := range m {
 		if k == key {
@@ -20,7 +22,3 @@ func RecurseKey(m map[string]interface{}, key string) interface{} {
 	}
 	return nil
 }
-
-type ConnectionString struct{}
-
-type UsernameClaim struct{}
