@@ -39,11 +39,11 @@ func CreateServer(str string) *chi.Mux {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Use(middleware.Logger)
 		r.Use(setDB)
 		r.Use(csrfMiddleware)
 		r.Use(auth.Authenticate)
 		r.Get("/txcount", api.TotalTransactionCount)
+		r.Post("/mock", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	})
 
 	r.Route("/admin", func(r chi.Router) {

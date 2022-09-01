@@ -107,11 +107,12 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	// Set cookie on user
 	http.SetCookie(w, &http.Cookie{
-		Name:     "jwt",
-		Value:    tokenString,
-		SameSite: http.SameSiteStrictMode,
-		HttpOnly: true,
-		Secure:   true,
+		Name:  "jwt",
+		Path:  "/",
+		Value: tokenString,
+		//SameSite: http.SameSiteStrictMode,
+		//HttpOnly: true,
+		// Secure: true,
 	})
 
 	// Create session in db
@@ -207,11 +208,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// Set cookie on user
 	http.SetCookie(w, &http.Cookie{
-		Name:     "jwt",
-		Value:    tokenString,
-		SameSite: http.SameSiteStrictMode,
-		HttpOnly: true,
-		Secure:   true,
+		Name:  "jwt",
+		Path:  "/",
+		Value: tokenString,
+		//SameSite: http.SameSiteStrictMode,
+		//HttpOnly: true,
+		//Secure: true,
 	})
 
 	// Create session in db

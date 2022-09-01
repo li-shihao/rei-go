@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/goccy/go-json"
 	"github.com/golang-jwt/jwt"
@@ -89,9 +90,9 @@ func TestAuthenticate(t *testing.T) {
 		t.Errorf("expected response to be %v but got %v", true, x2)
 	}
 
-	// Third case: Bad token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{"username": "123"})
-	tokenString3, _ := token.SignedString("fakekey")
+	// Third case: invalid token
+	token3 := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{"username": "123"})
+	tokenString3, _ := token3.SignedString("fakekey")
 
 	w3 := httptest.NewRecorder()
 
@@ -114,7 +115,7 @@ func TestAuthenticate(t *testing.T) {
 	var x3 interface{}
 	json.Unmarshal(data3, &x3)
 
-	if x3.(map[string]interface{})["Error"] != "bad token" {
+	if x3.(map[string]interface{})["Error"] != "invalid token. Did it expire?" {
 		t.Errorf("expected response to be %v but got %v", false, x3)
 	}
 
@@ -141,8 +142,40 @@ func TestAuthenticate(t *testing.T) {
 
 	json.Unmarshal(data2, &x2)
 
-	if x2.(map[string]interface{})["Error"] != "logged off from another client. Please login again" {
+	if x2.(map[string]interface{})["Error"] != "Other session active. Please login again" {
 		t.Errorf("expected response to be %v but got %v", false, x2)
+	}
+
+	// Fifth case: expired token
+	token5 := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
+		"username": "123",
+		"exp":      time.Now().Add(-5 * time.Hour).Unix(),
+	})
+	tokenString5, _ := token5.SignedString([]byte("pBNTRKr|a4<5xkn6x/,qu|+q)UT[F0=^"))
+
+	w5 := httptest.NewRecorder()
+
+	req5 := httptest.NewRequest(http.MethodPost, "/", nil)
+	req5.AddCookie(&http.Cookie{
+		Name:     "jwt",
+		Value:    tokenString5,
+		SameSite: http.SameSiteStrictMode,
+		HttpOnly: true,
+		Secure:   true,
+	})
+	req5.Header.Set("Content-Type", "application/json")
+
+	wrapper.ServeHTTP(w5, req5)
+
+	res5 := w5.Result()
+	defer res5.Body.Close()
+	data5, _ := io.ReadAll(res5.Body)
+
+	var x5 interface{}
+	json.Unmarshal(data5, &x5)
+
+	if x5.(map[string]interface{})["Error"] != "invalid token. Did it expire?" {
+		t.Errorf("expected response to be %v but got %v", false, x5)
 	}
 }
 

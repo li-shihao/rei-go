@@ -12,7 +12,6 @@ import (
 
 // Middleware to check for jwt and session authenticity
 func Authenticate(next http.Handler) http.Handler {
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// First check if tokenstring is present
@@ -27,7 +26,7 @@ func Authenticate(next http.Handler) http.Handler {
 		// Then verify the token
 		token, any, err := crypto.ParseJWT(tokenString)
 		if err != nil || !token {
-			render.New().JSON(w, 500, map[string]string{"Error": "bad token"})
+			render.New().JSON(w, 500, map[string]string{"Error": "invalid token. Did it expire?"})
 			return
 		}
 
@@ -48,17 +47,35 @@ func Authenticate(next http.Handler) http.Handler {
 		} else if *loggedIn && *ip != r.RemoteAddr {
 			http.SetCookie(w, &http.Cookie{
 				Name:  "jwt",
-				Value: ""})
-			render.New().JSON(w, 500, map[string]string{"Error": "logged off from another client. Please login again"})
+				Value: "",
+				Path:  "/"})
+			render.New().JSON(w, 500, map[string]string{"Error": "Other session active. Please login again"})
 			return
 		} else if !*loggedIn {
 			http.SetCookie(w, &http.Cookie{
 				Name:  "jwt",
-				Value: ""})
-
+				Value: "",
+				Path:  "/"})
 			render.New().JSON(w, 500, map[string]string{"Error": "Try logging in again"})
 			return
 		}
+
+		// Renew jwt expiration
+		tokenString, err = crypto.GenerateJWT(any["username"].(string))
+		if err != nil {
+			render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong"})
+			return
+		}
+
+		// Set cookie on user
+		http.SetCookie(w, &http.Cookie{
+			Name:  "jwt",
+			Path:  "/",
+			Value: tokenString,
+			//SameSite: http.SameSiteStrictMode,
+			//HttpOnly: true,
+			//Secure: true,
+		})
 
 		// Finally pass the claim into our next handler
 		ctx = context.WithValue(r.Context(), helpers.UsernameClaim{}, any["username"])

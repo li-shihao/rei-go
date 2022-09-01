@@ -3,13 +3,14 @@ package crypto
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
-type jwtClaims struct {
-	Username           string `json:"username"`
-	jwt.StandardClaims `json:"standardclaims"`
+type Claims struct {
+	Username string `json:"username"`
+	jwt.StandardClaims
 }
 
 var jwtKey = []byte("pBNTRKr|a4<5xkn6x/,qu|+q)UT[F0=^")
@@ -17,8 +18,14 @@ var jwtKey = []byte("pBNTRKr|a4<5xkn6x/,qu|+q)UT[F0=^")
 // Creating jwt tokens
 func GenerateJWT(username string) (string, error) {
 
-	// Create claim
-	claims := jwtClaims{Username: username}
+	// Create claims
+	claims := &Claims{
+		Username: username,
+		StandardClaims: jwt.StandardClaims{
+			// In JWT, the expiry time is expressed as unix milliseconds
+			ExpiresAt: time.Now().Add(1 * time.Hour).Unix(),
+		},
+	}
 
 	// Create token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
