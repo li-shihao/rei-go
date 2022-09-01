@@ -100,7 +100,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenString, expirationTime, err := crypto.GenerateJWT(incomeRequest.Username)
+	tokenString, err := crypto.GenerateJWT(incomeRequest.Username)
 
 	if err != nil {
 		render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong"})
@@ -111,11 +111,13 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
 		Value:    tokenString,
-		Expires:  expirationTime,
 		SameSite: http.SameSiteStrictMode,
 		HttpOnly: true,
 		Secure:   true,
 	})
+
+	// Create session in db
+	db.CreateSession(incomeRequest.Username, r.RemoteAddr)
 
 	// Rendering json repsonse
 	render.New().JSON(w, 201, map[string]string{"Token": tokenString})
@@ -176,7 +178,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	db := new(database.EntClient)
 	db.Init("postgres", connStr)
 
-	exist, err := db.QueryUserLogin(incomeRequest.Username, incomeRequest.Password)
+	exist, err := db.QueryUserCredentials(incomeRequest.Username, incomeRequest.Password)
 	if err != nil {
 		render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong"})
 		return
@@ -186,22 +188,36 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenString, expirationTime, err := crypto.GenerateJWT(incomeRequest.Username)
+	tokenString, err := crypto.GenerateJWT(incomeRequest.Username)
 
 	if err != nil {
 		render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong"})
 		return
 	}
 
+	// Find out if user has already logged in somewhere else
+	if loggedIn, _, err := db.QuerySession(incomeRequest.Username); err != nil || loggedIn == nil {
+
+		// If db query goes wrong
+		render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong"})
+		return
+
+		// If already logged in, delete previous session
+	} else if *loggedIn {
+		db.DeleteSession(incomeRequest.Username)
+	}
+
 	// Set cookie on user
 	http.SetCookie(w, &http.Cookie{
 		Name:     "jwt",
 		Value:    tokenString,
-		Expires:  expirationTime,
 		SameSite: http.SameSiteStrictMode,
 		HttpOnly: true,
 		Secure:   true,
 	})
+
+	// Create session in db
+	db.CreateSession(incomeRequest.Username, r.RemoteAddr)
 
 	// Rendering json repsonse
 	render.New().JSON(w, 201, map[string]string{"Token": tokenString})

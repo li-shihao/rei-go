@@ -24,6 +24,9 @@ type Objects func(*sql.Selector)
 // Packages is the predicate function for packages builders.
 type Packages func(*sql.Selector)
 
+// Sessions is the predicate function for sessions builders.
+type Sessions func(*sql.Selector)
+
 // Transactions is the predicate function for transactions builders.
 type Transactions func(*sql.Selector)
 

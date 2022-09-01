@@ -30,6 +30,7 @@ type hooks struct {
 	NFTs         []ent.Hook
 	Objects      []ent.Hook
 	Packages     []ent.Hook
+	Sessions     []ent.Hook
 	Transactions []ent.Hook
 	Users        []ent.Hook
 }

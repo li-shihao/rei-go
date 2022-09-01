@@ -24,6 +24,8 @@ type Tx struct {
 	Objects *ObjectsClient
 	// Packages is the client for interacting with the Packages builders.
 	Packages *PackagesClient
+	// Sessions is the client for interacting with the Sessions builders.
+	Sessions *SessionsClient
 	// Transactions is the client for interacting with the Transactions builders.
 	Transactions *TransactionsClient
 	// Users is the client for interacting with the Users builders.
@@ -169,6 +171,7 @@ func (tx *Tx) init() {
 	tx.NFTs = NewNFTsClient(tx.config)
 	tx.Objects = NewObjectsClient(tx.config)
 	tx.Packages = NewPackagesClient(tx.config)
+	tx.Sessions = NewSessionsClient(tx.config)
 	tx.Transactions = NewTransactionsClient(tx.config)
 	tx.Users = NewUsersClient(tx.config)
 }

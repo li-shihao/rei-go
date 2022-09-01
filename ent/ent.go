@@ -16,6 +16,7 @@ import (
 	"rei.io/rei/ent/nfts"
 	"rei.io/rei/ent/objects"
 	"rei.io/rei/ent/packages"
+	"rei.io/rei/ent/sessions"
 	"rei.io/rei/ent/transactions"
 	"rei.io/rei/ent/users"
 )
@@ -44,6 +45,7 @@ func columnChecker(table string) func(string) error {
 		nfts.Table:         nfts.ValidColumn,
 		objects.Table:      objects.ValidColumn,
 		packages.Table:     packages.ValidColumn,
+		sessions.Table:     sessions.ValidColumn,
 		transactions.Table: transactions.ValidColumn,
 		users.Table:        users.ValidColumn,
 	}

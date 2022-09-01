@@ -16,6 +16,7 @@ import (
 	"rei.io/rei/ent/nfts"
 	"rei.io/rei/ent/objects"
 	"rei.io/rei/ent/packages"
+	"rei.io/rei/ent/sessions"
 	"rei.io/rei/ent/transactions"
 	"rei.io/rei/ent/users"
 
@@ -40,6 +41,8 @@ type Client struct {
 	Objects *ObjectsClient
 	// Packages is the client for interacting with the Packages builders.
 	Packages *PackagesClient
+	// Sessions is the client for interacting with the Sessions builders.
+	Sessions *SessionsClient
 	// Transactions is the client for interacting with the Transactions builders.
 	Transactions *TransactionsClient
 	// Users is the client for interacting with the Users builders.
@@ -63,6 +66,7 @@ func (c *Client) init() {
 	c.NFTs = NewNFTsClient(c.config)
 	c.Objects = NewObjectsClient(c.config)
 	c.Packages = NewPackagesClient(c.config)
+	c.Sessions = NewSessionsClient(c.config)
 	c.Transactions = NewTransactionsClient(c.config)
 	c.Users = NewUsersClient(c.config)
 }
@@ -104,6 +108,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		NFTs:         NewNFTsClient(cfg),
 		Objects:      NewObjectsClient(cfg),
 		Packages:     NewPackagesClient(cfg),
+		Sessions:     NewSessionsClient(cfg),
 		Transactions: NewTransactionsClient(cfg),
 		Users:        NewUsersClient(cfg),
 	}, nil
@@ -131,6 +136,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		NFTs:         NewNFTsClient(cfg),
 		Objects:      NewObjectsClient(cfg),
 		Packages:     NewPackagesClient(cfg),
+		Sessions:     NewSessionsClient(cfg),
 		Transactions: NewTransactionsClient(cfg),
 		Users:        NewUsersClient(cfg),
 	}, nil
@@ -167,6 +173,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.NFTs.Use(hooks...)
 	c.Objects.Use(hooks...)
 	c.Packages.Use(hooks...)
+	c.Sessions.Use(hooks...)
 	c.Transactions.Use(hooks...)
 	c.Users.Use(hooks...)
 }
@@ -709,6 +716,96 @@ func (c *PackagesClient) GetX(ctx context.Context, id int) *Packages {
 // Hooks returns the client hooks.
 func (c *PackagesClient) Hooks() []Hook {
 	return c.hooks.Packages
+}
+
+// SessionsClient is a client for the Sessions schema.
+type SessionsClient struct {
+	config
+}
+
+// NewSessionsClient returns a client for the Sessions from the given config.
+func NewSessionsClient(c config) *SessionsClient {
+	return &SessionsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `sessions.Hooks(f(g(h())))`.
+func (c *SessionsClient) Use(hooks ...Hook) {
+	c.hooks.Sessions = append(c.hooks.Sessions, hooks...)
+}
+
+// Create returns a builder for creating a Sessions entity.
+func (c *SessionsClient) Create() *SessionsCreate {
+	mutation := newSessionsMutation(c.config, OpCreate)
+	return &SessionsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Sessions entities.
+func (c *SessionsClient) CreateBulk(builders ...*SessionsCreate) *SessionsCreateBulk {
+	return &SessionsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Sessions.
+func (c *SessionsClient) Update() *SessionsUpdate {
+	mutation := newSessionsMutation(c.config, OpUpdate)
+	return &SessionsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SessionsClient) UpdateOne(s *Sessions) *SessionsUpdateOne {
+	mutation := newSessionsMutation(c.config, OpUpdateOne, withSessions(s))
+	return &SessionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SessionsClient) UpdateOneID(id int) *SessionsUpdateOne {
+	mutation := newSessionsMutation(c.config, OpUpdateOne, withSessionsID(id))
+	return &SessionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Sessions.
+func (c *SessionsClient) Delete() *SessionsDelete {
+	mutation := newSessionsMutation(c.config, OpDelete)
+	return &SessionsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SessionsClient) DeleteOne(s *Sessions) *SessionsDeleteOne {
+	return c.DeleteOneID(s.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *SessionsClient) DeleteOneID(id int) *SessionsDeleteOne {
+	builder := c.Delete().Where(sessions.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SessionsDeleteOne{builder}
+}
+
+// Query returns a query builder for Sessions.
+func (c *SessionsClient) Query() *SessionsQuery {
+	return &SessionsQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Sessions entity by its id.
+func (c *SessionsClient) Get(ctx context.Context, id int) (*Sessions, error) {
+	return c.Query().Where(sessions.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SessionsClient) GetX(ctx context.Context, id int) *Sessions {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *SessionsClient) Hooks() []Hook {
+	return c.hooks.Sessions
 }
 
 // TransactionsClient is a client for the Transactions schema.

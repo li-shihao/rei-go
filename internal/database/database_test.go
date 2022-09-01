@@ -14,7 +14,9 @@ import (
 	"rei.io/rei/ent/nfts"
 	"rei.io/rei/ent/objects"
 	"rei.io/rei/ent/packages"
+	"rei.io/rei/ent/sessions"
 	"rei.io/rei/ent/transactions"
+	"rei.io/rei/ent/users"
 	"rei.io/rei/internal/sui"
 )
 
@@ -300,6 +302,31 @@ func TestCreatePackage(t *testing.T) {
 	}
 }
 
+func TestCreateUser(t *testing.T) {
+	p := postgres.Preset(
+		postgres.WithUser("gnomock", "gnomick"),
+		postgres.WithDatabase("mydb"),
+	)
+
+	container, _ := gnomock.Start(p)
+	t.Cleanup(func() { _ = gnomock.Stop(container) })
+
+	connStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
+		container.Host, container.DefaultPort(),
+		"gnomock", "gnomick", "mydb",
+	)
+
+	db := new(EntClient)
+	db.Init("postgres", connStr)
+
+	_, _ = db.CreateUser("123", "12345")
+	got1, _ := db.client.Users.Query().Where(users.UsernameEQ("123")).Exist(context.Background())
+	if !got1 {
+		t.Errorf("Result was incorrect, got %t, want %t.", got1, true)
+	}
+}
+
 func TestQueryUserExist(t *testing.T) {
 	p := postgres.Preset(
 		postgres.WithUser("gnomock", "gnomick"),
@@ -323,5 +350,129 @@ func TestQueryUserExist(t *testing.T) {
 
 	if !*got1 {
 		t.Errorf("Result was incorrect, got %t, want %t.", *got1, true)
+	}
+}
+
+func TestQueryUserCredentials(t *testing.T) {
+	p := postgres.Preset(
+		postgres.WithUser("gnomock", "gnomick"),
+		postgres.WithDatabase("mydb"),
+	)
+
+	container, _ := gnomock.Start(p)
+	t.Cleanup(func() { _ = gnomock.Stop(container) })
+
+	connStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
+		container.Host, container.DefaultPort(),
+		"gnomock", "gnomick", "mydb",
+	)
+
+	db := new(EntClient)
+	db.Init("postgres", connStr)
+
+	_, _ = db.CreateUser("123", "12345")
+	got1, _ := db.QueryUserCredentials("123", "12345")
+
+	if !*got1 {
+		t.Errorf("Result was incorrect, got %t, want %t.", *got1, true)
+	}
+
+	got2, _ := db.QueryUserCredentials("123", "1234553")
+
+	if *got2 {
+		t.Errorf("Result was incorrect, got %t, want %t.", *got2, false)
+	}
+}
+
+func TestCreateSession(t *testing.T) {
+	p := postgres.Preset(
+		postgres.WithUser("gnomock", "gnomick"),
+		postgres.WithDatabase("mydb"),
+	)
+
+	container, _ := gnomock.Start(p)
+	t.Cleanup(func() { _ = gnomock.Stop(container) })
+
+	connStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
+		container.Host, container.DefaultPort(),
+		"gnomock", "gnomick", "mydb",
+	)
+
+	db := new(EntClient)
+	db.Init("postgres", connStr)
+
+	_, _ = db.CreateUser("123", "12345")
+	_, _ = db.CreateSession("123", "192.168.0.1")
+
+	got1, _ := db.client.Sessions.Query().Where(sessions.And(sessions.UsernameEQ("123"), sessions.LoginIPEQ("192.168.0.1"))).Exist(context.Background())
+
+	if !got1 {
+		t.Errorf("Result was incorrect, got %t, want %t.", got1, true)
+	}
+}
+
+func TestDeleteSession(t *testing.T) {
+	p := postgres.Preset(
+		postgres.WithUser("gnomock", "gnomick"),
+		postgres.WithDatabase("mydb"),
+	)
+
+	container, _ := gnomock.Start(p)
+	t.Cleanup(func() { _ = gnomock.Stop(container) })
+
+	connStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
+		container.Host, container.DefaultPort(),
+		"gnomock", "gnomick", "mydb",
+	)
+
+	db := new(EntClient)
+	db.Init("postgres", connStr)
+
+	_, _ = db.CreateUser("123", "12345")
+	_, _ = db.CreateSession("123", "192.168.0.1")
+	_ = db.DeleteSession("123")
+	got1, _ := db.client.Sessions.Query().Where(sessions.And(sessions.UsernameEQ("123"), sessions.LoginIPEQ("192.168.0.1"))).Exist(context.Background())
+
+	if got1 {
+		t.Errorf("Result was incorrect, got %t, want %t.", got1, false)
+	}
+}
+
+func TestQuerySession(t *testing.T) {
+	p := postgres.Preset(
+		postgres.WithUser("gnomock", "gnomick"),
+		postgres.WithDatabase("mydb"),
+	)
+
+	container, _ := gnomock.Start(p)
+	t.Cleanup(func() { _ = gnomock.Stop(container) })
+
+	connStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
+		container.Host, container.DefaultPort(),
+		"gnomock", "gnomick", "mydb",
+	)
+
+	db := new(EntClient)
+	db.Init("postgres", connStr)
+
+	_, _ = db.CreateUser("123", "12345")
+	_, _ = db.CreateSession("123", "192.168.0.1")
+	_ = db.DeleteSession("123")
+	got1, _, _ := db.QuerySession("123")
+
+	if *got1 {
+		t.Errorf("Result was incorrect, got %t, want %t.", *got1, false)
+	}
+
+	_, _ = db.CreateUser("124", "12345")
+	_, _ = db.CreateSession("124", "192.168.0.1")
+	got2, _, _ := db.QuerySession("124")
+
+	if !*got2 {
+		t.Errorf("Result was incorrect, got %t, want %t.", *got2, true)
 	}
 }

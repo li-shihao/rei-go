@@ -87,6 +87,19 @@ func (f PackagesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return f(ctx, mv)
 }
 
+// The SessionsFunc type is an adapter to allow the use of ordinary
+// function as Sessions mutator.
+type SessionsFunc func(context.Context, *ent.SessionsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SessionsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.SessionsMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SessionsMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The TransactionsFunc type is an adapter to allow the use of ordinary
 // function as Transactions mutator.
 type TransactionsFunc func(context.Context, *ent.TransactionsMutation) (ent.Value, error)

@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 	"rei.io/rei/ent"
 	"rei.io/rei/ent/accounts"
 	"rei.io/rei/ent/objects"
 	"rei.io/rei/ent/schema"
+	"rei.io/rei/ent/sessions"
 	"rei.io/rei/ent/users"
 	"rei.io/rei/internal/crypto"
 	"rei.io/rei/internal/sui"
@@ -215,7 +217,7 @@ func (c *EntClient) QueryUserExist(username string) (*bool, error) {
 	return &exist, nil
 }
 
-func (c *EntClient) QueryUserLogin(username string, password string) (*bool, error) {
+func (c *EntClient) QueryUserCredentials(username string, password string) (*bool, error) {
 	user, err := c.client.Users.Query().Where(users.UsernameEQ(username)).Only(context.Background())
 
 	if err != nil {
@@ -239,4 +241,41 @@ func (c *EntClient) CreateUser(username string, password string) (*ent.Users, er
 		return nil, fmt.Errorf("failed creating user %w", err)
 	}
 	return user, nil
+}
+
+func (c *EntClient) CreateSession(username string, ip string) (*ent.Sessions, error) {
+	user, err := c.client.Users.Query().Where(users.UsernameEQ(username)).Exist(context.Background())
+	if err != nil || !user {
+		return nil, fmt.Errorf("user does not exist %w", err)
+	}
+
+	session, err := c.client.Sessions.Create().SetUsername(username).SetLoginIP(ip).SetLoginTime(time.Now()).Save(context.Background())
+
+	if err != nil {
+		return nil, fmt.Errorf("failed creating user session %w", err)
+	}
+	return session, nil
+}
+
+func (c *EntClient) DeleteSession(username string) error {
+	_, err := c.client.Sessions.Delete().Where(sessions.UsernameEQ(username)).Exec(context.Background())
+
+	if err != nil {
+		return fmt.Errorf("failed deleting user session %w", err)
+	}
+	return nil
+}
+
+func (c *EntClient) QuerySession(username string) (*bool, *string, error) {
+	session, err := c.client.Sessions.Query().Where(sessions.UsernameEQ(username)).All(context.Background())
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed querying user session %w", err)
+	}
+	if len(session) == 0 {
+		loggedIn := false
+		return &loggedIn, nil, nil
+	}
+	loggedIn := true
+	return &loggedIn, &session[0].LoginIP, nil
 }
