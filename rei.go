@@ -14,7 +14,7 @@ import (
 	"rei.io/rei/internal/database"
 	"rei.io/rei/internal/helpers"
 	"rei.io/rei/internal/sui"
-	chi "rei.io/rei/server"
+	"rei.io/rei/server"
 )
 
 var check = helpers.Check
@@ -173,7 +173,7 @@ func main() {
 	db.Init("postgres", connStr)
 
 	// API server set-up
-	r := chi.CreateServer(connStr)
+	r := server.CreateServer(connStr)
 
 	go func() {
 		http.ListenAndServe(":6060", r)
