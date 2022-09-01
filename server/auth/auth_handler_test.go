@@ -13,6 +13,7 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/orlangure/gnomock"
 	"github.com/orlangure/gnomock/preset/postgres"
+	"rei.io/rei/internal/helpers"
 )
 
 func TestSignup(t *testing.T) {
@@ -36,7 +37,7 @@ func TestSignup(t *testing.T) {
 	req1 := httptest.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer(body1))
 
 	// Set the request to use that server
-	ctx1 := context.WithValue(req1.Context(), ConnectionString{}, connStr)
+	ctx1 := context.WithValue(req1.Context(), helpers.ConnectionString{}, connStr)
 	req1 = req1.WithContext(ctx1)
 
 	req1.Header.Set("Content-Type", "application/json")
@@ -53,7 +54,7 @@ func TestSignup(t *testing.T) {
 
 	got1 := x1
 
-	if reflect.TypeOf(got1.(map[string]interface{})["Token"]) != reflect.TypeOf("") {
+	if reflect.TypeOf(got1.(map[string]interface{})["Status"]) != reflect.TypeOf("") {
 		t.Errorf("expected response to contain token but got %v", x1)
 	}
 
@@ -62,7 +63,7 @@ func TestSignup(t *testing.T) {
 	req2 := httptest.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer(body2))
 
 	// Set the request to use that server
-	ctx2 := context.WithValue(req2.Context(), ConnectionString{}, connStr)
+	ctx2 := context.WithValue(req2.Context(), helpers.ConnectionString{}, connStr)
 	req2 = req2.WithContext(ctx2)
 
 	req2.Header.Set("Content-Type", "application/json")
@@ -95,7 +96,7 @@ func TestSignup(t *testing.T) {
 	req3 := httptest.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer(body3))
 
 	// Set the request to use that server
-	ctx3 := context.WithValue(req3.Context(), ConnectionString{}, connStr)
+	ctx3 := context.WithValue(req3.Context(), helpers.ConnectionString{}, connStr)
 	req3 = req3.WithContext(ctx3)
 
 	req3.Header.Set("Content-Type", "application/json")
@@ -127,7 +128,7 @@ func TestSignup(t *testing.T) {
 	req4 := httptest.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer(body4))
 
 	// Set the request to use that server
-	ctx4 := context.WithValue(req4.Context(), ConnectionString{}, connStr)
+	ctx4 := context.WithValue(req4.Context(), helpers.ConnectionString{}, connStr)
 	req4 = req4.WithContext(ctx4)
 
 	req4.Header.Set("Content-Type", "application/json")
@@ -173,7 +174,7 @@ func TestLogin(t *testing.T) {
 	req1 := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(body1))
 
 	// Set the request to use that server
-	ctx1 := context.WithValue(req1.Context(), ConnectionString{}, connStr)
+	ctx1 := context.WithValue(req1.Context(), helpers.ConnectionString{}, connStr)
 	req1 = req1.WithContext(ctx1)
 
 	req1.Header.Set("Content-Type", "application/json")
@@ -207,7 +208,7 @@ func TestLogin(t *testing.T) {
 	signupRequest := httptest.NewRequest(http.MethodPost, "/signup", bytes.NewBuffer(signupBody))
 
 	// Set the request to use that server
-	ctxSignup := context.WithValue(signupRequest.Context(), ConnectionString{}, connStr)
+	ctxSignup := context.WithValue(signupRequest.Context(), helpers.ConnectionString{}, connStr)
 	signupRequest = signupRequest.WithContext(ctxSignup)
 
 	signupRequest.Header.Set("Content-Type", "application/json")
@@ -220,7 +221,7 @@ func TestLogin(t *testing.T) {
 	req2 := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(body2))
 
 	// Set the request to use that server
-	ctx2 := context.WithValue(req2.Context(), ConnectionString{}, connStr)
+	ctx2 := context.WithValue(req2.Context(), helpers.ConnectionString{}, connStr)
 	req2 = req2.WithContext(ctx2)
 
 	req2.Header.Set("Content-Type", "application/json")
@@ -236,8 +237,8 @@ func TestLogin(t *testing.T) {
 	json.Unmarshal(data2, &x2)
 
 	got2 := x2
-	if reflect.TypeOf(got2.(map[string]interface{})["Token"]) != reflect.TypeOf("") {
-		t.Errorf("expected response to contain token but got %v", x1)
+	if reflect.TypeOf(got2.(map[string]interface{})["Status"]) != reflect.TypeOf("") {
+		t.Errorf("expected response to contain token but got %v", x2)
 	}
 
 	// Third case: Wrong credentials
@@ -245,7 +246,7 @@ func TestLogin(t *testing.T) {
 	req3 := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(body3))
 
 	// Set the request to use that server
-	ctx3 := context.WithValue(req3.Context(), ConnectionString{}, connStr)
+	ctx3 := context.WithValue(req3.Context(), helpers.ConnectionString{}, connStr)
 	req3 = req3.WithContext(ctx3)
 
 	req3.Header.Set("Content-Type", "application/json")

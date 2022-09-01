@@ -7,9 +7,8 @@ import (
 	"github.com/unrolled/render"
 	"rei.io/rei/internal/crypto"
 	"rei.io/rei/internal/database"
+	"rei.io/rei/internal/helpers"
 )
-
-type UsernameJWT struct{}
 
 // Middleware to check for jwt and session authenticity
 func Authenticate(next http.Handler) http.Handler {
@@ -36,7 +35,7 @@ func Authenticate(next http.Handler) http.Handler {
 		ctx := r.Context()
 
 		// Assert type string
-		connStr := ctx.Value(ConnectionString{}).(string)
+		connStr := ctx.Value(helpers.ConnectionString{}).(string)
 
 		// Initialise db
 		db := new(database.EntClient)
@@ -62,7 +61,22 @@ func Authenticate(next http.Handler) http.Handler {
 		}
 
 		// Finally pass the claim into our next handler
-		ctx = context.WithValue(r.Context(), UsernameJWT{}, any["username"])
+		ctx = context.WithValue(r.Context(), helpers.UsernameClaim{}, any["username"])
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// Must add behind Authenticate
+func AdminOnly(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		user := ctx.Value(helpers.UsernameClaim{}).(string)
+
+		// If the user is wrong banish them
+		if user != "arthur" {
+			render.New().JSON(w, 403, map[string]string{"Error": "admin only"})
+			return
+		}
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

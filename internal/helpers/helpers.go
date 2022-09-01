@@ -20,3 +20,7 @@ func RecurseKey(m map[string]interface{}, key string) interface{} {
 	}
 	return nil
 }
+
+type ConnectionString struct{}
+
+type UsernameClaim struct{}

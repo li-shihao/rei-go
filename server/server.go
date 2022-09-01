@@ -1,4 +1,4 @@
-package server
+package chi
 
 import (
 	"context"
@@ -7,11 +7,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
-	api "rei.io/rei/server/API"
+	"rei.io/rei/internal/helpers"
+	"rei.io/rei/server/api"
 	"rei.io/rei/server/auth"
 )
 
 // Holder for db connection string
+
 var connStr string
 
 func CreateServer(str string) *chi.Mux {
@@ -30,21 +32,23 @@ func CreateServer(str string) *chi.Mux {
 	*/
 	r.Mount("/debug", middleware.Profiler())
 
+	r.Route("/", func(r chi.Router) {
+		r.Use(setDB)
+		r.Post("/signup", auth.Signup)
+		r.Post("/login", auth.Login)
+	})
+
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Use(middleware.Logger)
 		r.Use(setDB)
 		r.Use(csrfMiddleware)
+		r.Use(auth.Authenticate)
 		r.Get("/txcount", api.TotalTransactionCount)
 	})
 
-	r.Route("/signup", func(r chi.Router) {
+	r.Route("/admin", func(r chi.Router) {
 		r.Use(setDB)
-		r.Post("/", auth.Signup)
-	})
-
-	r.Route("/login", func(r chi.Router) {
-		r.Use(setDB)
-		r.Post("/", auth.Login)
+		r.Use(auth.AdminOnly)
 	})
 
 	return r
@@ -52,11 +56,8 @@ func CreateServer(str string) *chi.Mux {
 
 // Middleware to pack correct db connection string to our handlers
 func setDB(next http.Handler) http.Handler {
-
-	type ConnectionString struct{}
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), ConnectionString{}, connStr)
+		ctx := context.WithValue(r.Context(), helpers.ConnectionString{}, connStr)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

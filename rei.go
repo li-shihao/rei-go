@@ -14,7 +14,7 @@ import (
 	"rei.io/rei/internal/database"
 	"rei.io/rei/internal/helpers"
 	"rei.io/rei/internal/sui"
-	api "rei.io/rei/server"
+	chi "rei.io/rei/server"
 )
 
 var check = helpers.Check
@@ -135,7 +135,7 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 	}
 
 	// count always before print so we don't skip transactions
-	fmt.Printf("%s: Finished processing %d\n", tx.GetID(), cnt)
+	log.Printf("%s: Finished processing %d\n", tx.GetID(), cnt)
 	<-thread
 }
 
@@ -173,7 +173,7 @@ func main() {
 	db.Init("postgres", connStr)
 
 	// API server set-up
-	r := api.CreateServer(connStr)
+	r := chi.CreateServer(connStr)
 
 	go func() {
 		http.ListenAndServe(":6060", r)
