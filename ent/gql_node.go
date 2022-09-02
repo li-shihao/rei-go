@@ -16,15 +16,15 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
 	"golang.org/x/sync/semaphore"
-	"rei.io/rei/ent/accounts"
-	"rei.io/rei/ent/arguments"
-	"rei.io/rei/ent/events"
-	"rei.io/rei/ent/nfts"
-	"rei.io/rei/ent/objects"
-	"rei.io/rei/ent/packages"
-	"rei.io/rei/ent/sessions"
-	"rei.io/rei/ent/transactions"
-	"rei.io/rei/ent/users"
+	"rei.io/rei/ent/account"
+	"rei.io/rei/ent/argument"
+	"rei.io/rei/ent/event"
+	"rei.io/rei/ent/nft"
+	"rei.io/rei/ent/object"
+	"rei.io/rei/ent/pkg"
+	"rei.io/rei/ent/session"
+	"rei.io/rei/ent/transaction"
+	"rei.io/rei/ent/user"
 )
 
 // Noder wraps the basic Node method.
@@ -54,10 +54,10 @@ type Edge struct {
 	IDs  []int  `json:"ids,omitempty"`  // node ids (where this edge point to).
 }
 
-func (a *Accounts) Node(ctx context.Context) (node *Node, err error) {
+func (a *Account) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     a.ID,
-		Type:   "Accounts",
+		Type:   "Account",
 		Fields: make([]*Field, 5),
 		Edges:  make([]*Edge, 0),
 	}
@@ -105,10 +105,10 @@ func (a *Accounts) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
-func (a *Arguments) Node(ctx context.Context) (node *Node, err error) {
+func (a *Argument) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     a.ID,
-		Type:   "Arguments",
+		Type:   "Argument",
 		Fields: make([]*Field, 4),
 		Edges:  make([]*Edge, 0),
 	}
@@ -148,10 +148,10 @@ func (a *Arguments) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
-func (e *Events) Node(ctx context.Context) (node *Node, err error) {
+func (e *Event) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     e.ID,
-		Type:   "Events",
+		Type:   "Event",
 		Fields: make([]*Field, 6),
 		Edges:  make([]*Edge, 0),
 	}
@@ -207,15 +207,15 @@ func (e *Events) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
-func (nt *NFTs) Node(ctx context.Context) (node *Node, err error) {
+func (n *NFT) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
-		ID:     nt.ID,
-		Type:   "NFTs",
+		ID:     n.ID,
+		Type:   "NFT",
 		Fields: make([]*Field, 4),
 		Edges:  make([]*Edge, 0),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(nt.ObjectID); err != nil {
+	if buf, err = json.Marshal(n.ObjectID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
@@ -223,7 +223,7 @@ func (nt *NFTs) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "ObjectID",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(nt.Type); err != nil {
+	if buf, err = json.Marshal(n.Type); err != nil {
 		return nil, err
 	}
 	node.Fields[1] = &Field{
@@ -231,7 +231,7 @@ func (nt *NFTs) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "Type",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(nt.Metadata); err != nil {
+	if buf, err = json.Marshal(n.Metadata); err != nil {
 		return nil, err
 	}
 	node.Fields[2] = &Field{
@@ -239,7 +239,7 @@ func (nt *NFTs) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "Metadata",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(nt.SequenceID); err != nil {
+	if buf, err = json.Marshal(n.SequenceID); err != nil {
 		return nil, err
 	}
 	node.Fields[3] = &Field{
@@ -250,10 +250,10 @@ func (nt *NFTs) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
-func (o *Objects) Node(ctx context.Context) (node *Node, err error) {
+func (o *Object) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     o.ID,
-		Type:   "Objects",
+		Type:   "Object",
 		Fields: make([]*Field, 8),
 		Edges:  make([]*Edge, 0),
 	}
@@ -325,15 +325,15 @@ func (o *Objects) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
-func (pa *Packages) Node(ctx context.Context) (node *Node, err error) {
+func (pk *Pkg) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
-		ID:     pa.ID,
-		Type:   "Packages",
+		ID:     pk.ID,
+		Type:   "Pkg",
 		Fields: make([]*Field, 3),
 		Edges:  make([]*Edge, 0),
 	}
 	var buf []byte
-	if buf, err = json.Marshal(pa.TransactionID); err != nil {
+	if buf, err = json.Marshal(pk.TransactionID); err != nil {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
@@ -341,7 +341,7 @@ func (pa *Packages) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "TransactionID",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(pa.ObjectID); err != nil {
+	if buf, err = json.Marshal(pk.ObjectID); err != nil {
 		return nil, err
 	}
 	node.Fields[1] = &Field{
@@ -349,7 +349,7 @@ func (pa *Packages) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "ObjectID",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(pa.Bytecode); err != nil {
+	if buf, err = json.Marshal(pk.Bytecode); err != nil {
 		return nil, err
 	}
 	node.Fields[2] = &Field{
@@ -360,10 +360,10 @@ func (pa *Packages) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
-func (s *Sessions) Node(ctx context.Context) (node *Node, err error) {
+func (s *Session) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     s.ID,
-		Type:   "Sessions",
+		Type:   "Session",
 		Fields: make([]*Field, 3),
 		Edges:  make([]*Edge, 0),
 	}
@@ -395,10 +395,10 @@ func (s *Sessions) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
-func (t *Transactions) Node(ctx context.Context) (node *Node, err error) {
+func (t *Transaction) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     t.ID,
-		Type:   "Transactions",
+		Type:   "Transaction",
 		Fields: make([]*Field, 11),
 		Edges:  make([]*Edge, 0),
 	}
@@ -494,10 +494,10 @@ func (t *Transactions) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
-func (u *Users) Node(ctx context.Context) (node *Node, err error) {
+func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     u.ID,
-		Type:   "Users",
+		Type:   "User",
 		Fields: make([]*Field, 2),
 		Edges:  make([]*Edge, 0),
 	}
@@ -587,10 +587,10 @@ func (c *Client) Noder(ctx context.Context, id int, opts ...NodeOption) (_ Noder
 
 func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error) {
 	switch table {
-	case accounts.Table:
-		query := c.Accounts.Query().
-			Where(accounts.ID(id))
-		query, err := query.CollectFields(ctx, "Accounts")
+	case account.Table:
+		query := c.Account.Query().
+			Where(account.ID(id))
+		query, err := query.CollectFields(ctx, "Account")
 		if err != nil {
 			return nil, err
 		}
@@ -599,10 +599,10 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
-	case arguments.Table:
-		query := c.Arguments.Query().
-			Where(arguments.ID(id))
-		query, err := query.CollectFields(ctx, "Arguments")
+	case argument.Table:
+		query := c.Argument.Query().
+			Where(argument.ID(id))
+		query, err := query.CollectFields(ctx, "Argument")
 		if err != nil {
 			return nil, err
 		}
@@ -611,10 +611,10 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
-	case events.Table:
-		query := c.Events.Query().
-			Where(events.ID(id))
-		query, err := query.CollectFields(ctx, "Events")
+	case event.Table:
+		query := c.Event.Query().
+			Where(event.ID(id))
+		query, err := query.CollectFields(ctx, "Event")
 		if err != nil {
 			return nil, err
 		}
@@ -623,10 +623,10 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
-	case nfts.Table:
-		query := c.NFTs.Query().
-			Where(nfts.ID(id))
-		query, err := query.CollectFields(ctx, "NFTs")
+	case nft.Table:
+		query := c.NFT.Query().
+			Where(nft.ID(id))
+		query, err := query.CollectFields(ctx, "NFT")
 		if err != nil {
 			return nil, err
 		}
@@ -635,10 +635,10 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
-	case objects.Table:
-		query := c.Objects.Query().
-			Where(objects.ID(id))
-		query, err := query.CollectFields(ctx, "Objects")
+	case object.Table:
+		query := c.Object.Query().
+			Where(object.ID(id))
+		query, err := query.CollectFields(ctx, "Object")
 		if err != nil {
 			return nil, err
 		}
@@ -647,10 +647,10 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
-	case packages.Table:
-		query := c.Packages.Query().
-			Where(packages.ID(id))
-		query, err := query.CollectFields(ctx, "Packages")
+	case pkg.Table:
+		query := c.Pkg.Query().
+			Where(pkg.ID(id))
+		query, err := query.CollectFields(ctx, "Pkg")
 		if err != nil {
 			return nil, err
 		}
@@ -659,10 +659,10 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
-	case sessions.Table:
-		query := c.Sessions.Query().
-			Where(sessions.ID(id))
-		query, err := query.CollectFields(ctx, "Sessions")
+	case session.Table:
+		query := c.Session.Query().
+			Where(session.ID(id))
+		query, err := query.CollectFields(ctx, "Session")
 		if err != nil {
 			return nil, err
 		}
@@ -671,10 +671,10 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
-	case transactions.Table:
-		query := c.Transactions.Query().
-			Where(transactions.ID(id))
-		query, err := query.CollectFields(ctx, "Transactions")
+	case transaction.Table:
+		query := c.Transaction.Query().
+			Where(transaction.ID(id))
+		query, err := query.CollectFields(ctx, "Transaction")
 		if err != nil {
 			return nil, err
 		}
@@ -683,10 +683,10 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			return nil, err
 		}
 		return n, nil
-	case users.Table:
-		query := c.Users.Query().
-			Where(users.ID(id))
-		query, err := query.CollectFields(ctx, "Users")
+	case user.Table:
+		query := c.User.Query().
+			Where(user.ID(id))
+		query, err := query.CollectFields(ctx, "User")
 		if err != nil {
 			return nil, err
 		}
@@ -768,10 +768,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
-	case accounts.Table:
-		query := c.Accounts.Query().
-			Where(accounts.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Accounts")
+	case account.Table:
+		query := c.Account.Query().
+			Where(account.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Account")
 		if err != nil {
 			return nil, err
 		}
@@ -784,10 +784,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 				*noder = node
 			}
 		}
-	case arguments.Table:
-		query := c.Arguments.Query().
-			Where(arguments.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Arguments")
+	case argument.Table:
+		query := c.Argument.Query().
+			Where(argument.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Argument")
 		if err != nil {
 			return nil, err
 		}
@@ -800,10 +800,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 				*noder = node
 			}
 		}
-	case events.Table:
-		query := c.Events.Query().
-			Where(events.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Events")
+	case event.Table:
+		query := c.Event.Query().
+			Where(event.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Event")
 		if err != nil {
 			return nil, err
 		}
@@ -816,10 +816,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 				*noder = node
 			}
 		}
-	case nfts.Table:
-		query := c.NFTs.Query().
-			Where(nfts.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "NFTs")
+	case nft.Table:
+		query := c.NFT.Query().
+			Where(nft.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "NFT")
 		if err != nil {
 			return nil, err
 		}
@@ -832,10 +832,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 				*noder = node
 			}
 		}
-	case objects.Table:
-		query := c.Objects.Query().
-			Where(objects.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Objects")
+	case object.Table:
+		query := c.Object.Query().
+			Where(object.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Object")
 		if err != nil {
 			return nil, err
 		}
@@ -848,10 +848,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 				*noder = node
 			}
 		}
-	case packages.Table:
-		query := c.Packages.Query().
-			Where(packages.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Packages")
+	case pkg.Table:
+		query := c.Pkg.Query().
+			Where(pkg.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Pkg")
 		if err != nil {
 			return nil, err
 		}
@@ -864,10 +864,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 				*noder = node
 			}
 		}
-	case sessions.Table:
-		query := c.Sessions.Query().
-			Where(sessions.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Sessions")
+	case session.Table:
+		query := c.Session.Query().
+			Where(session.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Session")
 		if err != nil {
 			return nil, err
 		}
@@ -880,10 +880,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 				*noder = node
 			}
 		}
-	case transactions.Table:
-		query := c.Transactions.Query().
-			Where(transactions.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Transactions")
+	case transaction.Table:
+		query := c.Transaction.Query().
+			Where(transaction.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Transaction")
 		if err != nil {
 			return nil, err
 		}
@@ -896,10 +896,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 				*noder = node
 			}
 		}
-	case users.Table:
-		query := c.Users.Query().
-			Where(users.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "Users")
+	case user.Table:
+		query := c.User.Query().
+			Where(user.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "User")
 		if err != nil {
 			return nil, err
 		}

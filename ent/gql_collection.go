@@ -10,7 +10,7 @@ import (
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (a *AccountsQuery) CollectFields(ctx context.Context, satisfies ...string) (*AccountsQuery, error) {
+func (a *AccountQuery) CollectFields(ctx context.Context, satisfies ...string) (*AccountQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
 		return a, nil
@@ -21,19 +21,19 @@ func (a *AccountsQuery) CollectFields(ctx context.Context, satisfies ...string) 
 	return a, nil
 }
 
-func (a *AccountsQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (a *AccountQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
 
-type accountsPaginateArgs struct {
+type accountPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []AccountsPaginateOption
+	opts          []AccountPaginateOption
 }
 
-func newAccountsPaginateArgs(rv map[string]interface{}) *accountsPaginateArgs {
-	args := &accountsPaginateArgs{}
+func newAccountPaginateArgs(rv map[string]interface{}) *accountPaginateArgs {
+	args := &accountPaginateArgs{}
 	if rv == nil {
 		return args
 	}
@@ -53,7 +53,7 @@ func newAccountsPaginateArgs(rv map[string]interface{}) *accountsPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (a *ArgumentsQuery) CollectFields(ctx context.Context, satisfies ...string) (*ArgumentsQuery, error) {
+func (a *ArgumentQuery) CollectFields(ctx context.Context, satisfies ...string) (*ArgumentQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
 		return a, nil
@@ -64,19 +64,19 @@ func (a *ArgumentsQuery) CollectFields(ctx context.Context, satisfies ...string)
 	return a, nil
 }
 
-func (a *ArgumentsQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (a *ArgumentQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
 
-type argumentsPaginateArgs struct {
+type argumentPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []ArgumentsPaginateOption
+	opts          []ArgumentPaginateOption
 }
 
-func newArgumentsPaginateArgs(rv map[string]interface{}) *argumentsPaginateArgs {
-	args := &argumentsPaginateArgs{}
+func newArgumentPaginateArgs(rv map[string]interface{}) *argumentPaginateArgs {
+	args := &argumentPaginateArgs{}
 	if rv == nil {
 		return args
 	}
@@ -96,7 +96,7 @@ func newArgumentsPaginateArgs(rv map[string]interface{}) *argumentsPaginateArgs 
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (e *EventsQuery) CollectFields(ctx context.Context, satisfies ...string) (*EventsQuery, error) {
+func (e *EventQuery) CollectFields(ctx context.Context, satisfies ...string) (*EventQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
 		return e, nil
@@ -107,19 +107,19 @@ func (e *EventsQuery) CollectFields(ctx context.Context, satisfies ...string) (*
 	return e, nil
 }
 
-func (e *EventsQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (e *EventQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
 
-type eventsPaginateArgs struct {
+type eventPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []EventsPaginateOption
+	opts          []EventPaginateOption
 }
 
-func newEventsPaginateArgs(rv map[string]interface{}) *eventsPaginateArgs {
-	args := &eventsPaginateArgs{}
+func newEventPaginateArgs(rv map[string]interface{}) *eventPaginateArgs {
+	args := &eventPaginateArgs{}
 	if rv == nil {
 		return args
 	}
@@ -139,30 +139,30 @@ func newEventsPaginateArgs(rv map[string]interface{}) *eventsPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (nt *NFTsQuery) CollectFields(ctx context.Context, satisfies ...string) (*NFTsQuery, error) {
+func (n *NFTQuery) CollectFields(ctx context.Context, satisfies ...string) (*NFTQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return nt, nil
+		return n, nil
 	}
-	if err := nt.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := n.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return nt, nil
+	return n, nil
 }
 
-func (nt *NFTsQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (n *NFTQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
 
-type nftsPaginateArgs struct {
+type nftPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []NFTsPaginateOption
+	opts          []NFTPaginateOption
 }
 
-func newNFTsPaginateArgs(rv map[string]interface{}) *nftsPaginateArgs {
-	args := &nftsPaginateArgs{}
+func newNFTPaginateArgs(rv map[string]interface{}) *nftPaginateArgs {
+	args := &nftPaginateArgs{}
 	if rv == nil {
 		return args
 	}
@@ -182,7 +182,7 @@ func newNFTsPaginateArgs(rv map[string]interface{}) *nftsPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (o *ObjectsQuery) CollectFields(ctx context.Context, satisfies ...string) (*ObjectsQuery, error) {
+func (o *ObjectQuery) CollectFields(ctx context.Context, satisfies ...string) (*ObjectQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
 		return o, nil
@@ -193,19 +193,19 @@ func (o *ObjectsQuery) CollectFields(ctx context.Context, satisfies ...string) (
 	return o, nil
 }
 
-func (o *ObjectsQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (o *ObjectQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
 
-type objectsPaginateArgs struct {
+type objectPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []ObjectsPaginateOption
+	opts          []ObjectPaginateOption
 }
 
-func newObjectsPaginateArgs(rv map[string]interface{}) *objectsPaginateArgs {
-	args := &objectsPaginateArgs{}
+func newObjectPaginateArgs(rv map[string]interface{}) *objectPaginateArgs {
+	args := &objectPaginateArgs{}
 	if rv == nil {
 		return args
 	}
@@ -225,30 +225,30 @@ func newObjectsPaginateArgs(rv map[string]interface{}) *objectsPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (pa *PackagesQuery) CollectFields(ctx context.Context, satisfies ...string) (*PackagesQuery, error) {
+func (pk *PkgQuery) CollectFields(ctx context.Context, satisfies ...string) (*PkgQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return pa, nil
+		return pk, nil
 	}
-	if err := pa.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := pk.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return pa, nil
+	return pk, nil
 }
 
-func (pa *PackagesQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (pk *PkgQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
 
-type packagesPaginateArgs struct {
+type pkgPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []PackagesPaginateOption
+	opts          []PkgPaginateOption
 }
 
-func newPackagesPaginateArgs(rv map[string]interface{}) *packagesPaginateArgs {
-	args := &packagesPaginateArgs{}
+func newPkgPaginateArgs(rv map[string]interface{}) *pkgPaginateArgs {
+	args := &pkgPaginateArgs{}
 	if rv == nil {
 		return args
 	}
@@ -268,7 +268,7 @@ func newPackagesPaginateArgs(rv map[string]interface{}) *packagesPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (s *SessionsQuery) CollectFields(ctx context.Context, satisfies ...string) (*SessionsQuery, error) {
+func (s *SessionQuery) CollectFields(ctx context.Context, satisfies ...string) (*SessionQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
 		return s, nil
@@ -279,19 +279,19 @@ func (s *SessionsQuery) CollectFields(ctx context.Context, satisfies ...string) 
 	return s, nil
 }
 
-func (s *SessionsQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (s *SessionQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
 
-type sessionsPaginateArgs struct {
+type sessionPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []SessionsPaginateOption
+	opts          []SessionPaginateOption
 }
 
-func newSessionsPaginateArgs(rv map[string]interface{}) *sessionsPaginateArgs {
-	args := &sessionsPaginateArgs{}
+func newSessionPaginateArgs(rv map[string]interface{}) *sessionPaginateArgs {
+	args := &sessionPaginateArgs{}
 	if rv == nil {
 		return args
 	}
@@ -311,7 +311,7 @@ func newSessionsPaginateArgs(rv map[string]interface{}) *sessionsPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (t *TransactionsQuery) CollectFields(ctx context.Context, satisfies ...string) (*TransactionsQuery, error) {
+func (t *TransactionQuery) CollectFields(ctx context.Context, satisfies ...string) (*TransactionQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
 		return t, nil
@@ -322,19 +322,19 @@ func (t *TransactionsQuery) CollectFields(ctx context.Context, satisfies ...stri
 	return t, nil
 }
 
-func (t *TransactionsQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (t *TransactionQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
 
-type transactionsPaginateArgs struct {
+type transactionPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []TransactionsPaginateOption
+	opts          []TransactionPaginateOption
 }
 
-func newTransactionsPaginateArgs(rv map[string]interface{}) *transactionsPaginateArgs {
-	args := &transactionsPaginateArgs{}
+func newTransactionPaginateArgs(rv map[string]interface{}) *transactionPaginateArgs {
+	args := &transactionPaginateArgs{}
 	if rv == nil {
 		return args
 	}
@@ -354,7 +354,7 @@ func newTransactionsPaginateArgs(rv map[string]interface{}) *transactionsPaginat
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (u *UsersQuery) CollectFields(ctx context.Context, satisfies ...string) (*UsersQuery, error) {
+func (u *UserQuery) CollectFields(ctx context.Context, satisfies ...string) (*UserQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
 		return u, nil
@@ -365,19 +365,19 @@ func (u *UsersQuery) CollectFields(ctx context.Context, satisfies ...string) (*U
 	return u, nil
 }
 
-func (u *UsersQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
+func (u *UserQuery) collectField(ctx context.Context, op *graphql.OperationContext, field graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	return nil
 }
 
-type usersPaginateArgs struct {
+type userPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []UsersPaginateOption
+	opts          []UserPaginateOption
 }
 
-func newUsersPaginateArgs(rv map[string]interface{}) *usersPaginateArgs {
-	args := &usersPaginateArgs{}
+func newUserPaginateArgs(rv map[string]interface{}) *userPaginateArgs {
+	args := &userPaginateArgs{}
 	if rv == nil {
 		return args
 	}

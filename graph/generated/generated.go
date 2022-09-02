@@ -37,7 +37,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Query() QueryResolver
-	Transactions() TransactionsResolver
+	Transaction() TransactionResolver
 }
 
 type DirectiveRoot struct {
@@ -45,10 +45,11 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Query struct {
+		Transaction  func(childComplexity int, transactionID string) int
 		Transactions func(childComplexity int) int
 	}
 
-	Transactions struct {
+	Transaction struct {
 		Amount        func(childComplexity int) int
 		Function      func(childComplexity int) int
 		Gas           func(childComplexity int) int
@@ -65,12 +66,13 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	Transactions(ctx context.Context) (*ent.Transactions, error)
+	Transactions(ctx context.Context) ([]*ent.Transaction, error)
+	Transaction(ctx context.Context, transactionID string) (*ent.Transaction, error)
 }
-type TransactionsResolver interface {
-	Time(ctx context.Context, obj *ent.Transactions) (string, error)
+type TransactionResolver interface {
+	Time(ctx context.Context, obj *ent.Transaction) (string, error)
 
-	Gas(ctx context.Context, obj *ent.Transactions) (int, error)
+	Gas(ctx context.Context, obj *ent.Transaction) (int, error)
 }
 
 type executableSchema struct {
@@ -88,6 +90,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Query.transaction":
+		if e.complexity.Query.Transaction == nil {
+			break
+		}
+
+		args, err := ec.field_Query_transaction_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Transaction(childComplexity, args["TransactionID"].(string)), true
+
 	case "Query.transactions":
 		if e.complexity.Query.Transactions == nil {
 			break
@@ -95,89 +109,89 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Transactions(childComplexity), true
 
-	case "Transactions.Amount":
-		if e.complexity.Transactions.Amount == nil {
+	case "Transaction.Amount":
+		if e.complexity.Transaction.Amount == nil {
 			break
 		}
 
-		return e.complexity.Transactions.Amount(childComplexity), true
+		return e.complexity.Transaction.Amount(childComplexity), true
 
-	case "Transactions.Function":
-		if e.complexity.Transactions.Function == nil {
+	case "Transaction.Function":
+		if e.complexity.Transaction.Function == nil {
 			break
 		}
 
-		return e.complexity.Transactions.Function(childComplexity), true
+		return e.complexity.Transaction.Function(childComplexity), true
 
-	case "Transactions.Gas":
-		if e.complexity.Transactions.Gas == nil {
+	case "Transaction.Gas":
+		if e.complexity.Transaction.Gas == nil {
 			break
 		}
 
-		return e.complexity.Transactions.Gas(childComplexity), true
+		return e.complexity.Transaction.Gas(childComplexity), true
 
-	case "Transactions.id":
-		if e.complexity.Transactions.ID == nil {
+	case "Transaction.id":
+		if e.complexity.Transaction.ID == nil {
 			break
 		}
 
-		return e.complexity.Transactions.ID(childComplexity), true
+		return e.complexity.Transaction.ID(childComplexity), true
 
-	case "Transactions.Module":
-		if e.complexity.Transactions.Module == nil {
+	case "Transaction.Module":
+		if e.complexity.Transaction.Module == nil {
 			break
 		}
 
-		return e.complexity.Transactions.Module(childComplexity), true
+		return e.complexity.Transaction.Module(childComplexity), true
 
-	case "Transactions.Package":
-		if e.complexity.Transactions.Package == nil {
+	case "Transaction.Package":
+		if e.complexity.Transaction.Package == nil {
 			break
 		}
 
-		return e.complexity.Transactions.Package(childComplexity), true
+		return e.complexity.Transaction.Package(childComplexity), true
 
-	case "Transactions.Recipient":
-		if e.complexity.Transactions.Recipient == nil {
+	case "Transaction.Recipient":
+		if e.complexity.Transaction.Recipient == nil {
 			break
 		}
 
-		return e.complexity.Transactions.Recipient(childComplexity), true
+		return e.complexity.Transaction.Recipient(childComplexity), true
 
-	case "Transactions.Sender":
-		if e.complexity.Transactions.Sender == nil {
+	case "Transaction.Sender":
+		if e.complexity.Transaction.Sender == nil {
 			break
 		}
 
-		return e.complexity.Transactions.Sender(childComplexity), true
+		return e.complexity.Transaction.Sender(childComplexity), true
 
-	case "Transactions.Status":
-		if e.complexity.Transactions.Status == nil {
+	case "Transaction.Status":
+		if e.complexity.Transaction.Status == nil {
 			break
 		}
 
-		return e.complexity.Transactions.Status(childComplexity), true
+		return e.complexity.Transaction.Status(childComplexity), true
 
-	case "Transactions.Time":
-		if e.complexity.Transactions.Time == nil {
+	case "Transaction.Time":
+		if e.complexity.Transaction.Time == nil {
 			break
 		}
 
-		return e.complexity.Transactions.Time(childComplexity), true
+		return e.complexity.Transaction.Time(childComplexity), true
 
-	case "Transactions.TransactionID":
-		if e.complexity.Transactions.TransactionID == nil {
+	case "Transaction.TransactionID":
+		if e.complexity.Transaction.TransactionID == nil {
 			break
 		}
 
-		return e.complexity.Transactions.TransactionID(childComplexity), true
+		return e.complexity.Transaction.TransactionID(childComplexity), true
 
-	case "Transactions.Type":
-		if e.complexity.Transactions.Type == nil {
+	case "Transaction.Type":
+		if e.complexity.Transaction.Type == nil {
 			break
 		}
 
-		return e.complexity.Transactions.Type(childComplexity), true
+		return e.complexity.Transaction.Type(childComplexity), true
 
 	}
 	return 0, false
@@ -231,7 +245,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../transactions.graphqls", Input: `type Transactions {
+	{Name: "../transactions.graphqls", Input: `type Transaction {
   id: ID!
   Type: String!
   Time: String!
@@ -247,7 +261,8 @@ var sources = []*ast.Source{
 }
 
 type Query {
-  transactions: Transactions
+  transactions: [Transaction]
+  transaction(TransactionID: String!): Transaction
 }
 `, BuiltIn: false},
 }
@@ -269,6 +284,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_transaction_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["TransactionID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("TransactionID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["TransactionID"] = arg0
 	return args, nil
 }
 
@@ -333,9 +363,9 @@ func (ec *executionContext) _Query_transactions(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*ent.Transactions)
+	res := resTmp.([]*ent.Transaction)
 	fc.Result = res
-	return ec.marshalOTransactions2ᚖreiᚗioᚋreiᚋentᚐTransactions(ctx, field.Selections, res)
+	return ec.marshalOTransaction2ᚕᚖreiᚗioᚋreiᚋentᚐTransaction(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_transactions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -347,32 +377,110 @@ func (ec *executionContext) fieldContext_Query_transactions(ctx context.Context,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Transactions_id(ctx, field)
+				return ec.fieldContext_Transaction_id(ctx, field)
 			case "Type":
-				return ec.fieldContext_Transactions_Type(ctx, field)
+				return ec.fieldContext_Transaction_Type(ctx, field)
 			case "Time":
-				return ec.fieldContext_Transactions_Time(ctx, field)
+				return ec.fieldContext_Transaction_Time(ctx, field)
 			case "TransactionID":
-				return ec.fieldContext_Transactions_TransactionID(ctx, field)
+				return ec.fieldContext_Transaction_TransactionID(ctx, field)
 			case "Status":
-				return ec.fieldContext_Transactions_Status(ctx, field)
+				return ec.fieldContext_Transaction_Status(ctx, field)
 			case "Sender":
-				return ec.fieldContext_Transactions_Sender(ctx, field)
+				return ec.fieldContext_Transaction_Sender(ctx, field)
 			case "Recipient":
-				return ec.fieldContext_Transactions_Recipient(ctx, field)
+				return ec.fieldContext_Transaction_Recipient(ctx, field)
 			case "Amount":
-				return ec.fieldContext_Transactions_Amount(ctx, field)
+				return ec.fieldContext_Transaction_Amount(ctx, field)
 			case "Package":
-				return ec.fieldContext_Transactions_Package(ctx, field)
+				return ec.fieldContext_Transaction_Package(ctx, field)
 			case "Module":
-				return ec.fieldContext_Transactions_Module(ctx, field)
+				return ec.fieldContext_Transaction_Module(ctx, field)
 			case "Function":
-				return ec.fieldContext_Transactions_Function(ctx, field)
+				return ec.fieldContext_Transaction_Function(ctx, field)
 			case "Gas":
-				return ec.fieldContext_Transactions_Gas(ctx, field)
+				return ec.fieldContext_Transaction_Gas(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Transactions", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_transaction(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_transaction(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Transaction(rctx, fc.Args["TransactionID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Transaction)
+	fc.Result = res
+	return ec.marshalOTransaction2ᚖreiᚗioᚋreiᚋentᚐTransaction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_transaction(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Transaction_id(ctx, field)
+			case "Type":
+				return ec.fieldContext_Transaction_Type(ctx, field)
+			case "Time":
+				return ec.fieldContext_Transaction_Time(ctx, field)
+			case "TransactionID":
+				return ec.fieldContext_Transaction_TransactionID(ctx, field)
+			case "Status":
+				return ec.fieldContext_Transaction_Status(ctx, field)
+			case "Sender":
+				return ec.fieldContext_Transaction_Sender(ctx, field)
+			case "Recipient":
+				return ec.fieldContext_Transaction_Recipient(ctx, field)
+			case "Amount":
+				return ec.fieldContext_Transaction_Amount(ctx, field)
+			case "Package":
+				return ec.fieldContext_Transaction_Package(ctx, field)
+			case "Module":
+				return ec.fieldContext_Transaction_Module(ctx, field)
+			case "Function":
+				return ec.fieldContext_Transaction_Function(ctx, field)
+			case "Gas":
+				return ec.fieldContext_Transaction_Gas(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_transaction_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -506,8 +614,8 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_id(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_id(ctx, field)
+func (ec *executionContext) _Transaction_id(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -537,9 +645,9 @@ func (ec *executionContext) _Transactions_id(ctx context.Context, field graphql.
 	return ec.marshalNID2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -550,8 +658,8 @@ func (ec *executionContext) fieldContext_Transactions_id(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_Type(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_Type(ctx, field)
+func (ec *executionContext) _Transaction_Type(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_Type(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -581,9 +689,9 @@ func (ec *executionContext) _Transactions_Type(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_Type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_Type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -594,8 +702,8 @@ func (ec *executionContext) fieldContext_Transactions_Type(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_Time(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_Time(ctx, field)
+func (ec *executionContext) _Transaction_Time(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_Time(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -608,7 +716,7 @@ func (ec *executionContext) _Transactions_Time(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Transactions().Time(rctx, obj)
+		return ec.resolvers.Transaction().Time(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -625,9 +733,9 @@ func (ec *executionContext) _Transactions_Time(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_Time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_Time(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
@@ -638,8 +746,8 @@ func (ec *executionContext) fieldContext_Transactions_Time(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_TransactionID(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_TransactionID(ctx, field)
+func (ec *executionContext) _Transaction_TransactionID(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_TransactionID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -669,9 +777,9 @@ func (ec *executionContext) _Transactions_TransactionID(ctx context.Context, fie
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_TransactionID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_TransactionID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -682,8 +790,8 @@ func (ec *executionContext) fieldContext_Transactions_TransactionID(ctx context.
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_Status(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_Status(ctx, field)
+func (ec *executionContext) _Transaction_Status(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_Status(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -713,9 +821,9 @@ func (ec *executionContext) _Transactions_Status(ctx context.Context, field grap
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_Status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_Status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -726,8 +834,8 @@ func (ec *executionContext) fieldContext_Transactions_Status(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_Sender(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_Sender(ctx, field)
+func (ec *executionContext) _Transaction_Sender(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_Sender(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -757,9 +865,9 @@ func (ec *executionContext) _Transactions_Sender(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_Sender(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_Sender(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -770,8 +878,8 @@ func (ec *executionContext) fieldContext_Transactions_Sender(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_Recipient(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_Recipient(ctx, field)
+func (ec *executionContext) _Transaction_Recipient(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_Recipient(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -801,9 +909,9 @@ func (ec *executionContext) _Transactions_Recipient(ctx context.Context, field g
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_Recipient(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_Recipient(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -814,8 +922,8 @@ func (ec *executionContext) fieldContext_Transactions_Recipient(ctx context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_Amount(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_Amount(ctx, field)
+func (ec *executionContext) _Transaction_Amount(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_Amount(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -845,9 +953,9 @@ func (ec *executionContext) _Transactions_Amount(ctx context.Context, field grap
 	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_Amount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_Amount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -858,8 +966,8 @@ func (ec *executionContext) fieldContext_Transactions_Amount(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_Package(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_Package(ctx, field)
+func (ec *executionContext) _Transaction_Package(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_Package(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -889,9 +997,9 @@ func (ec *executionContext) _Transactions_Package(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_Package(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_Package(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -902,8 +1010,8 @@ func (ec *executionContext) fieldContext_Transactions_Package(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_Module(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_Module(ctx, field)
+func (ec *executionContext) _Transaction_Module(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_Module(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -933,9 +1041,9 @@ func (ec *executionContext) _Transactions_Module(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_Module(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_Module(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -946,8 +1054,8 @@ func (ec *executionContext) fieldContext_Transactions_Module(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_Function(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_Function(ctx, field)
+func (ec *executionContext) _Transaction_Function(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_Function(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -977,9 +1085,9 @@ func (ec *executionContext) _Transactions_Function(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_Function(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_Function(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -990,8 +1098,8 @@ func (ec *executionContext) fieldContext_Transactions_Function(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Transactions_Gas(ctx context.Context, field graphql.CollectedField, obj *ent.Transactions) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Transactions_Gas(ctx, field)
+func (ec *executionContext) _Transaction_Gas(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_Gas(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1004,7 +1112,7 @@ func (ec *executionContext) _Transactions_Gas(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Transactions().Gas(rctx, obj)
+		return ec.resolvers.Transaction().Gas(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1021,9 +1129,9 @@ func (ec *executionContext) _Transactions_Gas(ctx context.Context, field graphql
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Transactions_Gas(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Transaction_Gas(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Transactions",
+		Object:     "Transaction",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
@@ -2854,6 +2962,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "transaction":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_transaction(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -2877,26 +3005,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var transactionsImplementors = []string{"Transactions"}
+var transactionImplementors = []string{"Transaction"}
 
-func (ec *executionContext) _Transactions(ctx context.Context, sel ast.SelectionSet, obj *ent.Transactions) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, transactionsImplementors)
+func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionSet, obj *ent.Transaction) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, transactionImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Transactions")
+			out.Values[i] = graphql.MarshalString("Transaction")
 		case "id":
 
-			out.Values[i] = ec._Transactions_id(ctx, field, obj)
+			out.Values[i] = ec._Transaction_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "Type":
 
-			out.Values[i] = ec._Transactions_Type(ctx, field, obj)
+			out.Values[i] = ec._Transaction_Type(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
@@ -2910,7 +3038,7 @@ func (ec *executionContext) _Transactions(ctx context.Context, sel ast.Selection
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Transactions_Time(ctx, field, obj)
+				res = ec._Transaction_Time(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -2923,56 +3051,56 @@ func (ec *executionContext) _Transactions(ctx context.Context, sel ast.Selection
 			})
 		case "TransactionID":
 
-			out.Values[i] = ec._Transactions_TransactionID(ctx, field, obj)
+			out.Values[i] = ec._Transaction_TransactionID(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "Status":
 
-			out.Values[i] = ec._Transactions_Status(ctx, field, obj)
+			out.Values[i] = ec._Transaction_Status(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "Sender":
 
-			out.Values[i] = ec._Transactions_Sender(ctx, field, obj)
+			out.Values[i] = ec._Transaction_Sender(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "Recipient":
 
-			out.Values[i] = ec._Transactions_Recipient(ctx, field, obj)
+			out.Values[i] = ec._Transaction_Recipient(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "Amount":
 
-			out.Values[i] = ec._Transactions_Amount(ctx, field, obj)
+			out.Values[i] = ec._Transaction_Amount(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "Package":
 
-			out.Values[i] = ec._Transactions_Package(ctx, field, obj)
+			out.Values[i] = ec._Transaction_Package(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "Module":
 
-			out.Values[i] = ec._Transactions_Module(ctx, field, obj)
+			out.Values[i] = ec._Transaction_Module(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "Function":
 
-			out.Values[i] = ec._Transactions_Function(ctx, field, obj)
+			out.Values[i] = ec._Transaction_Function(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
@@ -2986,7 +3114,7 @@ func (ec *executionContext) _Transactions(ctx context.Context, sel ast.Selection
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Transactions_Gas(ctx, field, obj)
+				res = ec._Transaction_Gas(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3696,11 +3824,52 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOTransactions2ᚖreiᚗioᚋreiᚋentᚐTransactions(ctx context.Context, sel ast.SelectionSet, v *ent.Transactions) graphql.Marshaler {
+func (ec *executionContext) marshalOTransaction2ᚕᚖreiᚗioᚋreiᚋentᚐTransaction(ctx context.Context, sel ast.SelectionSet, v []*ent.Transaction) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._Transactions(ctx, sel, v)
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTransaction2ᚖreiᚗioᚋreiᚋentᚐTransaction(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOTransaction2ᚖreiᚗioᚋreiᚋentᚐTransaction(ctx context.Context, sel ast.SelectionSet, v *ent.Transaction) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Transaction(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

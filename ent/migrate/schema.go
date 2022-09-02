@@ -24,7 +24,7 @@ var (
 		PrimaryKey: []*schema.Column{AccountsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "accounts_sequence_id_account_id",
+				Name:    "account_sequence_id_account_id",
 				Unique:  true,
 				Columns: []*schema.Column{AccountsColumns[1], AccountsColumns[2]},
 			},
@@ -45,7 +45,7 @@ var (
 		PrimaryKey: []*schema.Column{ArgumentsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "arguments_name_type_transaction_id",
+				Name:    "argument_name_type_transaction_id",
 				Unique:  true,
 				Columns: []*schema.Column{ArgumentsColumns[1], ArgumentsColumns[2], ArgumentsColumns[3]},
 			},
@@ -68,7 +68,7 @@ var (
 		PrimaryKey: []*schema.Column{EventsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "events_transaction_id_type_object_id_version",
+				Name:    "event_transaction_id_type_object_id_version",
 				Unique:  true,
 				Columns: []*schema.Column{EventsColumns[4], EventsColumns[1], EventsColumns[5], EventsColumns[6]},
 			},
@@ -89,7 +89,7 @@ var (
 		PrimaryKey: []*schema.Column{NfTsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "nfts_object_id_sequence_id",
+				Name:    "nft_object_id_sequence_id",
 				Unique:  true,
 				Columns: []*schema.Column{NfTsColumns[1], NfTsColumns[4]},
 			},
@@ -114,29 +114,29 @@ var (
 		PrimaryKey: []*schema.Column{ObjectsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "objects_sequence_id_object_id",
+				Name:    "object_sequence_id_object_id",
 				Unique:  true,
 				Columns: []*schema.Column{ObjectsColumns[8], ObjectsColumns[7]},
 			},
 		},
 	}
-	// PackagesColumns holds the columns for the "packages" table.
-	PackagesColumns = []*schema.Column{
+	// PkgsColumns holds the columns for the "pkgs" table.
+	PkgsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "transaction_id", Type: field.TypeString},
 		{Name: "object_id", Type: field.TypeString},
 		{Name: "bytecode", Type: field.TypeJSON},
 	}
-	// PackagesTable holds the schema information for the "packages" table.
-	PackagesTable = &schema.Table{
-		Name:       "packages",
-		Columns:    PackagesColumns,
-		PrimaryKey: []*schema.Column{PackagesColumns[0]},
+	// PkgsTable holds the schema information for the "pkgs" table.
+	PkgsTable = &schema.Table{
+		Name:       "pkgs",
+		Columns:    PkgsColumns,
+		PrimaryKey: []*schema.Column{PkgsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "packages_transaction_id_object_id",
+				Name:    "pkg_transaction_id_object_id",
 				Unique:  true,
-				Columns: []*schema.Column{PackagesColumns[1], PackagesColumns[2]},
+				Columns: []*schema.Column{PkgsColumns[1], PkgsColumns[2]},
 			},
 		},
 	}
@@ -193,7 +193,7 @@ var (
 		EventsTable,
 		NfTsTable,
 		ObjectsTable,
-		PackagesTable,
+		PkgsTable,
 		SessionsTable,
 		TransactionsTable,
 		UsersTable,

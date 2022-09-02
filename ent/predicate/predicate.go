@@ -6,29 +6,29 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// Accounts is the predicate function for accounts builders.
-type Accounts func(*sql.Selector)
+// Account is the predicate function for account builders.
+type Account func(*sql.Selector)
 
-// Arguments is the predicate function for arguments builders.
-type Arguments func(*sql.Selector)
+// Argument is the predicate function for argument builders.
+type Argument func(*sql.Selector)
 
-// Events is the predicate function for events builders.
-type Events func(*sql.Selector)
+// Event is the predicate function for event builders.
+type Event func(*sql.Selector)
 
-// NFTs is the predicate function for nfts builders.
-type NFTs func(*sql.Selector)
+// NFT is the predicate function for nft builders.
+type NFT func(*sql.Selector)
 
-// Objects is the predicate function for objects builders.
-type Objects func(*sql.Selector)
+// Object is the predicate function for object builders.
+type Object func(*sql.Selector)
 
-// Packages is the predicate function for packages builders.
-type Packages func(*sql.Selector)
+// Pkg is the predicate function for pkg builders.
+type Pkg func(*sql.Selector)
 
-// Sessions is the predicate function for sessions builders.
-type Sessions func(*sql.Selector)
+// Session is the predicate function for session builders.
+type Session func(*sql.Selector)
 
-// Transactions is the predicate function for transactions builders.
-type Transactions func(*sql.Selector)
+// Transaction is the predicate function for transaction builders.
+type Transaction func(*sql.Selector)
 
-// Users is the predicate function for users builders.
-type Users func(*sql.Selector)
+// User is the predicate function for user builders.
+type User func(*sql.Selector)

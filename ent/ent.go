@@ -10,15 +10,15 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"rei.io/rei/ent/accounts"
-	"rei.io/rei/ent/arguments"
-	"rei.io/rei/ent/events"
-	"rei.io/rei/ent/nfts"
-	"rei.io/rei/ent/objects"
-	"rei.io/rei/ent/packages"
-	"rei.io/rei/ent/sessions"
-	"rei.io/rei/ent/transactions"
-	"rei.io/rei/ent/users"
+	"rei.io/rei/ent/account"
+	"rei.io/rei/ent/argument"
+	"rei.io/rei/ent/event"
+	"rei.io/rei/ent/nft"
+	"rei.io/rei/ent/object"
+	"rei.io/rei/ent/pkg"
+	"rei.io/rei/ent/session"
+	"rei.io/rei/ent/transaction"
+	"rei.io/rei/ent/user"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -39,15 +39,15 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		accounts.Table:     accounts.ValidColumn,
-		arguments.Table:    arguments.ValidColumn,
-		events.Table:       events.ValidColumn,
-		nfts.Table:         nfts.ValidColumn,
-		objects.Table:      objects.ValidColumn,
-		packages.Table:     packages.ValidColumn,
-		sessions.Table:     sessions.ValidColumn,
-		transactions.Table: transactions.ValidColumn,
-		users.Table:        users.ValidColumn,
+		account.Table:     account.ValidColumn,
+		argument.Table:    argument.ValidColumn,
+		event.Table:       event.ValidColumn,
+		nft.Table:         nft.ValidColumn,
+		object.Table:      object.ValidColumn,
+		pkg.Table:         pkg.ValidColumn,
+		session.Table:     session.ValidColumn,
+		transaction.Table: transaction.ValidColumn,
+		user.Table:        user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {
@@ -279,11 +279,11 @@ func IsConstraintError(err error) bool {
 type selector struct {
 	label string
 	flds  *[]string
-	scan  func(context.Context, interface{}) error
+	scan  func(context.Context, any) error
 }
 
 // ScanX is like Scan, but panics if an error occurs.
-func (s *selector) ScanX(ctx context.Context, v interface{}) {
+func (s *selector) ScanX(ctx context.Context, v any) {
 	if err := s.scan(ctx, v); err != nil {
 		panic(err)
 	}

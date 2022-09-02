@@ -12,24 +12,24 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// Accounts is the client for interacting with the Accounts builders.
-	Accounts *AccountsClient
-	// Arguments is the client for interacting with the Arguments builders.
-	Arguments *ArgumentsClient
-	// Events is the client for interacting with the Events builders.
-	Events *EventsClient
-	// NFTs is the client for interacting with the NFTs builders.
-	NFTs *NFTsClient
-	// Objects is the client for interacting with the Objects builders.
-	Objects *ObjectsClient
-	// Packages is the client for interacting with the Packages builders.
-	Packages *PackagesClient
-	// Sessions is the client for interacting with the Sessions builders.
-	Sessions *SessionsClient
-	// Transactions is the client for interacting with the Transactions builders.
-	Transactions *TransactionsClient
-	// Users is the client for interacting with the Users builders.
-	Users *UsersClient
+	// Account is the client for interacting with the Account builders.
+	Account *AccountClient
+	// Argument is the client for interacting with the Argument builders.
+	Argument *ArgumentClient
+	// Event is the client for interacting with the Event builders.
+	Event *EventClient
+	// NFT is the client for interacting with the NFT builders.
+	NFT *NFTClient
+	// Object is the client for interacting with the Object builders.
+	Object *ObjectClient
+	// Pkg is the client for interacting with the Pkg builders.
+	Pkg *PkgClient
+	// Session is the client for interacting with the Session builders.
+	Session *SessionClient
+	// Transaction is the client for interacting with the Transaction builders.
+	Transaction *TransactionClient
+	// User is the client for interacting with the User builders.
+	User *UserClient
 
 	// lazily loaded.
 	client     *Client
@@ -165,15 +165,15 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.Accounts = NewAccountsClient(tx.config)
-	tx.Arguments = NewArgumentsClient(tx.config)
-	tx.Events = NewEventsClient(tx.config)
-	tx.NFTs = NewNFTsClient(tx.config)
-	tx.Objects = NewObjectsClient(tx.config)
-	tx.Packages = NewPackagesClient(tx.config)
-	tx.Sessions = NewSessionsClient(tx.config)
-	tx.Transactions = NewTransactionsClient(tx.config)
-	tx.Users = NewUsersClient(tx.config)
+	tx.Account = NewAccountClient(tx.config)
+	tx.Argument = NewArgumentClient(tx.config)
+	tx.Event = NewEventClient(tx.config)
+	tx.NFT = NewNFTClient(tx.config)
+	tx.Object = NewObjectClient(tx.config)
+	tx.Pkg = NewPkgClient(tx.config)
+	tx.Session = NewSessionClient(tx.config)
+	tx.Transaction = NewTransactionClient(tx.config)
+	tx.User = NewUserClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.
@@ -183,7 +183,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Accounts.QueryXXX(), the query will be executed
+// applies a query, for example: Account.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.
@@ -222,12 +222,12 @@ func (*txDriver) Commit() error { return nil }
 func (*txDriver) Rollback() error { return nil }
 
 // Exec calls tx.Exec.
-func (tx *txDriver) Exec(ctx context.Context, query string, args, v interface{}) error {
+func (tx *txDriver) Exec(ctx context.Context, query string, args, v any) error {
 	return tx.tx.Exec(ctx, query, args, v)
 }
 
 // Query calls tx.Query.
-func (tx *txDriver) Query(ctx context.Context, query string, args, v interface{}) error {
+func (tx *txDriver) Query(ctx context.Context, query string, args, v any) error {
 	return tx.tx.Query(ctx, query, args, v)
 }
 

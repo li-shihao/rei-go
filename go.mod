@@ -3,7 +3,7 @@ module rei.io/rei
 go 1.19
 
 require (
-	entgo.io/contrib v0.3.1
+	entgo.io/contrib v0.3.2
 	github.com/99designs/gqlgen v0.17.16
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/cors v1.2.1
@@ -14,7 +14,7 @@ require (
 	github.com/orlangure/gnomock v0.21.1
 	github.com/unrolled/render v1.5.0
 	github.com/vektah/gqlparser/v2 v2.5.0
-	github.com/vmihailenco/msgpack/v5 v5.3.5
+	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
 )
@@ -36,13 +36,13 @@ require (
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
-	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
+	github.com/vmihailenco/tagparser v0.1.2 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
-	golang.org/x/tools v0.1.13-0.20220804200503-81c7dc4e4efa // indirect
+	golang.org/x/tools v0.1.13-0.20220819182638-587a15310bdd // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
@@ -50,7 +50,7 @@ require github.com/lib/pq v1.10.6 // direct
 
 require (
 	ariga.io/atlas v0.6.3 // indirect
-	entgo.io/ent v0.11.2
+	entgo.io/ent v0.11.3-0.20220830071904-3b1b75b9d7a9
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect

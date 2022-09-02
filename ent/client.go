@@ -10,15 +10,15 @@ import (
 
 	"rei.io/rei/ent/migrate"
 
-	"rei.io/rei/ent/accounts"
-	"rei.io/rei/ent/arguments"
-	"rei.io/rei/ent/events"
-	"rei.io/rei/ent/nfts"
-	"rei.io/rei/ent/objects"
-	"rei.io/rei/ent/packages"
-	"rei.io/rei/ent/sessions"
-	"rei.io/rei/ent/transactions"
-	"rei.io/rei/ent/users"
+	"rei.io/rei/ent/account"
+	"rei.io/rei/ent/argument"
+	"rei.io/rei/ent/event"
+	"rei.io/rei/ent/nft"
+	"rei.io/rei/ent/object"
+	"rei.io/rei/ent/pkg"
+	"rei.io/rei/ent/session"
+	"rei.io/rei/ent/transaction"
+	"rei.io/rei/ent/user"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -29,24 +29,24 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// Accounts is the client for interacting with the Accounts builders.
-	Accounts *AccountsClient
-	// Arguments is the client for interacting with the Arguments builders.
-	Arguments *ArgumentsClient
-	// Events is the client for interacting with the Events builders.
-	Events *EventsClient
-	// NFTs is the client for interacting with the NFTs builders.
-	NFTs *NFTsClient
-	// Objects is the client for interacting with the Objects builders.
-	Objects *ObjectsClient
-	// Packages is the client for interacting with the Packages builders.
-	Packages *PackagesClient
-	// Sessions is the client for interacting with the Sessions builders.
-	Sessions *SessionsClient
-	// Transactions is the client for interacting with the Transactions builders.
-	Transactions *TransactionsClient
-	// Users is the client for interacting with the Users builders.
-	Users *UsersClient
+	// Account is the client for interacting with the Account builders.
+	Account *AccountClient
+	// Argument is the client for interacting with the Argument builders.
+	Argument *ArgumentClient
+	// Event is the client for interacting with the Event builders.
+	Event *EventClient
+	// NFT is the client for interacting with the NFT builders.
+	NFT *NFTClient
+	// Object is the client for interacting with the Object builders.
+	Object *ObjectClient
+	// Pkg is the client for interacting with the Pkg builders.
+	Pkg *PkgClient
+	// Session is the client for interacting with the Session builders.
+	Session *SessionClient
+	// Transaction is the client for interacting with the Transaction builders.
+	Transaction *TransactionClient
+	// User is the client for interacting with the User builders.
+	User *UserClient
 	// additional fields for node api
 	tables tables
 }
@@ -62,15 +62,15 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.Accounts = NewAccountsClient(c.config)
-	c.Arguments = NewArgumentsClient(c.config)
-	c.Events = NewEventsClient(c.config)
-	c.NFTs = NewNFTsClient(c.config)
-	c.Objects = NewObjectsClient(c.config)
-	c.Packages = NewPackagesClient(c.config)
-	c.Sessions = NewSessionsClient(c.config)
-	c.Transactions = NewTransactionsClient(c.config)
-	c.Users = NewUsersClient(c.config)
+	c.Account = NewAccountClient(c.config)
+	c.Argument = NewArgumentClient(c.config)
+	c.Event = NewEventClient(c.config)
+	c.NFT = NewNFTClient(c.config)
+	c.Object = NewObjectClient(c.config)
+	c.Pkg = NewPkgClient(c.config)
+	c.Session = NewSessionClient(c.config)
+	c.Transaction = NewTransactionClient(c.config)
+	c.User = NewUserClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -102,17 +102,17 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:          ctx,
-		config:       cfg,
-		Accounts:     NewAccountsClient(cfg),
-		Arguments:    NewArgumentsClient(cfg),
-		Events:       NewEventsClient(cfg),
-		NFTs:         NewNFTsClient(cfg),
-		Objects:      NewObjectsClient(cfg),
-		Packages:     NewPackagesClient(cfg),
-		Sessions:     NewSessionsClient(cfg),
-		Transactions: NewTransactionsClient(cfg),
-		Users:        NewUsersClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		Account:     NewAccountClient(cfg),
+		Argument:    NewArgumentClient(cfg),
+		Event:       NewEventClient(cfg),
+		NFT:         NewNFTClient(cfg),
+		Object:      NewObjectClient(cfg),
+		Pkg:         NewPkgClient(cfg),
+		Session:     NewSessionClient(cfg),
+		Transaction: NewTransactionClient(cfg),
+		User:        NewUserClient(cfg),
 	}, nil
 }
 
@@ -130,24 +130,24 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:          ctx,
-		config:       cfg,
-		Accounts:     NewAccountsClient(cfg),
-		Arguments:    NewArgumentsClient(cfg),
-		Events:       NewEventsClient(cfg),
-		NFTs:         NewNFTsClient(cfg),
-		Objects:      NewObjectsClient(cfg),
-		Packages:     NewPackagesClient(cfg),
-		Sessions:     NewSessionsClient(cfg),
-		Transactions: NewTransactionsClient(cfg),
-		Users:        NewUsersClient(cfg),
+		ctx:         ctx,
+		config:      cfg,
+		Account:     NewAccountClient(cfg),
+		Argument:    NewArgumentClient(cfg),
+		Event:       NewEventClient(cfg),
+		NFT:         NewNFTClient(cfg),
+		Object:      NewObjectClient(cfg),
+		Pkg:         NewPkgClient(cfg),
+		Session:     NewSessionClient(cfg),
+		Transaction: NewTransactionClient(cfg),
+		User:        NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Accounts.
+//		Account.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -169,95 +169,95 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Accounts.Use(hooks...)
-	c.Arguments.Use(hooks...)
-	c.Events.Use(hooks...)
-	c.NFTs.Use(hooks...)
-	c.Objects.Use(hooks...)
-	c.Packages.Use(hooks...)
-	c.Sessions.Use(hooks...)
-	c.Transactions.Use(hooks...)
-	c.Users.Use(hooks...)
+	c.Account.Use(hooks...)
+	c.Argument.Use(hooks...)
+	c.Event.Use(hooks...)
+	c.NFT.Use(hooks...)
+	c.Object.Use(hooks...)
+	c.Pkg.Use(hooks...)
+	c.Session.Use(hooks...)
+	c.Transaction.Use(hooks...)
+	c.User.Use(hooks...)
 }
 
-// AccountsClient is a client for the Accounts schema.
-type AccountsClient struct {
+// AccountClient is a client for the Account schema.
+type AccountClient struct {
 	config
 }
 
-// NewAccountsClient returns a client for the Accounts from the given config.
-func NewAccountsClient(c config) *AccountsClient {
-	return &AccountsClient{config: c}
+// NewAccountClient returns a client for the Account from the given config.
+func NewAccountClient(c config) *AccountClient {
+	return &AccountClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `accounts.Hooks(f(g(h())))`.
-func (c *AccountsClient) Use(hooks ...Hook) {
-	c.hooks.Accounts = append(c.hooks.Accounts, hooks...)
+// A call to `Use(f, g, h)` equals to `account.Hooks(f(g(h())))`.
+func (c *AccountClient) Use(hooks ...Hook) {
+	c.hooks.Account = append(c.hooks.Account, hooks...)
 }
 
-// Create returns a builder for creating a Accounts entity.
-func (c *AccountsClient) Create() *AccountsCreate {
-	mutation := newAccountsMutation(c.config, OpCreate)
-	return &AccountsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Account entity.
+func (c *AccountClient) Create() *AccountCreate {
+	mutation := newAccountMutation(c.config, OpCreate)
+	return &AccountCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Accounts entities.
-func (c *AccountsClient) CreateBulk(builders ...*AccountsCreate) *AccountsCreateBulk {
-	return &AccountsCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Account entities.
+func (c *AccountClient) CreateBulk(builders ...*AccountCreate) *AccountCreateBulk {
+	return &AccountCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Accounts.
-func (c *AccountsClient) Update() *AccountsUpdate {
-	mutation := newAccountsMutation(c.config, OpUpdate)
-	return &AccountsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Account.
+func (c *AccountClient) Update() *AccountUpdate {
+	mutation := newAccountMutation(c.config, OpUpdate)
+	return &AccountUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *AccountsClient) UpdateOne(a *Accounts) *AccountsUpdateOne {
-	mutation := newAccountsMutation(c.config, OpUpdateOne, withAccounts(a))
-	return &AccountsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *AccountClient) UpdateOne(a *Account) *AccountUpdateOne {
+	mutation := newAccountMutation(c.config, OpUpdateOne, withAccount(a))
+	return &AccountUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *AccountsClient) UpdateOneID(id int) *AccountsUpdateOne {
-	mutation := newAccountsMutation(c.config, OpUpdateOne, withAccountsID(id))
-	return &AccountsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *AccountClient) UpdateOneID(id int) *AccountUpdateOne {
+	mutation := newAccountMutation(c.config, OpUpdateOne, withAccountID(id))
+	return &AccountUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Accounts.
-func (c *AccountsClient) Delete() *AccountsDelete {
-	mutation := newAccountsMutation(c.config, OpDelete)
-	return &AccountsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Account.
+func (c *AccountClient) Delete() *AccountDelete {
+	mutation := newAccountMutation(c.config, OpDelete)
+	return &AccountDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *AccountsClient) DeleteOne(a *Accounts) *AccountsDeleteOne {
+func (c *AccountClient) DeleteOne(a *Account) *AccountDeleteOne {
 	return c.DeleteOneID(a.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *AccountsClient) DeleteOneID(id int) *AccountsDeleteOne {
-	builder := c.Delete().Where(accounts.ID(id))
+func (c *AccountClient) DeleteOneID(id int) *AccountDeleteOne {
+	builder := c.Delete().Where(account.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &AccountsDeleteOne{builder}
+	return &AccountDeleteOne{builder}
 }
 
-// Query returns a query builder for Accounts.
-func (c *AccountsClient) Query() *AccountsQuery {
-	return &AccountsQuery{
+// Query returns a query builder for Account.
+func (c *AccountClient) Query() *AccountQuery {
+	return &AccountQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Accounts entity by its id.
-func (c *AccountsClient) Get(ctx context.Context, id int) (*Accounts, error) {
-	return c.Query().Where(accounts.ID(id)).Only(ctx)
+// Get returns a Account entity by its id.
+func (c *AccountClient) Get(ctx context.Context, id int) (*Account, error) {
+	return c.Query().Where(account.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *AccountsClient) GetX(ctx context.Context, id int) *Accounts {
+func (c *AccountClient) GetX(ctx context.Context, id int) *Account {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -266,88 +266,88 @@ func (c *AccountsClient) GetX(ctx context.Context, id int) *Accounts {
 }
 
 // Hooks returns the client hooks.
-func (c *AccountsClient) Hooks() []Hook {
-	return c.hooks.Accounts
+func (c *AccountClient) Hooks() []Hook {
+	return c.hooks.Account
 }
 
-// ArgumentsClient is a client for the Arguments schema.
-type ArgumentsClient struct {
+// ArgumentClient is a client for the Argument schema.
+type ArgumentClient struct {
 	config
 }
 
-// NewArgumentsClient returns a client for the Arguments from the given config.
-func NewArgumentsClient(c config) *ArgumentsClient {
-	return &ArgumentsClient{config: c}
+// NewArgumentClient returns a client for the Argument from the given config.
+func NewArgumentClient(c config) *ArgumentClient {
+	return &ArgumentClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `arguments.Hooks(f(g(h())))`.
-func (c *ArgumentsClient) Use(hooks ...Hook) {
-	c.hooks.Arguments = append(c.hooks.Arguments, hooks...)
+// A call to `Use(f, g, h)` equals to `argument.Hooks(f(g(h())))`.
+func (c *ArgumentClient) Use(hooks ...Hook) {
+	c.hooks.Argument = append(c.hooks.Argument, hooks...)
 }
 
-// Create returns a builder for creating a Arguments entity.
-func (c *ArgumentsClient) Create() *ArgumentsCreate {
-	mutation := newArgumentsMutation(c.config, OpCreate)
-	return &ArgumentsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Argument entity.
+func (c *ArgumentClient) Create() *ArgumentCreate {
+	mutation := newArgumentMutation(c.config, OpCreate)
+	return &ArgumentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Arguments entities.
-func (c *ArgumentsClient) CreateBulk(builders ...*ArgumentsCreate) *ArgumentsCreateBulk {
-	return &ArgumentsCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Argument entities.
+func (c *ArgumentClient) CreateBulk(builders ...*ArgumentCreate) *ArgumentCreateBulk {
+	return &ArgumentCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Arguments.
-func (c *ArgumentsClient) Update() *ArgumentsUpdate {
-	mutation := newArgumentsMutation(c.config, OpUpdate)
-	return &ArgumentsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Argument.
+func (c *ArgumentClient) Update() *ArgumentUpdate {
+	mutation := newArgumentMutation(c.config, OpUpdate)
+	return &ArgumentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ArgumentsClient) UpdateOne(a *Arguments) *ArgumentsUpdateOne {
-	mutation := newArgumentsMutation(c.config, OpUpdateOne, withArguments(a))
-	return &ArgumentsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ArgumentClient) UpdateOne(a *Argument) *ArgumentUpdateOne {
+	mutation := newArgumentMutation(c.config, OpUpdateOne, withArgument(a))
+	return &ArgumentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ArgumentsClient) UpdateOneID(id int) *ArgumentsUpdateOne {
-	mutation := newArgumentsMutation(c.config, OpUpdateOne, withArgumentsID(id))
-	return &ArgumentsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ArgumentClient) UpdateOneID(id int) *ArgumentUpdateOne {
+	mutation := newArgumentMutation(c.config, OpUpdateOne, withArgumentID(id))
+	return &ArgumentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Arguments.
-func (c *ArgumentsClient) Delete() *ArgumentsDelete {
-	mutation := newArgumentsMutation(c.config, OpDelete)
-	return &ArgumentsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Argument.
+func (c *ArgumentClient) Delete() *ArgumentDelete {
+	mutation := newArgumentMutation(c.config, OpDelete)
+	return &ArgumentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ArgumentsClient) DeleteOne(a *Arguments) *ArgumentsDeleteOne {
+func (c *ArgumentClient) DeleteOne(a *Argument) *ArgumentDeleteOne {
 	return c.DeleteOneID(a.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *ArgumentsClient) DeleteOneID(id int) *ArgumentsDeleteOne {
-	builder := c.Delete().Where(arguments.ID(id))
+func (c *ArgumentClient) DeleteOneID(id int) *ArgumentDeleteOne {
+	builder := c.Delete().Where(argument.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &ArgumentsDeleteOne{builder}
+	return &ArgumentDeleteOne{builder}
 }
 
-// Query returns a query builder for Arguments.
-func (c *ArgumentsClient) Query() *ArgumentsQuery {
-	return &ArgumentsQuery{
+// Query returns a query builder for Argument.
+func (c *ArgumentClient) Query() *ArgumentQuery {
+	return &ArgumentQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Arguments entity by its id.
-func (c *ArgumentsClient) Get(ctx context.Context, id int) (*Arguments, error) {
-	return c.Query().Where(arguments.ID(id)).Only(ctx)
+// Get returns a Argument entity by its id.
+func (c *ArgumentClient) Get(ctx context.Context, id int) (*Argument, error) {
+	return c.Query().Where(argument.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ArgumentsClient) GetX(ctx context.Context, id int) *Arguments {
+func (c *ArgumentClient) GetX(ctx context.Context, id int) *Argument {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -356,88 +356,88 @@ func (c *ArgumentsClient) GetX(ctx context.Context, id int) *Arguments {
 }
 
 // Hooks returns the client hooks.
-func (c *ArgumentsClient) Hooks() []Hook {
-	return c.hooks.Arguments
+func (c *ArgumentClient) Hooks() []Hook {
+	return c.hooks.Argument
 }
 
-// EventsClient is a client for the Events schema.
-type EventsClient struct {
+// EventClient is a client for the Event schema.
+type EventClient struct {
 	config
 }
 
-// NewEventsClient returns a client for the Events from the given config.
-func NewEventsClient(c config) *EventsClient {
-	return &EventsClient{config: c}
+// NewEventClient returns a client for the Event from the given config.
+func NewEventClient(c config) *EventClient {
+	return &EventClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `events.Hooks(f(g(h())))`.
-func (c *EventsClient) Use(hooks ...Hook) {
-	c.hooks.Events = append(c.hooks.Events, hooks...)
+// A call to `Use(f, g, h)` equals to `event.Hooks(f(g(h())))`.
+func (c *EventClient) Use(hooks ...Hook) {
+	c.hooks.Event = append(c.hooks.Event, hooks...)
 }
 
-// Create returns a builder for creating a Events entity.
-func (c *EventsClient) Create() *EventsCreate {
-	mutation := newEventsMutation(c.config, OpCreate)
-	return &EventsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Event entity.
+func (c *EventClient) Create() *EventCreate {
+	mutation := newEventMutation(c.config, OpCreate)
+	return &EventCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Events entities.
-func (c *EventsClient) CreateBulk(builders ...*EventsCreate) *EventsCreateBulk {
-	return &EventsCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Event entities.
+func (c *EventClient) CreateBulk(builders ...*EventCreate) *EventCreateBulk {
+	return &EventCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Events.
-func (c *EventsClient) Update() *EventsUpdate {
-	mutation := newEventsMutation(c.config, OpUpdate)
-	return &EventsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Event.
+func (c *EventClient) Update() *EventUpdate {
+	mutation := newEventMutation(c.config, OpUpdate)
+	return &EventUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *EventsClient) UpdateOne(e *Events) *EventsUpdateOne {
-	mutation := newEventsMutation(c.config, OpUpdateOne, withEvents(e))
-	return &EventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *EventClient) UpdateOne(e *Event) *EventUpdateOne {
+	mutation := newEventMutation(c.config, OpUpdateOne, withEvent(e))
+	return &EventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *EventsClient) UpdateOneID(id int) *EventsUpdateOne {
-	mutation := newEventsMutation(c.config, OpUpdateOne, withEventsID(id))
-	return &EventsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *EventClient) UpdateOneID(id int) *EventUpdateOne {
+	mutation := newEventMutation(c.config, OpUpdateOne, withEventID(id))
+	return &EventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Events.
-func (c *EventsClient) Delete() *EventsDelete {
-	mutation := newEventsMutation(c.config, OpDelete)
-	return &EventsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Event.
+func (c *EventClient) Delete() *EventDelete {
+	mutation := newEventMutation(c.config, OpDelete)
+	return &EventDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *EventsClient) DeleteOne(e *Events) *EventsDeleteOne {
+func (c *EventClient) DeleteOne(e *Event) *EventDeleteOne {
 	return c.DeleteOneID(e.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *EventsClient) DeleteOneID(id int) *EventsDeleteOne {
-	builder := c.Delete().Where(events.ID(id))
+func (c *EventClient) DeleteOneID(id int) *EventDeleteOne {
+	builder := c.Delete().Where(event.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &EventsDeleteOne{builder}
+	return &EventDeleteOne{builder}
 }
 
-// Query returns a query builder for Events.
-func (c *EventsClient) Query() *EventsQuery {
-	return &EventsQuery{
+// Query returns a query builder for Event.
+func (c *EventClient) Query() *EventQuery {
+	return &EventQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Events entity by its id.
-func (c *EventsClient) Get(ctx context.Context, id int) (*Events, error) {
-	return c.Query().Where(events.ID(id)).Only(ctx)
+// Get returns a Event entity by its id.
+func (c *EventClient) Get(ctx context.Context, id int) (*Event, error) {
+	return c.Query().Where(event.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *EventsClient) GetX(ctx context.Context, id int) *Events {
+func (c *EventClient) GetX(ctx context.Context, id int) *Event {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -446,88 +446,88 @@ func (c *EventsClient) GetX(ctx context.Context, id int) *Events {
 }
 
 // Hooks returns the client hooks.
-func (c *EventsClient) Hooks() []Hook {
-	return c.hooks.Events
+func (c *EventClient) Hooks() []Hook {
+	return c.hooks.Event
 }
 
-// NFTsClient is a client for the NFTs schema.
-type NFTsClient struct {
+// NFTClient is a client for the NFT schema.
+type NFTClient struct {
 	config
 }
 
-// NewNFTsClient returns a client for the NFTs from the given config.
-func NewNFTsClient(c config) *NFTsClient {
-	return &NFTsClient{config: c}
+// NewNFTClient returns a client for the NFT from the given config.
+func NewNFTClient(c config) *NFTClient {
+	return &NFTClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `nfts.Hooks(f(g(h())))`.
-func (c *NFTsClient) Use(hooks ...Hook) {
-	c.hooks.NFTs = append(c.hooks.NFTs, hooks...)
+// A call to `Use(f, g, h)` equals to `nft.Hooks(f(g(h())))`.
+func (c *NFTClient) Use(hooks ...Hook) {
+	c.hooks.NFT = append(c.hooks.NFT, hooks...)
 }
 
-// Create returns a builder for creating a NFTs entity.
-func (c *NFTsClient) Create() *NFTsCreate {
-	mutation := newNFTsMutation(c.config, OpCreate)
-	return &NFTsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a NFT entity.
+func (c *NFTClient) Create() *NFTCreate {
+	mutation := newNFTMutation(c.config, OpCreate)
+	return &NFTCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of NFTs entities.
-func (c *NFTsClient) CreateBulk(builders ...*NFTsCreate) *NFTsCreateBulk {
-	return &NFTsCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of NFT entities.
+func (c *NFTClient) CreateBulk(builders ...*NFTCreate) *NFTCreateBulk {
+	return &NFTCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for NFTs.
-func (c *NFTsClient) Update() *NFTsUpdate {
-	mutation := newNFTsMutation(c.config, OpUpdate)
-	return &NFTsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for NFT.
+func (c *NFTClient) Update() *NFTUpdate {
+	mutation := newNFTMutation(c.config, OpUpdate)
+	return &NFTUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *NFTsClient) UpdateOne(nt *NFTs) *NFTsUpdateOne {
-	mutation := newNFTsMutation(c.config, OpUpdateOne, withNFTs(nt))
-	return &NFTsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *NFTClient) UpdateOne(n *NFT) *NFTUpdateOne {
+	mutation := newNFTMutation(c.config, OpUpdateOne, withNFT(n))
+	return &NFTUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *NFTsClient) UpdateOneID(id int) *NFTsUpdateOne {
-	mutation := newNFTsMutation(c.config, OpUpdateOne, withNFTsID(id))
-	return &NFTsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *NFTClient) UpdateOneID(id int) *NFTUpdateOne {
+	mutation := newNFTMutation(c.config, OpUpdateOne, withNFTID(id))
+	return &NFTUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for NFTs.
-func (c *NFTsClient) Delete() *NFTsDelete {
-	mutation := newNFTsMutation(c.config, OpDelete)
-	return &NFTsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for NFT.
+func (c *NFTClient) Delete() *NFTDelete {
+	mutation := newNFTMutation(c.config, OpDelete)
+	return &NFTDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *NFTsClient) DeleteOne(nt *NFTs) *NFTsDeleteOne {
-	return c.DeleteOneID(nt.ID)
+func (c *NFTClient) DeleteOne(n *NFT) *NFTDeleteOne {
+	return c.DeleteOneID(n.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *NFTsClient) DeleteOneID(id int) *NFTsDeleteOne {
-	builder := c.Delete().Where(nfts.ID(id))
+func (c *NFTClient) DeleteOneID(id int) *NFTDeleteOne {
+	builder := c.Delete().Where(nft.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &NFTsDeleteOne{builder}
+	return &NFTDeleteOne{builder}
 }
 
-// Query returns a query builder for NFTs.
-func (c *NFTsClient) Query() *NFTsQuery {
-	return &NFTsQuery{
+// Query returns a query builder for NFT.
+func (c *NFTClient) Query() *NFTQuery {
+	return &NFTQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a NFTs entity by its id.
-func (c *NFTsClient) Get(ctx context.Context, id int) (*NFTs, error) {
-	return c.Query().Where(nfts.ID(id)).Only(ctx)
+// Get returns a NFT entity by its id.
+func (c *NFTClient) Get(ctx context.Context, id int) (*NFT, error) {
+	return c.Query().Where(nft.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *NFTsClient) GetX(ctx context.Context, id int) *NFTs {
+func (c *NFTClient) GetX(ctx context.Context, id int) *NFT {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -536,88 +536,88 @@ func (c *NFTsClient) GetX(ctx context.Context, id int) *NFTs {
 }
 
 // Hooks returns the client hooks.
-func (c *NFTsClient) Hooks() []Hook {
-	return c.hooks.NFTs
+func (c *NFTClient) Hooks() []Hook {
+	return c.hooks.NFT
 }
 
-// ObjectsClient is a client for the Objects schema.
-type ObjectsClient struct {
+// ObjectClient is a client for the Object schema.
+type ObjectClient struct {
 	config
 }
 
-// NewObjectsClient returns a client for the Objects from the given config.
-func NewObjectsClient(c config) *ObjectsClient {
-	return &ObjectsClient{config: c}
+// NewObjectClient returns a client for the Object from the given config.
+func NewObjectClient(c config) *ObjectClient {
+	return &ObjectClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `objects.Hooks(f(g(h())))`.
-func (c *ObjectsClient) Use(hooks ...Hook) {
-	c.hooks.Objects = append(c.hooks.Objects, hooks...)
+// A call to `Use(f, g, h)` equals to `object.Hooks(f(g(h())))`.
+func (c *ObjectClient) Use(hooks ...Hook) {
+	c.hooks.Object = append(c.hooks.Object, hooks...)
 }
 
-// Create returns a builder for creating a Objects entity.
-func (c *ObjectsClient) Create() *ObjectsCreate {
-	mutation := newObjectsMutation(c.config, OpCreate)
-	return &ObjectsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Object entity.
+func (c *ObjectClient) Create() *ObjectCreate {
+	mutation := newObjectMutation(c.config, OpCreate)
+	return &ObjectCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Objects entities.
-func (c *ObjectsClient) CreateBulk(builders ...*ObjectsCreate) *ObjectsCreateBulk {
-	return &ObjectsCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Object entities.
+func (c *ObjectClient) CreateBulk(builders ...*ObjectCreate) *ObjectCreateBulk {
+	return &ObjectCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Objects.
-func (c *ObjectsClient) Update() *ObjectsUpdate {
-	mutation := newObjectsMutation(c.config, OpUpdate)
-	return &ObjectsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Object.
+func (c *ObjectClient) Update() *ObjectUpdate {
+	mutation := newObjectMutation(c.config, OpUpdate)
+	return &ObjectUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *ObjectsClient) UpdateOne(o *Objects) *ObjectsUpdateOne {
-	mutation := newObjectsMutation(c.config, OpUpdateOne, withObjects(o))
-	return &ObjectsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ObjectClient) UpdateOne(o *Object) *ObjectUpdateOne {
+	mutation := newObjectMutation(c.config, OpUpdateOne, withObject(o))
+	return &ObjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ObjectsClient) UpdateOneID(id int) *ObjectsUpdateOne {
-	mutation := newObjectsMutation(c.config, OpUpdateOne, withObjectsID(id))
-	return &ObjectsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *ObjectClient) UpdateOneID(id int) *ObjectUpdateOne {
+	mutation := newObjectMutation(c.config, OpUpdateOne, withObjectID(id))
+	return &ObjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Objects.
-func (c *ObjectsClient) Delete() *ObjectsDelete {
-	mutation := newObjectsMutation(c.config, OpDelete)
-	return &ObjectsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Object.
+func (c *ObjectClient) Delete() *ObjectDelete {
+	mutation := newObjectMutation(c.config, OpDelete)
+	return &ObjectDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *ObjectsClient) DeleteOne(o *Objects) *ObjectsDeleteOne {
+func (c *ObjectClient) DeleteOne(o *Object) *ObjectDeleteOne {
 	return c.DeleteOneID(o.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *ObjectsClient) DeleteOneID(id int) *ObjectsDeleteOne {
-	builder := c.Delete().Where(objects.ID(id))
+func (c *ObjectClient) DeleteOneID(id int) *ObjectDeleteOne {
+	builder := c.Delete().Where(object.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &ObjectsDeleteOne{builder}
+	return &ObjectDeleteOne{builder}
 }
 
-// Query returns a query builder for Objects.
-func (c *ObjectsClient) Query() *ObjectsQuery {
-	return &ObjectsQuery{
+// Query returns a query builder for Object.
+func (c *ObjectClient) Query() *ObjectQuery {
+	return &ObjectQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Objects entity by its id.
-func (c *ObjectsClient) Get(ctx context.Context, id int) (*Objects, error) {
-	return c.Query().Where(objects.ID(id)).Only(ctx)
+// Get returns a Object entity by its id.
+func (c *ObjectClient) Get(ctx context.Context, id int) (*Object, error) {
+	return c.Query().Where(object.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ObjectsClient) GetX(ctx context.Context, id int) *Objects {
+func (c *ObjectClient) GetX(ctx context.Context, id int) *Object {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -626,88 +626,88 @@ func (c *ObjectsClient) GetX(ctx context.Context, id int) *Objects {
 }
 
 // Hooks returns the client hooks.
-func (c *ObjectsClient) Hooks() []Hook {
-	return c.hooks.Objects
+func (c *ObjectClient) Hooks() []Hook {
+	return c.hooks.Object
 }
 
-// PackagesClient is a client for the Packages schema.
-type PackagesClient struct {
+// PkgClient is a client for the Pkg schema.
+type PkgClient struct {
 	config
 }
 
-// NewPackagesClient returns a client for the Packages from the given config.
-func NewPackagesClient(c config) *PackagesClient {
-	return &PackagesClient{config: c}
+// NewPkgClient returns a client for the Pkg from the given config.
+func NewPkgClient(c config) *PkgClient {
+	return &PkgClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `packages.Hooks(f(g(h())))`.
-func (c *PackagesClient) Use(hooks ...Hook) {
-	c.hooks.Packages = append(c.hooks.Packages, hooks...)
+// A call to `Use(f, g, h)` equals to `pkg.Hooks(f(g(h())))`.
+func (c *PkgClient) Use(hooks ...Hook) {
+	c.hooks.Pkg = append(c.hooks.Pkg, hooks...)
 }
 
-// Create returns a builder for creating a Packages entity.
-func (c *PackagesClient) Create() *PackagesCreate {
-	mutation := newPackagesMutation(c.config, OpCreate)
-	return &PackagesCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Pkg entity.
+func (c *PkgClient) Create() *PkgCreate {
+	mutation := newPkgMutation(c.config, OpCreate)
+	return &PkgCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Packages entities.
-func (c *PackagesClient) CreateBulk(builders ...*PackagesCreate) *PackagesCreateBulk {
-	return &PackagesCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Pkg entities.
+func (c *PkgClient) CreateBulk(builders ...*PkgCreate) *PkgCreateBulk {
+	return &PkgCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Packages.
-func (c *PackagesClient) Update() *PackagesUpdate {
-	mutation := newPackagesMutation(c.config, OpUpdate)
-	return &PackagesUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Pkg.
+func (c *PkgClient) Update() *PkgUpdate {
+	mutation := newPkgMutation(c.config, OpUpdate)
+	return &PkgUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *PackagesClient) UpdateOne(pa *Packages) *PackagesUpdateOne {
-	mutation := newPackagesMutation(c.config, OpUpdateOne, withPackages(pa))
-	return &PackagesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *PkgClient) UpdateOne(pk *Pkg) *PkgUpdateOne {
+	mutation := newPkgMutation(c.config, OpUpdateOne, withPkg(pk))
+	return &PkgUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *PackagesClient) UpdateOneID(id int) *PackagesUpdateOne {
-	mutation := newPackagesMutation(c.config, OpUpdateOne, withPackagesID(id))
-	return &PackagesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *PkgClient) UpdateOneID(id int) *PkgUpdateOne {
+	mutation := newPkgMutation(c.config, OpUpdateOne, withPkgID(id))
+	return &PkgUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Packages.
-func (c *PackagesClient) Delete() *PackagesDelete {
-	mutation := newPackagesMutation(c.config, OpDelete)
-	return &PackagesDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Pkg.
+func (c *PkgClient) Delete() *PkgDelete {
+	mutation := newPkgMutation(c.config, OpDelete)
+	return &PkgDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *PackagesClient) DeleteOne(pa *Packages) *PackagesDeleteOne {
-	return c.DeleteOneID(pa.ID)
+func (c *PkgClient) DeleteOne(pk *Pkg) *PkgDeleteOne {
+	return c.DeleteOneID(pk.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *PackagesClient) DeleteOneID(id int) *PackagesDeleteOne {
-	builder := c.Delete().Where(packages.ID(id))
+func (c *PkgClient) DeleteOneID(id int) *PkgDeleteOne {
+	builder := c.Delete().Where(pkg.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &PackagesDeleteOne{builder}
+	return &PkgDeleteOne{builder}
 }
 
-// Query returns a query builder for Packages.
-func (c *PackagesClient) Query() *PackagesQuery {
-	return &PackagesQuery{
+// Query returns a query builder for Pkg.
+func (c *PkgClient) Query() *PkgQuery {
+	return &PkgQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Packages entity by its id.
-func (c *PackagesClient) Get(ctx context.Context, id int) (*Packages, error) {
-	return c.Query().Where(packages.ID(id)).Only(ctx)
+// Get returns a Pkg entity by its id.
+func (c *PkgClient) Get(ctx context.Context, id int) (*Pkg, error) {
+	return c.Query().Where(pkg.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *PackagesClient) GetX(ctx context.Context, id int) *Packages {
+func (c *PkgClient) GetX(ctx context.Context, id int) *Pkg {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -716,88 +716,88 @@ func (c *PackagesClient) GetX(ctx context.Context, id int) *Packages {
 }
 
 // Hooks returns the client hooks.
-func (c *PackagesClient) Hooks() []Hook {
-	return c.hooks.Packages
+func (c *PkgClient) Hooks() []Hook {
+	return c.hooks.Pkg
 }
 
-// SessionsClient is a client for the Sessions schema.
-type SessionsClient struct {
+// SessionClient is a client for the Session schema.
+type SessionClient struct {
 	config
 }
 
-// NewSessionsClient returns a client for the Sessions from the given config.
-func NewSessionsClient(c config) *SessionsClient {
-	return &SessionsClient{config: c}
+// NewSessionClient returns a client for the Session from the given config.
+func NewSessionClient(c config) *SessionClient {
+	return &SessionClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `sessions.Hooks(f(g(h())))`.
-func (c *SessionsClient) Use(hooks ...Hook) {
-	c.hooks.Sessions = append(c.hooks.Sessions, hooks...)
+// A call to `Use(f, g, h)` equals to `session.Hooks(f(g(h())))`.
+func (c *SessionClient) Use(hooks ...Hook) {
+	c.hooks.Session = append(c.hooks.Session, hooks...)
 }
 
-// Create returns a builder for creating a Sessions entity.
-func (c *SessionsClient) Create() *SessionsCreate {
-	mutation := newSessionsMutation(c.config, OpCreate)
-	return &SessionsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Session entity.
+func (c *SessionClient) Create() *SessionCreate {
+	mutation := newSessionMutation(c.config, OpCreate)
+	return &SessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Sessions entities.
-func (c *SessionsClient) CreateBulk(builders ...*SessionsCreate) *SessionsCreateBulk {
-	return &SessionsCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Session entities.
+func (c *SessionClient) CreateBulk(builders ...*SessionCreate) *SessionCreateBulk {
+	return &SessionCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Sessions.
-func (c *SessionsClient) Update() *SessionsUpdate {
-	mutation := newSessionsMutation(c.config, OpUpdate)
-	return &SessionsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Session.
+func (c *SessionClient) Update() *SessionUpdate {
+	mutation := newSessionMutation(c.config, OpUpdate)
+	return &SessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *SessionsClient) UpdateOne(s *Sessions) *SessionsUpdateOne {
-	mutation := newSessionsMutation(c.config, OpUpdateOne, withSessions(s))
-	return &SessionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SessionClient) UpdateOne(s *Session) *SessionUpdateOne {
+	mutation := newSessionMutation(c.config, OpUpdateOne, withSession(s))
+	return &SessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *SessionsClient) UpdateOneID(id int) *SessionsUpdateOne {
-	mutation := newSessionsMutation(c.config, OpUpdateOne, withSessionsID(id))
-	return &SessionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SessionClient) UpdateOneID(id int) *SessionUpdateOne {
+	mutation := newSessionMutation(c.config, OpUpdateOne, withSessionID(id))
+	return &SessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Sessions.
-func (c *SessionsClient) Delete() *SessionsDelete {
-	mutation := newSessionsMutation(c.config, OpDelete)
-	return &SessionsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Session.
+func (c *SessionClient) Delete() *SessionDelete {
+	mutation := newSessionMutation(c.config, OpDelete)
+	return &SessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *SessionsClient) DeleteOne(s *Sessions) *SessionsDeleteOne {
+func (c *SessionClient) DeleteOne(s *Session) *SessionDeleteOne {
 	return c.DeleteOneID(s.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *SessionsClient) DeleteOneID(id int) *SessionsDeleteOne {
-	builder := c.Delete().Where(sessions.ID(id))
+func (c *SessionClient) DeleteOneID(id int) *SessionDeleteOne {
+	builder := c.Delete().Where(session.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &SessionsDeleteOne{builder}
+	return &SessionDeleteOne{builder}
 }
 
-// Query returns a query builder for Sessions.
-func (c *SessionsClient) Query() *SessionsQuery {
-	return &SessionsQuery{
+// Query returns a query builder for Session.
+func (c *SessionClient) Query() *SessionQuery {
+	return &SessionQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Sessions entity by its id.
-func (c *SessionsClient) Get(ctx context.Context, id int) (*Sessions, error) {
-	return c.Query().Where(sessions.ID(id)).Only(ctx)
+// Get returns a Session entity by its id.
+func (c *SessionClient) Get(ctx context.Context, id int) (*Session, error) {
+	return c.Query().Where(session.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *SessionsClient) GetX(ctx context.Context, id int) *Sessions {
+func (c *SessionClient) GetX(ctx context.Context, id int) *Session {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -806,88 +806,88 @@ func (c *SessionsClient) GetX(ctx context.Context, id int) *Sessions {
 }
 
 // Hooks returns the client hooks.
-func (c *SessionsClient) Hooks() []Hook {
-	return c.hooks.Sessions
+func (c *SessionClient) Hooks() []Hook {
+	return c.hooks.Session
 }
 
-// TransactionsClient is a client for the Transactions schema.
-type TransactionsClient struct {
+// TransactionClient is a client for the Transaction schema.
+type TransactionClient struct {
 	config
 }
 
-// NewTransactionsClient returns a client for the Transactions from the given config.
-func NewTransactionsClient(c config) *TransactionsClient {
-	return &TransactionsClient{config: c}
+// NewTransactionClient returns a client for the Transaction from the given config.
+func NewTransactionClient(c config) *TransactionClient {
+	return &TransactionClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `transactions.Hooks(f(g(h())))`.
-func (c *TransactionsClient) Use(hooks ...Hook) {
-	c.hooks.Transactions = append(c.hooks.Transactions, hooks...)
+// A call to `Use(f, g, h)` equals to `transaction.Hooks(f(g(h())))`.
+func (c *TransactionClient) Use(hooks ...Hook) {
+	c.hooks.Transaction = append(c.hooks.Transaction, hooks...)
 }
 
-// Create returns a builder for creating a Transactions entity.
-func (c *TransactionsClient) Create() *TransactionsCreate {
-	mutation := newTransactionsMutation(c.config, OpCreate)
-	return &TransactionsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a Transaction entity.
+func (c *TransactionClient) Create() *TransactionCreate {
+	mutation := newTransactionMutation(c.config, OpCreate)
+	return &TransactionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Transactions entities.
-func (c *TransactionsClient) CreateBulk(builders ...*TransactionsCreate) *TransactionsCreateBulk {
-	return &TransactionsCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of Transaction entities.
+func (c *TransactionClient) CreateBulk(builders ...*TransactionCreate) *TransactionCreateBulk {
+	return &TransactionCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Transactions.
-func (c *TransactionsClient) Update() *TransactionsUpdate {
-	mutation := newTransactionsMutation(c.config, OpUpdate)
-	return &TransactionsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for Transaction.
+func (c *TransactionClient) Update() *TransactionUpdate {
+	mutation := newTransactionMutation(c.config, OpUpdate)
+	return &TransactionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *TransactionsClient) UpdateOne(t *Transactions) *TransactionsUpdateOne {
-	mutation := newTransactionsMutation(c.config, OpUpdateOne, withTransactions(t))
-	return &TransactionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *TransactionClient) UpdateOne(t *Transaction) *TransactionUpdateOne {
+	mutation := newTransactionMutation(c.config, OpUpdateOne, withTransaction(t))
+	return &TransactionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *TransactionsClient) UpdateOneID(id int) *TransactionsUpdateOne {
-	mutation := newTransactionsMutation(c.config, OpUpdateOne, withTransactionsID(id))
-	return &TransactionsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *TransactionClient) UpdateOneID(id int) *TransactionUpdateOne {
+	mutation := newTransactionMutation(c.config, OpUpdateOne, withTransactionID(id))
+	return &TransactionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Transactions.
-func (c *TransactionsClient) Delete() *TransactionsDelete {
-	mutation := newTransactionsMutation(c.config, OpDelete)
-	return &TransactionsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for Transaction.
+func (c *TransactionClient) Delete() *TransactionDelete {
+	mutation := newTransactionMutation(c.config, OpDelete)
+	return &TransactionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *TransactionsClient) DeleteOne(t *Transactions) *TransactionsDeleteOne {
+func (c *TransactionClient) DeleteOne(t *Transaction) *TransactionDeleteOne {
 	return c.DeleteOneID(t.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *TransactionsClient) DeleteOneID(id int) *TransactionsDeleteOne {
-	builder := c.Delete().Where(transactions.ID(id))
+func (c *TransactionClient) DeleteOneID(id int) *TransactionDeleteOne {
+	builder := c.Delete().Where(transaction.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &TransactionsDeleteOne{builder}
+	return &TransactionDeleteOne{builder}
 }
 
-// Query returns a query builder for Transactions.
-func (c *TransactionsClient) Query() *TransactionsQuery {
-	return &TransactionsQuery{
+// Query returns a query builder for Transaction.
+func (c *TransactionClient) Query() *TransactionQuery {
+	return &TransactionQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Transactions entity by its id.
-func (c *TransactionsClient) Get(ctx context.Context, id int) (*Transactions, error) {
-	return c.Query().Where(transactions.ID(id)).Only(ctx)
+// Get returns a Transaction entity by its id.
+func (c *TransactionClient) Get(ctx context.Context, id int) (*Transaction, error) {
+	return c.Query().Where(transaction.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *TransactionsClient) GetX(ctx context.Context, id int) *Transactions {
+func (c *TransactionClient) GetX(ctx context.Context, id int) *Transaction {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -896,88 +896,88 @@ func (c *TransactionsClient) GetX(ctx context.Context, id int) *Transactions {
 }
 
 // Hooks returns the client hooks.
-func (c *TransactionsClient) Hooks() []Hook {
-	return c.hooks.Transactions
+func (c *TransactionClient) Hooks() []Hook {
+	return c.hooks.Transaction
 }
 
-// UsersClient is a client for the Users schema.
-type UsersClient struct {
+// UserClient is a client for the User schema.
+type UserClient struct {
 	config
 }
 
-// NewUsersClient returns a client for the Users from the given config.
-func NewUsersClient(c config) *UsersClient {
-	return &UsersClient{config: c}
+// NewUserClient returns a client for the User from the given config.
+func NewUserClient(c config) *UserClient {
+	return &UserClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `users.Hooks(f(g(h())))`.
-func (c *UsersClient) Use(hooks ...Hook) {
-	c.hooks.Users = append(c.hooks.Users, hooks...)
+// A call to `Use(f, g, h)` equals to `user.Hooks(f(g(h())))`.
+func (c *UserClient) Use(hooks ...Hook) {
+	c.hooks.User = append(c.hooks.User, hooks...)
 }
 
-// Create returns a builder for creating a Users entity.
-func (c *UsersClient) Create() *UsersCreate {
-	mutation := newUsersMutation(c.config, OpCreate)
-	return &UsersCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a User entity.
+func (c *UserClient) Create() *UserCreate {
+	mutation := newUserMutation(c.config, OpCreate)
+	return &UserCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Users entities.
-func (c *UsersClient) CreateBulk(builders ...*UsersCreate) *UsersCreateBulk {
-	return &UsersCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of User entities.
+func (c *UserClient) CreateBulk(builders ...*UserCreate) *UserCreateBulk {
+	return &UserCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Users.
-func (c *UsersClient) Update() *UsersUpdate {
-	mutation := newUsersMutation(c.config, OpUpdate)
-	return &UsersUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for User.
+func (c *UserClient) Update() *UserUpdate {
+	mutation := newUserMutation(c.config, OpUpdate)
+	return &UserUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *UsersClient) UpdateOne(u *Users) *UsersUpdateOne {
-	mutation := newUsersMutation(c.config, OpUpdateOne, withUsers(u))
-	return &UsersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
+	mutation := newUserMutation(c.config, OpUpdateOne, withUser(u))
+	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *UsersClient) UpdateOneID(id int) *UsersUpdateOne {
-	mutation := newUsersMutation(c.config, OpUpdateOne, withUsersID(id))
-	return &UsersUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *UserClient) UpdateOneID(id int) *UserUpdateOne {
+	mutation := newUserMutation(c.config, OpUpdateOne, withUserID(id))
+	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Users.
-func (c *UsersClient) Delete() *UsersDelete {
-	mutation := newUsersMutation(c.config, OpDelete)
-	return &UsersDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for User.
+func (c *UserClient) Delete() *UserDelete {
+	mutation := newUserMutation(c.config, OpDelete)
+	return &UserDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *UsersClient) DeleteOne(u *Users) *UsersDeleteOne {
+func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
 	return c.DeleteOneID(u.ID)
 }
 
 // DeleteOne returns a builder for deleting the given entity by its id.
-func (c *UsersClient) DeleteOneID(id int) *UsersDeleteOne {
-	builder := c.Delete().Where(users.ID(id))
+func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
+	builder := c.Delete().Where(user.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &UsersDeleteOne{builder}
+	return &UserDeleteOne{builder}
 }
 
-// Query returns a query builder for Users.
-func (c *UsersClient) Query() *UsersQuery {
-	return &UsersQuery{
+// Query returns a query builder for User.
+func (c *UserClient) Query() *UserQuery {
+	return &UserQuery{
 		config: c.config,
 	}
 }
 
-// Get returns a Users entity by its id.
-func (c *UsersClient) Get(ctx context.Context, id int) (*Users, error) {
-	return c.Query().Where(users.ID(id)).Only(ctx)
+// Get returns a User entity by its id.
+func (c *UserClient) Get(ctx context.Context, id int) (*User, error) {
+	return c.Query().Where(user.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *UsersClient) GetX(ctx context.Context, id int) *Users {
+func (c *UserClient) GetX(ctx context.Context, id int) *User {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -986,6 +986,6 @@ func (c *UsersClient) GetX(ctx context.Context, id int) *Users {
 }
 
 // Hooks returns the client hooks.
-func (c *UsersClient) Hooks() []Hook {
-	return c.hooks.Users
+func (c *UserClient) Hooks() []Hook {
+	return c.hooks.User
 }

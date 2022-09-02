@@ -17,22 +17,22 @@ type config struct {
 	// debug enable a debug logging.
 	debug bool
 	// log used for logging on debug mode.
-	log func(...interface{})
+	log func(...any)
 	// hooks to execute on mutations.
 	hooks *hooks
 }
 
 // hooks per client, for fast access.
 type hooks struct {
-	Accounts     []ent.Hook
-	Arguments    []ent.Hook
-	Events       []ent.Hook
-	NFTs         []ent.Hook
-	Objects      []ent.Hook
-	Packages     []ent.Hook
-	Sessions     []ent.Hook
-	Transactions []ent.Hook
-	Users        []ent.Hook
+	Account     []ent.Hook
+	Argument    []ent.Hook
+	Event       []ent.Hook
+	NFT         []ent.Hook
+	Object      []ent.Hook
+	Pkg         []ent.Hook
+	Session     []ent.Hook
+	Transaction []ent.Hook
+	User        []ent.Hook
 }
 
 // Options applies the options on the config object.
@@ -53,7 +53,7 @@ func Debug() Option {
 }
 
 // Log sets the logging function for debug mode.
-func Log(fn func(...interface{})) Option {
+func Log(fn func(...any)) Option {
 	return func(c *config) {
 		c.log = fn
 	}

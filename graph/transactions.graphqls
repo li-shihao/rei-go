@@ -1,4 +1,4 @@
-type Transactions {
+type Transaction {
   id: ID!
   Type: String!
   Time: String!
@@ -14,5 +14,6 @@ type Transactions {
 }
 
 type Query {
-  transactions: Transactions
+  transactions: [Transaction]
+  transaction(TransactionID: String!): Transaction
 }
