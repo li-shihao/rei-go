@@ -47,6 +47,8 @@ type Client struct {
 	Transactions *TransactionsClient
 	// Users is the client for interacting with the Users builders.
 	Users *UsersClient
+	// additional fields for node api
+	tables tables
 }
 
 // NewClient creates a new client configured with the given options.

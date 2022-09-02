@@ -23,6 +23,8 @@ type SessionsQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Sessions
+	modifiers  []func(*sql.Selector)
+	loadTotal  []func(context.Context, []*Sessions) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -324,6 +326,9 @@ func (sq *SessionsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ses
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
+	if len(sq.modifiers) > 0 {
+		_spec.Modifiers = sq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -333,11 +338,19 @@ func (sq *SessionsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ses
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	for i := range sq.loadTotal {
+		if err := sq.loadTotal[i](ctx, nodes); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (sq *SessionsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := sq.querySpec()
+	if len(sq.modifiers) > 0 {
+		_spec.Modifiers = sq.modifiers
+	}
 	_spec.Node.Columns = sq.fields
 	if len(sq.fields) > 0 {
 		_spec.Unique = sq.unique != nil && *sq.unique

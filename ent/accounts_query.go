@@ -23,6 +23,8 @@ type AccountsQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Accounts
+	modifiers  []func(*sql.Selector)
+	loadTotal  []func(context.Context, []*Accounts) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -324,6 +326,9 @@ func (aq *AccountsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acc
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
+	if len(aq.modifiers) > 0 {
+		_spec.Modifiers = aq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -333,11 +338,19 @@ func (aq *AccountsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Acc
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	for i := range aq.loadTotal {
+		if err := aq.loadTotal[i](ctx, nodes); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (aq *AccountsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := aq.querySpec()
+	if len(aq.modifiers) > 0 {
+		_spec.Modifiers = aq.modifiers
+	}
 	_spec.Node.Columns = aq.fields
 	if len(aq.fields) > 0 {
 		_spec.Unique = aq.unique != nil && *aq.unique

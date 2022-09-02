@@ -1,0 +1,18 @@
+type Transactions {
+  id: ID!
+  Type: String!
+  Time: String!
+  TransactionID: String!
+  Status: Boolean!
+  Sender: String!
+  Recipient: String!
+  Amount: Float!
+  Package: String!
+  Module: String!
+  Function: String!
+  Gas: Int!
+}
+
+type Query {
+  transactions: Transactions
+}

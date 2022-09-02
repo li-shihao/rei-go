@@ -23,6 +23,8 @@ type PackagesQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Packages
+	modifiers  []func(*sql.Selector)
+	loadTotal  []func(context.Context, []*Packages) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -324,6 +326,9 @@ func (pq *PackagesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pac
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
+	if len(pq.modifiers) > 0 {
+		_spec.Modifiers = pq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -333,11 +338,19 @@ func (pq *PackagesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pac
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	for i := range pq.loadTotal {
+		if err := pq.loadTotal[i](ctx, nodes); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (pq *PackagesQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := pq.querySpec()
+	if len(pq.modifiers) > 0 {
+		_spec.Modifiers = pq.modifiers
+	}
 	_spec.Node.Columns = pq.fields
 	if len(pq.fields) > 0 {
 		_spec.Unique = pq.unique != nil && *pq.unique

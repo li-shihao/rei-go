@@ -23,6 +23,8 @@ type ObjectsQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Objects
+	modifiers  []func(*sql.Selector)
+	loadTotal  []func(context.Context, []*Objects) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -324,6 +326,9 @@ func (oq *ObjectsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Obje
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
+	if len(oq.modifiers) > 0 {
+		_spec.Modifiers = oq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -333,11 +338,19 @@ func (oq *ObjectsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Obje
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	for i := range oq.loadTotal {
+		if err := oq.loadTotal[i](ctx, nodes); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (oq *ObjectsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := oq.querySpec()
+	if len(oq.modifiers) > 0 {
+		_spec.Modifiers = oq.modifiers
+	}
 	_spec.Node.Columns = oq.fields
 	if len(oq.fields) > 0 {
 		_spec.Unique = oq.unique != nil && *oq.unique

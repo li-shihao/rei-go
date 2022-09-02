@@ -21,6 +21,10 @@ type EntClient struct {
 	client *ent.Client
 }
 
+func (c *EntClient) GetClient() *ent.Client {
+	return c.client
+}
+
 func (c *EntClient) Init(dbType string, dbOption string) {
 	cl, err := ent.Open(dbType, dbOption)
 	if err != nil {

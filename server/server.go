@@ -48,6 +48,8 @@ func CreateServer(str string) *chi.Mux {
 		r.Use(setDB)
 		r.Post("/signup", auth.Signup)
 		r.Post("/login", auth.Login)
+		r.Post("/query", api.GraphQLHandler(connStr))
+		r.Get("/playground", api.PlaygroundQLHandler("/query"))
 	})
 
 	// Private Routes (Requires Auth)

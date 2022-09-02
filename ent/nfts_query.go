@@ -23,6 +23,8 @@ type NFTsQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.NFTs
+	modifiers  []func(*sql.Selector)
+	loadTotal  []func(context.Context, []*NFTs) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -324,6 +326,9 @@ func (ntq *NFTsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*NFTs, 
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
+	if len(ntq.modifiers) > 0 {
+		_spec.Modifiers = ntq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -333,11 +338,19 @@ func (ntq *NFTsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*NFTs, 
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	for i := range ntq.loadTotal {
+		if err := ntq.loadTotal[i](ctx, nodes); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (ntq *NFTsQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := ntq.querySpec()
+	if len(ntq.modifiers) > 0 {
+		_spec.Modifiers = ntq.modifiers
+	}
 	_spec.Node.Columns = ntq.fields
 	if len(ntq.fields) > 0 {
 		_spec.Unique = ntq.unique != nil && *ntq.unique
