@@ -1,0 +1,9 @@
+type Pkg {
+  TransactionID: String!
+  ObjectID: String!
+  Bytecode: Map!
+}
+
+extend type Query {
+  pkg(ObjectID: String, TransactionID: String): Pkg
+}

@@ -1,0 +1,19 @@
+type Account {
+  SequenceID: Int!
+  AccountID: String!
+  Balance: Int!
+  Transactions: [String!]!
+  Objects: [AccObject]
+}
+
+scalar Map
+
+type AccObject {
+  ObjectId: String!
+  Type: String!
+  Metadata: Map!
+}
+
+extend type Query {
+  account(AccountID: String!): Account
+}

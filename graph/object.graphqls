@@ -1,0 +1,15 @@
+type Object {
+  Status: String!
+  Datatype: String!
+  Type: String!
+  Has_public_transfer: Boolean!
+  Fields: Map!
+  Owner: String!
+  ObjectID: String!
+  SequenceID: Int!
+}
+
+extend type Query {
+  object(ObjectID: String!): Object
+  Objects(Owner: String!): [Object]
+}

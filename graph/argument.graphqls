@@ -1,0 +1,10 @@
+type Argument {
+  Name: String!
+  Type: String!
+  TransactionID: String!
+  Data: String!
+}
+
+extend type Query {
+  argument(TransactionID: String!): Argument
+}

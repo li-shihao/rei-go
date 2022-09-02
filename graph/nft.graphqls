@@ -1,0 +1,10 @@
+type NFT {
+  ObjectID: String!
+  Type: String!
+  Metadata: Map!
+  SequenceID: Int!
+}
+
+extend type Query {
+  nft(ObjectID: String!): NFT
+}

@@ -1,0 +1,14 @@
+scalar Time
+
+type Event {
+  Type: String!
+  Sender: String!
+  Recipient: String!
+  TransactionID: String!
+  ObjectID: String!
+  Version: Int!
+}
+
+extend type Query {
+  events(TransactionID: String!): [Event]
+}

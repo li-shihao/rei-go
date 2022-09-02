@@ -2,8 +2,8 @@
 
 package model
 
-type TransactionsInput struct {
-	TransactionID string `json:"TransactionID"`
-	Sender        string `json:"Sender"`
-	Recipient     string `json:"Recipient"`
+type AccObject struct {
+	ObjectID string                 `json:"ObjectId"`
+	Type     string                 `json:"Type"`
+	Metadata map[string]interface{} `json:"Metadata"`
 }

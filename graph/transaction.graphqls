@@ -1,0 +1,19 @@
+type Transaction {
+  Type: String!
+  Time: Time!
+  TransactionID: String!
+  Status: Boolean!
+  Sender: String!
+  Recipient: String!
+  Amount: Float!
+  Package: String!
+  Module: String!
+  Function: String!
+  Gas: Int!
+}
+
+extend type Query {
+  transactions: [Transaction]
+  transaction(TransactionID: String!): Transaction
+  totalTransactions: Int
+}
