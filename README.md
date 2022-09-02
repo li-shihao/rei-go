@@ -1,6 +1,6 @@
 # rei-go
 ![test](https://github.com/li-shihao/sui-go/actions/workflows/go.yml/badge.svg)  
-SUI Blockchain Parser
+SUI Blockchain Analyzer
 ## Usage
 ```Go
 import (
