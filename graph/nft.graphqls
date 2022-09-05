@@ -5,6 +5,15 @@ type NFT {
   SequenceID: Int!
 }
 
+type NFTCount {
+  Type: String!
+  Count: Int!
+}
+
 extend type Query {
   nft(ObjectID: String!): NFT
+}
+
+extend type Subscription {
+  nfts: [NFTCount]
 }

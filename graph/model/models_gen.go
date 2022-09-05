@@ -7,3 +7,8 @@ type AccObject struct {
 	Type     string                 `json:"Type"`
 	Metadata map[string]interface{} `json:"Metadata"`
 }
+
+type NFTCount struct {
+	Type  string `json:"Type"`
+	Count int    `json:"Count"`
+}

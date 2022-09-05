@@ -10,9 +10,9 @@ func TestJWT(t *testing.T) {
 	testUser := "arthur"
 
 	tokenString1, _ := GenerateJWT(testUser)
-	canDecrypt1, any1, _ := ParseJWT(tokenString1)
+	any1, _ := ParseJWT(tokenString1)
 
-	if !canDecrypt1 || any1["username"] != "arthur" {
+	if any1 == nil || any1["username"] != "arthur" {
 		t.Errorf("expected to be able to decrypt, but %v", any1)
 	}
 }

@@ -5,20 +5,13 @@ package graph
 
 import (
 	"context"
+	"log"
+	"time"
 
 	"rei.io/rei/ent"
 	"rei.io/rei/ent/transaction"
 	"rei.io/rei/graph/generated"
 )
-
-// Transactions is the resolver for the transactions field.
-func (r *queryResolver) Transactions(ctx context.Context) ([]*ent.Transaction, error) {
-	transactions, err := r.client.Transaction.Query().Order(ent.Desc(transaction.FieldTime)).Limit(10).All(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return transactions, nil
-}
 
 // Transaction is the resolver for the transaction field.
 func (r *queryResolver) Transaction(ctx context.Context, transactionID string) (*ent.Transaction, error) {
@@ -38,12 +31,48 @@ func (r *queryResolver) TotalTransactions(ctx context.Context) (*int, error) {
 	return &total, nil
 }
 
+// Tps is the resolver for the TPS field.
+func (r *subscriptionResolver) Tps(ctx context.Context) (<-chan *float64, error) {
+	c := make(chan *float64)
+	go func() {
+		time.Sleep(1 * time.Second)
+		tps, _ := r.client.Transaction.Query().Where(transaction.And(transaction.TimeGT(time.Now().Add(-1 * time.Minute)))).Count(ctx)
+		tps_ptr := float64(tps) / 60
+		select {
+		case c <- &tps_ptr:
+		default:
+			return
+		}
+	}()
+	return c, nil
+}
+
+// Transactions is the resolver for the transactions field.
+func (r *subscriptionResolver) Transactions(ctx context.Context) (<-chan []*ent.Transaction, error) {
+	c := make(chan []*ent.Transaction)
+	go func() {
+		time.Sleep(5 * time.Second)
+		transactions, _ := r.client.Transaction.Query().Order(ent.Desc(transaction.FieldTime)).Limit(10).All(ctx)
+		log.Println(transactions)
+		select {
+		case c <- transactions:
+		default:
+			return
+		}
+	}()
+	return c, nil
+}
+
 // Gas is the resolver for the Gas field.
 func (r *transactionResolver) Gas(ctx context.Context, obj *ent.Transaction) (int, error) {
 	return int(obj.Gas), nil
 }
 
+// Subscription returns generated.SubscriptionResolver implementation.
+func (r *Resolver) Subscription() generated.SubscriptionResolver { return &subscriptionResolver{r} }
+
 // Transaction returns generated.TransactionResolver implementation.
 func (r *Resolver) Transaction() generated.TransactionResolver { return &transactionResolver{r} }
 
+type subscriptionResolver struct{ *Resolver }
 type transactionResolver struct{ *Resolver }

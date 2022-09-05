@@ -2,7 +2,7 @@ package sui
 
 import (
 	"errors"
-	"math"
+	"fmt"
 	"reflect"
 	"strings"
 	"time"
@@ -173,8 +173,10 @@ func (tx *TX) GetType() string {
 
 // Get the time in ms epoch of a transaction
 func (tx *TX) GetTime() time.Time {
-	integ, decim := math.Modf(tx.Result.Timestamp_ms / 1000)
-	return time.Unix(int64(integ), int64(decim*(1e9))).UTC()
+	// integ, decim := math.Modf(tx.Result.Timestamp_ms / 1000)
+	// return time.Unix(int64(integ), int64(decim*(1e9))).UTC()
+	fmt.Println(time.Now())
+	return time.Now()
 }
 
 // Get the digest of a transaction

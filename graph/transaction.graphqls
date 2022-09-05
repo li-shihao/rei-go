@@ -13,7 +13,11 @@ type Transaction {
 }
 
 extend type Query {
-  transactions: [Transaction]
   transaction(TransactionID: String!): Transaction
   totalTransactions: Int
+}
+
+type Subscription {
+  TPS: Float
+  transactions: [Transaction]
 }

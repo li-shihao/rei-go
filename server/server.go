@@ -27,14 +27,12 @@ func CreateServer(str string) *chi.Mux {
 	r := chi.NewRouter()
 
 	// CORS (I need this for anything to work)
-	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
-		AllowedMethods:   []string{"GET", "POST"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
+	r.Use(cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://127.0.0.1:3000"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Origin"},
 		AllowCredentials: true,
-		MaxAge:           300,
-	}))
+		Debug:            true,
+	}).Handler)
 
 	/*
 		pprof profiling endpoint
@@ -48,8 +46,8 @@ func CreateServer(str string) *chi.Mux {
 		r.Use(setDB)
 		r.Post("/signup", auth.Signup)
 		r.Post("/login", auth.Login)
-		r.Post("/query", api.GraphQLHandler(connStr))
-		r.Get("/playground", api.PlaygroundQLHandler("/query"))
+		r.Handle("/query", api.GraphQLHandler(connStr))
+		r.Handle("/playground", api.PlaygroundQLHandler("/query"))
 	})
 
 	// Private Routes (Requires Auth)
@@ -64,7 +62,6 @@ func CreateServer(str string) *chi.Mux {
 		})
 		r.Post("/logout", auth.Logout)
 	})
-
 	return r
 }
 

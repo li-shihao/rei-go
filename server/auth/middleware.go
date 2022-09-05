@@ -24,8 +24,8 @@ func Authenticate(next http.Handler) http.Handler {
 		tokenString := cookie.Value
 
 		// Then verify the token
-		token, any, err := crypto.ParseJWT(tokenString)
-		if err != nil || !token {
+		any, err := crypto.ParseJWT(tokenString)
+		if err != nil {
 			render.New().JSON(w, 500, map[string]string{"Error": "invalid token. Did it expire?"})
 			return
 		}

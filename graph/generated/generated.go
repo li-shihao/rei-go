@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -43,6 +44,7 @@ type ResolverRoot interface {
 	NFT() NFTResolver
 	Object() ObjectResolver
 	Query() QueryResolver
+	Subscription() SubscriptionResolver
 	Transaction() TransactionResolver
 }
 
@@ -87,6 +89,11 @@ type ComplexityRoot struct {
 		Type       func(childComplexity int) int
 	}
 
+	NFTCount struct {
+		Count func(childComplexity int) int
+		Type  func(childComplexity int) int
+	}
+
 	Object struct {
 		DataType          func(childComplexity int) int
 		Fields            func(childComplexity int) int
@@ -114,7 +121,12 @@ type ComplexityRoot struct {
 		Pkg               func(childComplexity int, objectID *string, transactionID *string) int
 		TotalTransactions func(childComplexity int) int
 		Transaction       func(childComplexity int, transactionID string) int
-		Transactions      func(childComplexity int) int
+	}
+
+	Subscription struct {
+		Nfts         func(childComplexity int) int
+		Tps          func(childComplexity int) int
+		Transactions func(childComplexity int) int
 	}
 
 	Transaction struct {
@@ -156,9 +168,13 @@ type QueryResolver interface {
 	Object(ctx context.Context, objectID string) (*ent.Object, error)
 	Objects(ctx context.Context, owner string) ([]*ent.Object, error)
 	Pkg(ctx context.Context, objectID *string, transactionID *string) (*ent.Pkg, error)
-	Transactions(ctx context.Context) ([]*ent.Transaction, error)
 	Transaction(ctx context.Context, transactionID string) (*ent.Transaction, error)
 	TotalTransactions(ctx context.Context) (*int, error)
+}
+type SubscriptionResolver interface {
+	Tps(ctx context.Context) (<-chan *float64, error)
+	Transactions(ctx context.Context) (<-chan []*ent.Transaction, error)
+	Nfts(ctx context.Context) (<-chan []*model.NFTCount, error)
 }
 type TransactionResolver interface {
 	Gas(ctx context.Context, obj *ent.Transaction) (int, error)
@@ -332,6 +348,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.NFT.Type(childComplexity), true
+
+	case "NFTCount.Count":
+		if e.complexity.NFTCount.Count == nil {
+			break
+		}
+
+		return e.complexity.NFTCount.Count(childComplexity), true
+
+	case "NFTCount.Type":
+		if e.complexity.NFTCount.Type == nil {
+			break
+		}
+
+		return e.complexity.NFTCount.Type(childComplexity), true
 
 	case "Object.Datatype":
 		if e.complexity.Object.DataType == nil {
@@ -513,12 +543,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Transaction(childComplexity, args["TransactionID"].(string)), true
 
-	case "Query.transactions":
-		if e.complexity.Query.Transactions == nil {
+	case "Subscription.nfts":
+		if e.complexity.Subscription.Nfts == nil {
 			break
 		}
 
-		return e.complexity.Query.Transactions(childComplexity), true
+		return e.complexity.Subscription.Nfts(childComplexity), true
+
+	case "Subscription.TPS":
+		if e.complexity.Subscription.Tps == nil {
+			break
+		}
+
+		return e.complexity.Subscription.Tps(childComplexity), true
+
+	case "Subscription.transactions":
+		if e.complexity.Subscription.Transactions == nil {
+			break
+		}
+
+		return e.complexity.Subscription.Transactions(childComplexity), true
 
 	case "Transaction.Amount":
 		if e.complexity.Transaction.Amount == nil {
@@ -623,6 +667,23 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 				Data: buf.Bytes(),
 			}
 		}
+	case ast.Subscription:
+		next := ec._Subscription(ctx, rc.Operation.SelectionSet)
+
+		var buf bytes.Buffer
+		return func(ctx context.Context) *graphql.Response {
+			buf.Reset()
+			data := next(ctx)
+
+			if data == nil {
+				return nil
+			}
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
 
 	default:
 		return graphql.OneShot(graphql.ErrorResponse(ctx, "unsupported GraphQL operation"))
@@ -702,8 +763,17 @@ extend type Query {
   SequenceID: Int!
 }
 
+type NFTCount {
+  Type: String!
+  Count: Int!
+}
+
 extend type Query {
   nft(ObjectID: String!): NFT
+}
+
+extend type Subscription {
+  nfts: [NFTCount]
 }
 `, BuiltIn: false},
 	{Name: "../object.graphqls", Input: `type Object {
@@ -747,9 +817,13 @@ extend type Query {
 }
 
 extend type Query {
-  transactions: [Transaction]
   transaction(TransactionID: String!): Transaction
   totalTransactions: Int
+}
+
+type Subscription {
+  TPS: Float
+  transactions: [Transaction]
 }
 `, BuiltIn: false},
 }
@@ -1914,6 +1988,94 @@ func (ec *executionContext) fieldContext_NFT_SequenceID(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _NFTCount_Type(ctx context.Context, field graphql.CollectedField, obj *model.NFTCount) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_NFTCount_Type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_NFTCount_Type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NFTCount",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _NFTCount_Count(ctx context.Context, field graphql.CollectedField, obj *model.NFTCount) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_NFTCount_Count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_NFTCount_Count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "NFTCount",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Object_Status(ctx context.Context, field graphql.CollectedField, obj *ent.Object) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Object_Status(ctx, field)
 	if err != nil {
@@ -2852,71 +3014,6 @@ func (ec *executionContext) fieldContext_Query_pkg(ctx context.Context, field gr
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_transactions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_transactions(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Transactions(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Transaction)
-	fc.Result = res
-	return ec.marshalOTransaction2ᚕᚖreiᚗioᚋreiᚋentᚐTransaction(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_transactions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "Type":
-				return ec.fieldContext_Transaction_Type(ctx, field)
-			case "Time":
-				return ec.fieldContext_Transaction_Time(ctx, field)
-			case "TransactionID":
-				return ec.fieldContext_Transaction_TransactionID(ctx, field)
-			case "Status":
-				return ec.fieldContext_Transaction_Status(ctx, field)
-			case "Sender":
-				return ec.fieldContext_Transaction_Sender(ctx, field)
-			case "Recipient":
-				return ec.fieldContext_Transaction_Recipient(ctx, field)
-			case "Amount":
-				return ec.fieldContext_Transaction_Amount(ctx, field)
-			case "Package":
-				return ec.fieldContext_Transaction_Package(ctx, field)
-			case "Module":
-				return ec.fieldContext_Transaction_Module(ctx, field)
-			case "Function":
-				return ec.fieldContext_Transaction_Function(ctx, field)
-			case "Gas":
-				return ec.fieldContext_Transaction_Gas(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_transaction(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_transaction(ctx, field)
 	if err != nil {
@@ -3158,6 +3255,201 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_TPS(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_TPS(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().Tps(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *float64):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_TPS(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_transactions(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_transactions(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().Transactions(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan []*ent.Transaction):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOTransaction2ᚕᚖreiᚗioᚋreiᚋentᚐTransaction(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_transactions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Type":
+				return ec.fieldContext_Transaction_Type(ctx, field)
+			case "Time":
+				return ec.fieldContext_Transaction_Time(ctx, field)
+			case "TransactionID":
+				return ec.fieldContext_Transaction_TransactionID(ctx, field)
+			case "Status":
+				return ec.fieldContext_Transaction_Status(ctx, field)
+			case "Sender":
+				return ec.fieldContext_Transaction_Sender(ctx, field)
+			case "Recipient":
+				return ec.fieldContext_Transaction_Recipient(ctx, field)
+			case "Amount":
+				return ec.fieldContext_Transaction_Amount(ctx, field)
+			case "Package":
+				return ec.fieldContext_Transaction_Package(ctx, field)
+			case "Module":
+				return ec.fieldContext_Transaction_Module(ctx, field)
+			case "Function":
+				return ec.fieldContext_Transaction_Function(ctx, field)
+			case "Gas":
+				return ec.fieldContext_Transaction_Gas(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_nfts(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_nfts(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().Nfts(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan []*model.NFTCount):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalONFTCount2ᚕᚖreiᚗioᚋreiᚋgraphᚋmodelᚐNFTCount(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_nfts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Type":
+				return ec.fieldContext_NFTCount_Type(ctx, field)
+			case "Count":
+				return ec.fieldContext_NFTCount_Count(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type NFTCount", field.Name)
 		},
 	}
 	return fc, nil
@@ -5749,6 +6041,41 @@ func (ec *executionContext) _NFT(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
+var nFTCountImplementors = []string{"NFTCount"}
+
+func (ec *executionContext) _NFTCount(ctx context.Context, sel ast.SelectionSet, obj *model.NFTCount) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, nFTCountImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("NFTCount")
+		case "Type":
+
+			out.Values[i] = ec._NFTCount_Type(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Count":
+
+			out.Values[i] = ec._NFTCount_Count(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var objectImplementors = []string{"Object"}
 
 func (ec *executionContext) _Object(ctx context.Context, sel ast.SelectionSet, obj *ent.Object) graphql.Marshaler {
@@ -6040,26 +6367,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "transactions":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_transactions(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "transaction":
 			field := field
 
@@ -6121,6 +6428,30 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		return graphql.Null
 	}
 	return out
+}
+
+var subscriptionImplementors = []string{"Subscription"}
+
+func (ec *executionContext) _Subscription(ctx context.Context, sel ast.SelectionSet) func(ctx context.Context) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, subscriptionImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Subscription",
+	})
+	if len(fields) != 1 {
+		ec.Errorf(ctx, "must subscribe to exactly one stream")
+		return nil
+	}
+
+	switch fields[0].Name {
+	case "TPS":
+		return ec._Subscription_TPS(ctx, fields[0])
+	case "transactions":
+		return ec._Subscription_transactions(ctx, fields[0])
+	case "nfts":
+		return ec._Subscription_nfts(ctx, fields[0])
+	default:
+		panic("unknown field " + strconv.Quote(fields[0].Name))
+	}
 }
 
 var transactionImplementors = []string{"Transaction"}
@@ -7069,6 +7400,22 @@ func (ec *executionContext) marshalOEvent2ᚖreiᚗioᚋreiᚋentᚐEvent(ctx co
 	return ec._Event(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalFloatContext(*v)
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -7090,6 +7437,54 @@ func (ec *executionContext) marshalONFT2ᚖreiᚗioᚋreiᚋentᚐNFT(ctx contex
 		return graphql.Null
 	}
 	return ec._NFT(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalONFTCount2ᚕᚖreiᚗioᚋreiᚋgraphᚋmodelᚐNFTCount(ctx context.Context, sel ast.SelectionSet, v []*model.NFTCount) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalONFTCount2ᚖreiᚗioᚋreiᚋgraphᚋmodelᚐNFTCount(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalONFTCount2ᚖreiᚗioᚋreiᚋgraphᚋmodelᚐNFTCount(ctx context.Context, sel ast.SelectionSet, v *model.NFTCount) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._NFTCount(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOObject2ᚕᚖreiᚗioᚋreiᚋentᚐObject(ctx context.Context, sel ast.SelectionSet, v []*ent.Object) graphql.Marshaler {

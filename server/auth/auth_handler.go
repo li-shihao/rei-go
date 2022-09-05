@@ -187,13 +187,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenString, err := crypto.GenerateJWT(incomeRequest.Username)
-
-	if err != nil {
-		render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong"})
-		return
-	}
-
 	// Find out if user has already logged in somewhere else
 	if loggedIn, _, err := db.QuerySession(incomeRequest.Username); err != nil || loggedIn == nil {
 
@@ -204,6 +197,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		// If already logged in, delete previous session
 	} else if *loggedIn {
 		db.DeleteSession(incomeRequest.Username)
+	}
+
+	tokenString, err := crypto.GenerateJWT(incomeRequest.Username)
+
+	if err != nil {
+		render.New().JSON(w, 500, map[string]string{"Error": "Something went wrong"})
+		return
 	}
 
 	// Set cookie on user

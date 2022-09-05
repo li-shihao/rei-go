@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -9,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/orlangure/gnomock"
-	"github.com/orlangure/gnomock/preset/postgres"
 	"rei.io/rei/internal/database"
 	"rei.io/rei/internal/helpers"
 	"rei.io/rei/internal/sui"
@@ -104,21 +101,21 @@ func main() {
 
 	// New db instance
 	db := new(database.EntClient)
-	//db.Init("postgres", "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable")
+	connStr := "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable"
 
-	p := postgres.Preset(
-		postgres.WithUser("gnomock", "gnomick"),
-		postgres.WithDatabase("mydb"),
-	)
+	// p := postgres.Preset(
+	// 	postgres.WithUser("gnomock", "gnomick"),
+	// 	postgres.WithDatabase("mydb"),
+	// )
 
-	log.Println("Starting docker....")
-	container, _ := gnomock.Start(p)
+	// log.Println("Starting docker....")
+	// container, _ := gnomock.Start(p)
 
-	connStr := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
-		container.Host, container.DefaultPort(),
-		"gnomock", "gnomick", "mydb",
-	)
+	// connStr := fmt.Sprintf(
+	// 	"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
+	// 	container.Host, container.DefaultPort(),
+	// 	"gnomock", "gnomick", "mydb",
+	// )
 
 	db.Init("postgres", connStr)
 
@@ -134,7 +131,7 @@ func main() {
 	signal.Notify(sigchan, os.Interrupt)
 
 	// Goroutine settings
-	const MAX = 4
+	const MAX = 1
 	thread := make(chan int, MAX)
 
 	// Only used as a limit

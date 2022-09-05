@@ -35,7 +35,7 @@ func GenerateJWT(username string) (string, error) {
 }
 
 // Verifying and extracting information from jwt tokens
-func ParseJWT(tokenString string) (bool, jwt.MapClaims, error) {
+func ParseJWT(tokenString string) (jwt.MapClaims, error) {
 
 	// Get the token itself
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -49,13 +49,13 @@ func ParseJWT(tokenString string) (bool, jwt.MapClaims, error) {
 
 	// If the token cannot be parsed
 	if err != nil {
-		return false, nil, err
+		return nil, err
 	}
 
 	// If claims cannot be extracted
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return true, claims, nil
+		return claims, nil
 	} else {
-		return false, nil, errors.New("token invalid")
+		return nil, errors.New("token invalid")
 	}
 }
