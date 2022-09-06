@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"net"
 	"net/http"
 
 	"github.com/unrolled/render"
@@ -42,6 +43,8 @@ func Authenticate(next http.Handler) http.Handler {
 
 		loggedIn, ip, err := db.QuerySession(any["username"].(string))
 
+		host, _, _ := net.SplitHostPort(r.RemoteAddr)
+
 		/*
 			Error, login state not found (technically only having one of these two is enough since return value
 			causes both state, but left it so its more clear
@@ -51,7 +54,7 @@ func Authenticate(next http.Handler) http.Handler {
 			return
 
 			// If logged in but current registered session on another ip
-		} else if *loggedIn && *ip != r.RemoteAddr {
+		} else if *loggedIn && *ip != host {
 
 			// Clear cookie
 			http.SetCookie(w, &http.Cookie{
@@ -73,7 +76,7 @@ func Authenticate(next http.Handler) http.Handler {
 			return
 
 			// If logged in and on correct ip
-		} else if *loggedIn && *ip == r.RemoteAddr {
+		} else if *loggedIn && *ip == host {
 
 			// Renew jwt expiration
 			tokenString, err = crypto.GenerateJWT(any["username"].(string))
@@ -92,7 +95,6 @@ func Authenticate(next http.Handler) http.Handler {
 				//Secure: true,
 			})
 		}
-
 		// Finally pass the claim into our next handler
 		ctx = context.WithValue(r.Context(), helpers.UsernameClaim{}, any["username"])
 		next.ServeHTTP(w, r.WithContext(ctx))

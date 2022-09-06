@@ -30,10 +30,7 @@ func (c *EntClient) Init(dbType string, dbOption string) {
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
-	// Run the auto migration tool.
-	if err := cl.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
-	}
+
 	c.client = cl
 }
 

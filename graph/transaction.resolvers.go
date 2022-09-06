@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"rei.io/rei/ent"
@@ -35,13 +34,11 @@ func (r *queryResolver) TotalTransactions(ctx context.Context) (*int, error) {
 func (r *subscriptionResolver) Tps(ctx context.Context) (<-chan *float64, error) {
 	c := make(chan *float64)
 	go func() {
-		time.Sleep(1 * time.Second)
-		tps, _ := r.client.Transaction.Query().Where(transaction.And(transaction.TimeGT(time.Now().Add(-1 * time.Minute)))).Count(ctx)
-		tps_ptr := float64(tps) / 60
-		select {
-		case c <- &tps_ptr:
-		default:
-			return
+		for {
+			time.Sleep(time.Second)
+			tps, _ := r.client.Transaction.Query().Where(transaction.And(transaction.TimeGT(time.Now().Add(-1 * time.Minute)))).Count(ctx)
+			tps_ptr := float64(tps) / 60
+			c <- &tps_ptr
 		}
 	}()
 	return c, nil
@@ -51,13 +48,10 @@ func (r *subscriptionResolver) Tps(ctx context.Context) (<-chan *float64, error)
 func (r *subscriptionResolver) Transactions(ctx context.Context) (<-chan []*ent.Transaction, error) {
 	c := make(chan []*ent.Transaction)
 	go func() {
-		time.Sleep(5 * time.Second)
-		transactions, _ := r.client.Transaction.Query().Order(ent.Desc(transaction.FieldTime)).Limit(10).All(ctx)
-		log.Println(transactions)
-		select {
-		case c <- transactions:
-		default:
-			return
+		for {
+			time.Sleep(time.Second)
+			transactions, _ := r.client.Transaction.Query().Order(ent.Desc(transaction.FieldTime)).Limit(10).All(ctx)
+			c <- transactions
 		}
 	}()
 	return c, nil

@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"log"
 	"sort"
 	"time"
 
@@ -35,48 +34,42 @@ func (r *queryResolver) Nft(ctx context.Context, objectID string) (*ent.NFT, err
 func (r *subscriptionResolver) Nfts(ctx context.Context) (<-chan []*model.NFTCount, error) {
 	c := make(chan []*model.NFTCount)
 	go func() {
+		for {
+			var v []struct {
+				Type  string `json:"type"`
+				Count int    `json:"count"`
+			}
 
-		var v []struct {
-			Type  string `json:"type"`
-			Count int    `json:"count"`
-		}
+			var temp []*model.NFTCount
 
-		var temp []*model.NFTCount
+			time.Sleep(1 * time.Second)
+			_ = r.client.NFT.Query().
+				Where(
+					nft.Not(
+						nft.TypeHasPrefix("0x2::coin"),
+					),
+					nft.Not(
+						func(s *sql.Selector) {
+							s.Where(sqljson.ValueEQ(nft.FieldMetadata, "{}"))
+						},
+					),
+				).
+				GroupBy(nft.FieldType).
+				Aggregate(ent.Count()).
+				Scan(ctx, &v)
 
-		time.Sleep(1 * time.Second)
-		_ = r.client.NFT.Query().
-			Where(
-				nft.Not(
-					nft.TypeHasPrefix("0x2::coin"),
-				),
-				nft.Not(
-					func(s *sql.Selector) {
-						s.Where(sqljson.ValueEQ(nft.FieldMetadata, "{}"))
-					},
-				),
-			).
-			GroupBy(nft.FieldType).
-			Aggregate(ent.Count()).
-			Scan(ctx, &v)
+			sort.Slice(v, func(i, j int) bool {
+				return v[i].Count > v[j].Count
+			})
 
-		sort.Slice(v, func(i, j int) bool {
-			return v[i].Count > v[j].Count
-		})
+			for i, d := range v {
+				var inner model.NFTCount
+				temp = append(temp, &inner)
+				temp[i].Count = d.Count
+				temp[i].Type = d.Type
+			}
 
-		for i, d := range v {
-			var inner model.NFTCount
-			temp = append(temp, &inner)
-			temp[i].Count = d.Count
-			temp[i].Type = d.Type
-		}
-
-		log.Println(temp)
-
-		select {
-		case c <- temp:
-
-		default:
-			return
+			c <- temp
 		}
 	}()
 	return c, nil

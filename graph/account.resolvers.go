@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"time"
 
 	"rei.io/rei/ent"
 	"rei.io/rei/ent/account"
@@ -37,11 +38,33 @@ func (r *accountResolver) Objects(ctx context.Context, obj *ent.Account) ([]*mod
 
 // Account is the resolver for the account field.
 func (r *queryResolver) Account(ctx context.Context, accountID string) (*ent.Account, error) {
-	account, err := r.client.Account.Query().Where(account.AccountIDEQ(accountID)).Only(ctx)
+	account, err := r.client.Account.Query().Where(account.AccountIDEQ(accountID)).Order(ent.Desc(account.FieldSequenceID)).Limit(1).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return account[0], nil
+}
+
+// AccountHistory is the resolver for the accountHistory field.
+func (r *queryResolver) AccountHistory(ctx context.Context, accountID string) ([]*ent.Account, error) {
+	account, err := r.client.Account.Query().Where(account.AccountIDEQ(accountID)).Order(ent.Desc(account.FieldSequenceID)).All(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return account, nil
+}
+
+// Accounts is the resolver for the accounts field.
+func (r *subscriptionResolver) Accounts(ctx context.Context) (<-chan []*ent.Account, error) {
+	c := make(chan []*ent.Account)
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+			acc, _ := r.client.Account.Query().Order(ent.Desc(account.FieldBalance)).Limit(10).All(ctx)
+			c <- acc
+		}
+	}()
+	return c, nil
 }
 
 // Account returns generated.AccountResolver implementation.

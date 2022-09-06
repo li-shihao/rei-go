@@ -961,19 +961,19 @@ func TestGetAccount(t *testing.T) {
 		t.Errorf("Result was incorrect, got %t, want %t.", got2, exp2)
 	}
 
-	result3, _ := tc.GetAccount("0x018309d97970190a54e3a84f3459f976ebf0ac7e")
-	got3 := false
-	exp3 := true
+	// result3, _ := tc.GetAccount("0x018309d97970190a54e3a84f3459f976ebf0ac7e")
+	// got3 := false
+	// exp3 := true
 
-	for _, v := range result3.Transactions {
-		if v == "kQZs3QvSPN4ij7xKIJOkzK9S83Bj6EHq1nk2ncUjfXY=" {
-			got3 = true
-		}
-	}
+	// for _, v := range result3.Transactions {
+	// 	if v == "kQZs3QvSPN4ij7xKIJOkzK9S83Bj6EHq1nk2ncUjfXY=" {
+	// 		got3 = true
+	// 	}
+	// }
 
-	if got3 != exp3 {
-		t.Errorf("Result was incorrect, got %t, want %t.", got3, exp3)
-	}
+	// if got3 != exp3 {
+	// 	t.Errorf("Result was incorrect, got %t, want %t.", got3, exp3)
+	// }
 
 }
 

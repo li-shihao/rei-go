@@ -7,7 +7,6 @@ require (
 	github.com/99designs/gqlgen v0.17.16
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/cors v1.2.1
-	github.com/goccy/go-json v0.9.11
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/gorilla/websocket v1.5.0
 	github.com/hashicorp/go-multierror v1.1.1

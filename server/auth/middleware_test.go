@@ -10,7 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goccy/go-json"
+	"encoding/json"
+
 	"github.com/golang-jwt/jwt"
 	"github.com/orlangure/gnomock"
 	"github.com/orlangure/gnomock/preset/postgres"

@@ -11,7 +11,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"rei.io/rei/internal/helpers"
 
-	"github.com/goccy/go-json"
+	"encoding/json"
 )
 
 var check = helpers.Check

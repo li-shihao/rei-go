@@ -10,7 +10,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/goccy/go-json"
+	"encoding/json"
+
 	"github.com/orlangure/gnomock"
 	"github.com/orlangure/gnomock/preset/postgres"
 	"rei.io/rei/internal/helpers"

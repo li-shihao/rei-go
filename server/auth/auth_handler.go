@@ -2,9 +2,11 @@ package auth
 
 import (
 	"io"
+	"net"
 	"net/http"
 
-	"github.com/goccy/go-json"
+	"encoding/json"
+
 	"github.com/unrolled/render"
 	"rei.io/rei/internal/crypto"
 	"rei.io/rei/internal/database"
@@ -115,8 +117,10 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		// Secure: true,
 	})
 
+	host, _, _ := net.SplitHostPort(r.RemoteAddr)
+
 	// Create session in db
-	db.CreateSession(incomeRequest.Username, r.RemoteAddr)
+	db.CreateSession(incomeRequest.Username, host)
 
 	// Rendering json repsonse
 	render.New().JSON(w, 201, map[string]string{"Status": "Signup succeeded"})
@@ -216,8 +220,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		//Secure: true,
 	})
 
+	host, _, _ := net.SplitHostPort(r.RemoteAddr)
+
 	// Create session in db
-	db.CreateSession(incomeRequest.Username, r.RemoteAddr)
+	db.CreateSession(incomeRequest.Username, host)
 
 	// Rendering json repsonse
 	render.New().JSON(w, 201, map[string]string{"Status": "Login succeeded"})
@@ -259,4 +265,8 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 
 	// Rendering json repsonse
 	render.New().JSON(w, 201, map[string]string{"Status": "Logout successful"})
+}
+
+func Confirm(w http.ResponseWriter, r *http.Request) {
+	render.New().JSON(w, 201, map[string]string{"Status": "Authenticated"})
 }

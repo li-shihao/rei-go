@@ -16,4 +16,9 @@ type AccObject {
 
 extend type Query {
   account(AccountID: String!): Account
+  accountHistory(AccountID: String!): [Account]
+}
+
+extend type Subscription {
+  accounts: [Account]
 }

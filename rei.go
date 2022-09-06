@@ -7,11 +7,14 @@ import (
 	"os/signal"
 	"strings"
 	"time"
+	"fmt"
 
 	"rei.io/rei/internal/database"
 	"rei.io/rei/internal/helpers"
 	"rei.io/rei/internal/sui"
 	"rei.io/rei/server"
+	"github.com/orlangure/gnomock"
+	"github.com/orlangure/gnomock/preset/postgres"
 )
 
 var check = helpers.Check
@@ -97,25 +100,25 @@ func main() {
 
 	// Create new SUI client instance
 	sc := new(sui.SUIClient)
-	sc.Init("http://127.0.0.1:9000")
+	sc.Init("http://178.20.44.135:9000")
 
 	// New db instance
 	db := new(database.EntClient)
-	connStr := "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable"
+	//connStr := "host=localhost port=5432 user=postgres dbname=rei password=postgres sslmode=disable"
 
-	// p := postgres.Preset(
-	// 	postgres.WithUser("gnomock", "gnomick"),
-	// 	postgres.WithDatabase("mydb"),
-	// )
+	p := postgres.Preset(
+		postgres.WithUser("gnomock", "gnomick"),
+		postgres.WithDatabase("mydb"),
+	)
 
-	// log.Println("Starting docker....")
-	// container, _ := gnomock.Start(p)
+	log.Println("Starting docker....")
+	container, _ := gnomock.Start(p)
 
-	// connStr := fmt.Sprintf(
-	// 	"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
-	// 	container.Host, container.DefaultPort(),
-	// 	"gnomock", "gnomick", "mydb",
-	// )
+	connStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s  dbname=%s sslmode=disable",
+		container.Host, container.DefaultPort(),
+		"gnomock", "gnomick", "mydb",
+	)
 
 	db.Init("postgres", connStr)
 

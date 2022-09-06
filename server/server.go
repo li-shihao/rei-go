@@ -28,7 +28,8 @@ func CreateServer(str string) *chi.Mux {
 
 	// CORS (I need this for anything to work)
 	r.Use(cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://127.0.0.1:3000"},
+		AllowedOrigins:   []string{"http://127.0.0.1:3000", "http://158.140.129.74"},
+		AllowedMethods:   []string{"GET", "POST"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Origin"},
 		AllowCredentials: true,
 		Debug:            true,
@@ -46,19 +47,19 @@ func CreateServer(str string) *chi.Mux {
 		r.Use(setDB)
 		r.Post("/signup", auth.Signup)
 		r.Post("/login", auth.Login)
-		r.Handle("/query", api.GraphQLHandler(connStr))
-		r.Handle("/playground", api.PlaygroundQLHandler("/query"))
 	})
 
 	// Private Routes (Requires Auth)
 	r.Group(func(r chi.Router) {
 		r.Use(setDB)
 		r.Use(auth.Authenticate)
+		r.Post("/auth", auth.Confirm)
 		r.Route("/api/v1", func(r chi.Router) {
-			r.Get("/txcount", api.TotalTransactionCount)
+			r.Handle("/query", api.GraphQLHandler(connStr))
 		})
 		r.Route("/admin", func(r chi.Router) {
 			r.Use(auth.AdminOnly)
+			r.Handle("/playground", api.PlaygroundQLHandler("/api/v1/query"))
 		})
 		r.Post("/logout", auth.Logout)
 	})

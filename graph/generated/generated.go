@@ -113,6 +113,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Account           func(childComplexity int, accountID string) int
+		AccountHistory    func(childComplexity int, accountID string) int
 		Argument          func(childComplexity int, transactionID string) int
 		Events            func(childComplexity int, transactionID string) int
 		Nft               func(childComplexity int, objectID string) int
@@ -124,6 +125,7 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
+		Accounts     func(childComplexity int) int
 		Nfts         func(childComplexity int) int
 		Tps          func(childComplexity int) int
 		Transactions func(childComplexity int) int
@@ -162,6 +164,7 @@ type ObjectResolver interface {
 }
 type QueryResolver interface {
 	Account(ctx context.Context, accountID string) (*ent.Account, error)
+	AccountHistory(ctx context.Context, accountID string) ([]*ent.Account, error)
 	Argument(ctx context.Context, transactionID string) (*ent.Argument, error)
 	Events(ctx context.Context, transactionID string) ([]*ent.Event, error)
 	Nft(ctx context.Context, objectID string) (*ent.NFT, error)
@@ -174,6 +177,7 @@ type QueryResolver interface {
 type SubscriptionResolver interface {
 	Tps(ctx context.Context) (<-chan *float64, error)
 	Transactions(ctx context.Context) (<-chan []*ent.Transaction, error)
+	Accounts(ctx context.Context) (<-chan []*ent.Account, error)
 	Nfts(ctx context.Context) (<-chan []*model.NFTCount, error)
 }
 type TransactionResolver interface {
@@ -452,6 +456,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Account(childComplexity, args["AccountID"].(string)), true
 
+	case "Query.accountHistory":
+		if e.complexity.Query.AccountHistory == nil {
+			break
+		}
+
+		args, err := ec.field_Query_accountHistory_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.AccountHistory(childComplexity, args["AccountID"].(string)), true
+
 	case "Query.argument":
 		if e.complexity.Query.Argument == nil {
 			break
@@ -542,6 +558,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Transaction(childComplexity, args["TransactionID"].(string)), true
+
+	case "Subscription.accounts":
+		if e.complexity.Subscription.Accounts == nil {
+			break
+		}
+
+		return e.complexity.Subscription.Accounts(childComplexity), true
 
 	case "Subscription.nfts":
 		if e.complexity.Subscription.Nfts == nil {
@@ -728,6 +751,11 @@ type AccObject {
 
 extend type Query {
   account(AccountID: String!): Account
+  accountHistory(AccountID: String!): [Account]
+}
+
+extend type Subscription {
+  accounts: [Account]
 }
 `, BuiltIn: false},
 	{Name: "../argument.graphqls", Input: `type Argument {
@@ -860,6 +888,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_accountHistory_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["AccountID"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("AccountID"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["AccountID"] = arg0
 	return args, nil
 }
 
@@ -2624,6 +2667,70 @@ func (ec *executionContext) fieldContext_Query_account(ctx context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_accountHistory(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_accountHistory(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().AccountHistory(rctx, fc.Args["AccountID"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Account)
+	fc.Result = res
+	return ec.marshalOAccount2ᚕᚖreiᚗioᚋreiᚋentᚐAccount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_accountHistory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "SequenceID":
+				return ec.fieldContext_Account_SequenceID(ctx, field)
+			case "AccountID":
+				return ec.fieldContext_Account_AccountID(ctx, field)
+			case "Balance":
+				return ec.fieldContext_Account_Balance(ctx, field)
+			case "Transactions":
+				return ec.fieldContext_Account_Transactions(ctx, field)
+			case "Objects":
+				return ec.fieldContext_Account_Objects(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Account", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_accountHistory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_argument(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_argument(ctx, field)
 	if err != nil {
@@ -3389,6 +3496,73 @@ func (ec *executionContext) fieldContext_Subscription_transactions(ctx context.C
 				return ec.fieldContext_Transaction_Gas(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_accounts(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_accounts(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().Accounts(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan []*ent.Account):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOAccount2ᚕᚖreiᚗioᚋreiᚋentᚐAccount(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_accounts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "SequenceID":
+				return ec.fieldContext_Account_SequenceID(ctx, field)
+			case "AccountID":
+				return ec.fieldContext_Account_AccountID(ctx, field)
+			case "Balance":
+				return ec.fieldContext_Account_Balance(ctx, field)
+			case "Transactions":
+				return ec.fieldContext_Account_Transactions(ctx, field)
+			case "Objects":
+				return ec.fieldContext_Account_Objects(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Account", field.Name)
 		},
 	}
 	return fc, nil
@@ -6247,6 +6421,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "accountHistory":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_accountHistory(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "argument":
 			field := field
 
@@ -6447,6 +6641,8 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 		return ec._Subscription_TPS(ctx, fields[0])
 	case "transactions":
 		return ec._Subscription_transactions(ctx, fields[0])
+	case "accounts":
+		return ec._Subscription_accounts(ctx, fields[0])
 	case "nfts":
 		return ec._Subscription_nfts(ctx, fields[0])
 	default:
@@ -7310,6 +7506,47 @@ func (ec *executionContext) marshalOAccObject2ᚖreiᚗioᚋreiᚋgraphᚋmodel�
 		return graphql.Null
 	}
 	return ec._AccObject(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOAccount2ᚕᚖreiᚗioᚋreiᚋentᚐAccount(ctx context.Context, sel ast.SelectionSet, v []*ent.Account) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOAccount2ᚖreiᚗioᚋreiᚋentᚐAccount(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalOAccount2ᚖreiᚗioᚋreiᚋentᚐAccount(ctx context.Context, sel ast.SelectionSet, v *ent.Account) graphql.Marshaler {
