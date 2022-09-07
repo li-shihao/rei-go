@@ -376,9 +376,22 @@ func (m *AccountMutation) OldTransactions(ctx context.Context) (v []string, err 
 	return oldValue.Transactions, nil
 }
 
+// ClearTransactions clears the value of the "Transactions" field.
+func (m *AccountMutation) ClearTransactions() {
+	m._Transactions = nil
+	m.clearedFields[account.FieldTransactions] = struct{}{}
+}
+
+// TransactionsCleared returns if the "Transactions" field was cleared in this mutation.
+func (m *AccountMutation) TransactionsCleared() bool {
+	_, ok := m.clearedFields[account.FieldTransactions]
+	return ok
+}
+
 // ResetTransactions resets all changes to the "Transactions" field.
 func (m *AccountMutation) ResetTransactions() {
 	m._Transactions = nil
+	delete(m.clearedFields, account.FieldTransactions)
 }
 
 // Where appends a list predicates to the AccountMutation builder.
@@ -553,7 +566,11 @@ func (m *AccountMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AccountMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(account.FieldTransactions) {
+		fields = append(fields, account.FieldTransactions)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -566,6 +583,11 @@ func (m *AccountMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AccountMutation) ClearField(name string) error {
+	switch name {
+	case account.FieldTransactions:
+		m.ClearTransactions()
+		return nil
+	}
 	return fmt.Errorf("unknown Account nullable field %s", name)
 }
 

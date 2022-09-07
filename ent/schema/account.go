@@ -24,7 +24,7 @@ func (Account) Fields() []ent.Field {
 		field.String("AccountID"),
 		field.Uint64("Balance"),
 		field.JSON("Objects", []AccObject{}),
-		field.Strings("Transactions"),
+		field.Strings("Transactions").Optional(),
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"rei.io/rei/ent/nft"
@@ -17,6 +18,7 @@ type NFTCreate struct {
 	config
 	mutation *NFTMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetObjectID sets the "ObjectID" field.
@@ -158,6 +160,7 @@ func (nc *NFTCreate) createSpec() (*NFT, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = nc.conflict
 	if value, ok := nc.mutation.ObjectID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -193,10 +196,250 @@ func (nc *NFTCreate) createSpec() (*NFT, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.NFT.Create().
+//		SetObjectID(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.NFTUpsert) {
+//			SetObjectID(v+v).
+//		}).
+//		Exec(ctx)
+func (nc *NFTCreate) OnConflict(opts ...sql.ConflictOption) *NFTUpsertOne {
+	nc.conflict = opts
+	return &NFTUpsertOne{
+		create: nc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.NFT.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (nc *NFTCreate) OnConflictColumns(columns ...string) *NFTUpsertOne {
+	nc.conflict = append(nc.conflict, sql.ConflictColumns(columns...))
+	return &NFTUpsertOne{
+		create: nc,
+	}
+}
+
+type (
+	// NFTUpsertOne is the builder for "upsert"-ing
+	//  one NFT node.
+	NFTUpsertOne struct {
+		create *NFTCreate
+	}
+
+	// NFTUpsert is the "OnConflict" setter.
+	NFTUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetObjectID sets the "ObjectID" field.
+func (u *NFTUpsert) SetObjectID(v string) *NFTUpsert {
+	u.Set(nft.FieldObjectID, v)
+	return u
+}
+
+// UpdateObjectID sets the "ObjectID" field to the value that was provided on create.
+func (u *NFTUpsert) UpdateObjectID() *NFTUpsert {
+	u.SetExcluded(nft.FieldObjectID)
+	return u
+}
+
+// SetType sets the "Type" field.
+func (u *NFTUpsert) SetType(v string) *NFTUpsert {
+	u.Set(nft.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *NFTUpsert) UpdateType() *NFTUpsert {
+	u.SetExcluded(nft.FieldType)
+	return u
+}
+
+// SetMetadata sets the "Metadata" field.
+func (u *NFTUpsert) SetMetadata(v map[string]interface{}) *NFTUpsert {
+	u.Set(nft.FieldMetadata, v)
+	return u
+}
+
+// UpdateMetadata sets the "Metadata" field to the value that was provided on create.
+func (u *NFTUpsert) UpdateMetadata() *NFTUpsert {
+	u.SetExcluded(nft.FieldMetadata)
+	return u
+}
+
+// SetSequenceID sets the "SequenceID" field.
+func (u *NFTUpsert) SetSequenceID(v uint64) *NFTUpsert {
+	u.Set(nft.FieldSequenceID, v)
+	return u
+}
+
+// UpdateSequenceID sets the "SequenceID" field to the value that was provided on create.
+func (u *NFTUpsert) UpdateSequenceID() *NFTUpsert {
+	u.SetExcluded(nft.FieldSequenceID)
+	return u
+}
+
+// AddSequenceID adds v to the "SequenceID" field.
+func (u *NFTUpsert) AddSequenceID(v uint64) *NFTUpsert {
+	u.Add(nft.FieldSequenceID, v)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.NFT.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *NFTUpsertOne) UpdateNewValues() *NFTUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.NFT.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *NFTUpsertOne) Ignore() *NFTUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *NFTUpsertOne) DoNothing() *NFTUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the NFTCreate.OnConflict
+// documentation for more info.
+func (u *NFTUpsertOne) Update(set func(*NFTUpsert)) *NFTUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&NFTUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetObjectID sets the "ObjectID" field.
+func (u *NFTUpsertOne) SetObjectID(v string) *NFTUpsertOne {
+	return u.Update(func(s *NFTUpsert) {
+		s.SetObjectID(v)
+	})
+}
+
+// UpdateObjectID sets the "ObjectID" field to the value that was provided on create.
+func (u *NFTUpsertOne) UpdateObjectID() *NFTUpsertOne {
+	return u.Update(func(s *NFTUpsert) {
+		s.UpdateObjectID()
+	})
+}
+
+// SetType sets the "Type" field.
+func (u *NFTUpsertOne) SetType(v string) *NFTUpsertOne {
+	return u.Update(func(s *NFTUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *NFTUpsertOne) UpdateType() *NFTUpsertOne {
+	return u.Update(func(s *NFTUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetMetadata sets the "Metadata" field.
+func (u *NFTUpsertOne) SetMetadata(v map[string]interface{}) *NFTUpsertOne {
+	return u.Update(func(s *NFTUpsert) {
+		s.SetMetadata(v)
+	})
+}
+
+// UpdateMetadata sets the "Metadata" field to the value that was provided on create.
+func (u *NFTUpsertOne) UpdateMetadata() *NFTUpsertOne {
+	return u.Update(func(s *NFTUpsert) {
+		s.UpdateMetadata()
+	})
+}
+
+// SetSequenceID sets the "SequenceID" field.
+func (u *NFTUpsertOne) SetSequenceID(v uint64) *NFTUpsertOne {
+	return u.Update(func(s *NFTUpsert) {
+		s.SetSequenceID(v)
+	})
+}
+
+// AddSequenceID adds v to the "SequenceID" field.
+func (u *NFTUpsertOne) AddSequenceID(v uint64) *NFTUpsertOne {
+	return u.Update(func(s *NFTUpsert) {
+		s.AddSequenceID(v)
+	})
+}
+
+// UpdateSequenceID sets the "SequenceID" field to the value that was provided on create.
+func (u *NFTUpsertOne) UpdateSequenceID() *NFTUpsertOne {
+	return u.Update(func(s *NFTUpsert) {
+		s.UpdateSequenceID()
+	})
+}
+
+// Exec executes the query.
+func (u *NFTUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for NFTCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *NFTUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *NFTUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *NFTUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // NFTCreateBulk is the builder for creating many NFT entities in bulk.
 type NFTCreateBulk struct {
 	config
 	builders []*NFTCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the NFT entities in the database.
@@ -222,6 +465,7 @@ func (ncb *NFTCreateBulk) Save(ctx context.Context) ([]*NFT, error) {
 					_, err = mutators[i+1].Mutate(root, ncb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = ncb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ncb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -272,6 +516,170 @@ func (ncb *NFTCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (ncb *NFTCreateBulk) ExecX(ctx context.Context) {
 	if err := ncb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.NFT.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.NFTUpsert) {
+//			SetObjectID(v+v).
+//		}).
+//		Exec(ctx)
+func (ncb *NFTCreateBulk) OnConflict(opts ...sql.ConflictOption) *NFTUpsertBulk {
+	ncb.conflict = opts
+	return &NFTUpsertBulk{
+		create: ncb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.NFT.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ncb *NFTCreateBulk) OnConflictColumns(columns ...string) *NFTUpsertBulk {
+	ncb.conflict = append(ncb.conflict, sql.ConflictColumns(columns...))
+	return &NFTUpsertBulk{
+		create: ncb,
+	}
+}
+
+// NFTUpsertBulk is the builder for "upsert"-ing
+// a bulk of NFT nodes.
+type NFTUpsertBulk struct {
+	create *NFTCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.NFT.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *NFTUpsertBulk) UpdateNewValues() *NFTUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.NFT.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *NFTUpsertBulk) Ignore() *NFTUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *NFTUpsertBulk) DoNothing() *NFTUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the NFTCreateBulk.OnConflict
+// documentation for more info.
+func (u *NFTUpsertBulk) Update(set func(*NFTUpsert)) *NFTUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&NFTUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetObjectID sets the "ObjectID" field.
+func (u *NFTUpsertBulk) SetObjectID(v string) *NFTUpsertBulk {
+	return u.Update(func(s *NFTUpsert) {
+		s.SetObjectID(v)
+	})
+}
+
+// UpdateObjectID sets the "ObjectID" field to the value that was provided on create.
+func (u *NFTUpsertBulk) UpdateObjectID() *NFTUpsertBulk {
+	return u.Update(func(s *NFTUpsert) {
+		s.UpdateObjectID()
+	})
+}
+
+// SetType sets the "Type" field.
+func (u *NFTUpsertBulk) SetType(v string) *NFTUpsertBulk {
+	return u.Update(func(s *NFTUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *NFTUpsertBulk) UpdateType() *NFTUpsertBulk {
+	return u.Update(func(s *NFTUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetMetadata sets the "Metadata" field.
+func (u *NFTUpsertBulk) SetMetadata(v map[string]interface{}) *NFTUpsertBulk {
+	return u.Update(func(s *NFTUpsert) {
+		s.SetMetadata(v)
+	})
+}
+
+// UpdateMetadata sets the "Metadata" field to the value that was provided on create.
+func (u *NFTUpsertBulk) UpdateMetadata() *NFTUpsertBulk {
+	return u.Update(func(s *NFTUpsert) {
+		s.UpdateMetadata()
+	})
+}
+
+// SetSequenceID sets the "SequenceID" field.
+func (u *NFTUpsertBulk) SetSequenceID(v uint64) *NFTUpsertBulk {
+	return u.Update(func(s *NFTUpsert) {
+		s.SetSequenceID(v)
+	})
+}
+
+// AddSequenceID adds v to the "SequenceID" field.
+func (u *NFTUpsertBulk) AddSequenceID(v uint64) *NFTUpsertBulk {
+	return u.Update(func(s *NFTUpsert) {
+		s.AddSequenceID(v)
+	})
+}
+
+// UpdateSequenceID sets the "SequenceID" field to the value that was provided on create.
+func (u *NFTUpsertBulk) UpdateSequenceID() *NFTUpsertBulk {
+	return u.Update(func(s *NFTUpsert) {
+		s.UpdateSequenceID()
+	})
+}
+
+// Exec executes the query.
+func (u *NFTUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the NFTCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for NFTCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *NFTUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -72,6 +72,12 @@ func (au *AccountUpdate) SetTransactions(s []string) *AccountUpdate {
 	return au
 }
 
+// ClearTransactions clears the value of the "Transactions" field.
+func (au *AccountUpdate) ClearTransactions() *AccountUpdate {
+	au.mutation.ClearTransactions()
+	return au
+}
+
 // Mutation returns the AccountMutation object of the builder.
 func (au *AccountUpdate) Mutation() *AccountMutation {
 	return au.mutation
@@ -198,6 +204,12 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: account.FieldTransactions,
 		})
 	}
+	if au.mutation.TransactionsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: account.FieldTransactions,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{account.Label}
@@ -258,6 +270,12 @@ func (auo *AccountUpdateOne) SetObjects(so []schema.AccObject) *AccountUpdateOne
 // SetTransactions sets the "Transactions" field.
 func (auo *AccountUpdateOne) SetTransactions(s []string) *AccountUpdateOne {
 	auo.mutation.SetTransactions(s)
+	return auo
+}
+
+// ClearTransactions clears the value of the "Transactions" field.
+func (auo *AccountUpdateOne) ClearTransactions() *AccountUpdateOne {
+	auo.mutation.ClearTransactions()
 	return auo
 }
 
@@ -414,6 +432,12 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
+			Column: account.FieldTransactions,
+		})
+	}
+	if auo.mutation.TransactionsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
 			Column: account.FieldTransactions,
 		})
 	}

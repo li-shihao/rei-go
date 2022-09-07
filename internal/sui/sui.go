@@ -307,7 +307,7 @@ func (sc *SUIClient) GetTransactionsInRange(start uint64, end uint64) ([]string,
 }
 
 // Get object
-func (sc *SUIClient) GetObject(id string) (Obj, error) {
+func (sc *SUIClient) GetObject(id string) (*Obj, error) {
 	body := []byte(fmt.Sprintf(`{"jsonrpc":"2.0", "id":1, "method": "sui_getObject", "params": ["%s"]}`, id))
 
 	// Returned struct with proper formatting
@@ -340,13 +340,16 @@ func (sc *SUIClient) GetObject(id string) (Obj, error) {
 
 	// Convert map to struct
 	err = mapstructure.Decode(z, &x)
-	check(err)
 
-	if reflect.ValueOf(x.Result).IsZero() {
-		return Obj{}, errors.New("not valid object")
+	if err != nil {
+		return nil, errors.New("not valid object")
 	}
 
-	return x, nil
+	if reflect.ValueOf(x.Result).IsZero() {
+		return nil, errors.New("not valid object")
+	}
+
+	return &x, nil
 }
 
 // Get transactions related to object

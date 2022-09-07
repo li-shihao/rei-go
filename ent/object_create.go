@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"rei.io/rei/ent/object"
@@ -17,6 +18,7 @@ type ObjectCreate struct {
 	config
 	mutation *ObjectMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetStatus sets the "Status" field.
@@ -194,6 +196,7 @@ func (oc *ObjectCreate) createSpec() (*Object, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = oc.conflict
 	if value, ok := oc.mutation.Status(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -261,10 +264,354 @@ func (oc *ObjectCreate) createSpec() (*Object, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Object.Create().
+//		SetStatus(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ObjectUpsert) {
+//			SetStatus(v+v).
+//		}).
+//		Exec(ctx)
+func (oc *ObjectCreate) OnConflict(opts ...sql.ConflictOption) *ObjectUpsertOne {
+	oc.conflict = opts
+	return &ObjectUpsertOne{
+		create: oc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Object.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (oc *ObjectCreate) OnConflictColumns(columns ...string) *ObjectUpsertOne {
+	oc.conflict = append(oc.conflict, sql.ConflictColumns(columns...))
+	return &ObjectUpsertOne{
+		create: oc,
+	}
+}
+
+type (
+	// ObjectUpsertOne is the builder for "upsert"-ing
+	//  one Object node.
+	ObjectUpsertOne struct {
+		create *ObjectCreate
+	}
+
+	// ObjectUpsert is the "OnConflict" setter.
+	ObjectUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetStatus sets the "Status" field.
+func (u *ObjectUpsert) SetStatus(v string) *ObjectUpsert {
+	u.Set(object.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "Status" field to the value that was provided on create.
+func (u *ObjectUpsert) UpdateStatus() *ObjectUpsert {
+	u.SetExcluded(object.FieldStatus)
+	return u
+}
+
+// SetDataType sets the "DataType" field.
+func (u *ObjectUpsert) SetDataType(v string) *ObjectUpsert {
+	u.Set(object.FieldDataType, v)
+	return u
+}
+
+// UpdateDataType sets the "DataType" field to the value that was provided on create.
+func (u *ObjectUpsert) UpdateDataType() *ObjectUpsert {
+	u.SetExcluded(object.FieldDataType)
+	return u
+}
+
+// SetType sets the "Type" field.
+func (u *ObjectUpsert) SetType(v string) *ObjectUpsert {
+	u.Set(object.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *ObjectUpsert) UpdateType() *ObjectUpsert {
+	u.SetExcluded(object.FieldType)
+	return u
+}
+
+// SetHasPublicTransfer sets the "Has_public_transfer" field.
+func (u *ObjectUpsert) SetHasPublicTransfer(v bool) *ObjectUpsert {
+	u.Set(object.FieldHasPublicTransfer, v)
+	return u
+}
+
+// UpdateHasPublicTransfer sets the "Has_public_transfer" field to the value that was provided on create.
+func (u *ObjectUpsert) UpdateHasPublicTransfer() *ObjectUpsert {
+	u.SetExcluded(object.FieldHasPublicTransfer)
+	return u
+}
+
+// SetFields sets the "Fields" field.
+func (u *ObjectUpsert) SetFields(v map[string]interface{}) *ObjectUpsert {
+	u.Set(object.FieldFields, v)
+	return u
+}
+
+// UpdateFields sets the "Fields" field to the value that was provided on create.
+func (u *ObjectUpsert) UpdateFields() *ObjectUpsert {
+	u.SetExcluded(object.FieldFields)
+	return u
+}
+
+// SetOwner sets the "Owner" field.
+func (u *ObjectUpsert) SetOwner(v string) *ObjectUpsert {
+	u.Set(object.FieldOwner, v)
+	return u
+}
+
+// UpdateOwner sets the "Owner" field to the value that was provided on create.
+func (u *ObjectUpsert) UpdateOwner() *ObjectUpsert {
+	u.SetExcluded(object.FieldOwner)
+	return u
+}
+
+// SetObjectID sets the "ObjectID" field.
+func (u *ObjectUpsert) SetObjectID(v string) *ObjectUpsert {
+	u.Set(object.FieldObjectID, v)
+	return u
+}
+
+// UpdateObjectID sets the "ObjectID" field to the value that was provided on create.
+func (u *ObjectUpsert) UpdateObjectID() *ObjectUpsert {
+	u.SetExcluded(object.FieldObjectID)
+	return u
+}
+
+// SetSequenceID sets the "SequenceID" field.
+func (u *ObjectUpsert) SetSequenceID(v uint64) *ObjectUpsert {
+	u.Set(object.FieldSequenceID, v)
+	return u
+}
+
+// UpdateSequenceID sets the "SequenceID" field to the value that was provided on create.
+func (u *ObjectUpsert) UpdateSequenceID() *ObjectUpsert {
+	u.SetExcluded(object.FieldSequenceID)
+	return u
+}
+
+// AddSequenceID adds v to the "SequenceID" field.
+func (u *ObjectUpsert) AddSequenceID(v uint64) *ObjectUpsert {
+	u.Add(object.FieldSequenceID, v)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Object.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *ObjectUpsertOne) UpdateNewValues() *ObjectUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Object.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ObjectUpsertOne) Ignore() *ObjectUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ObjectUpsertOne) DoNothing() *ObjectUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ObjectCreate.OnConflict
+// documentation for more info.
+func (u *ObjectUpsertOne) Update(set func(*ObjectUpsert)) *ObjectUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ObjectUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetStatus sets the "Status" field.
+func (u *ObjectUpsertOne) SetStatus(v string) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "Status" field to the value that was provided on create.
+func (u *ObjectUpsertOne) UpdateStatus() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetDataType sets the "DataType" field.
+func (u *ObjectUpsertOne) SetDataType(v string) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetDataType(v)
+	})
+}
+
+// UpdateDataType sets the "DataType" field to the value that was provided on create.
+func (u *ObjectUpsertOne) UpdateDataType() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateDataType()
+	})
+}
+
+// SetType sets the "Type" field.
+func (u *ObjectUpsertOne) SetType(v string) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *ObjectUpsertOne) UpdateType() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetHasPublicTransfer sets the "Has_public_transfer" field.
+func (u *ObjectUpsertOne) SetHasPublicTransfer(v bool) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetHasPublicTransfer(v)
+	})
+}
+
+// UpdateHasPublicTransfer sets the "Has_public_transfer" field to the value that was provided on create.
+func (u *ObjectUpsertOne) UpdateHasPublicTransfer() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateHasPublicTransfer()
+	})
+}
+
+// SetFields sets the "Fields" field.
+func (u *ObjectUpsertOne) SetFields(v map[string]interface{}) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetFields(v)
+	})
+}
+
+// UpdateFields sets the "Fields" field to the value that was provided on create.
+func (u *ObjectUpsertOne) UpdateFields() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateFields()
+	})
+}
+
+// SetOwner sets the "Owner" field.
+func (u *ObjectUpsertOne) SetOwner(v string) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetOwner(v)
+	})
+}
+
+// UpdateOwner sets the "Owner" field to the value that was provided on create.
+func (u *ObjectUpsertOne) UpdateOwner() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateOwner()
+	})
+}
+
+// SetObjectID sets the "ObjectID" field.
+func (u *ObjectUpsertOne) SetObjectID(v string) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetObjectID(v)
+	})
+}
+
+// UpdateObjectID sets the "ObjectID" field to the value that was provided on create.
+func (u *ObjectUpsertOne) UpdateObjectID() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateObjectID()
+	})
+}
+
+// SetSequenceID sets the "SequenceID" field.
+func (u *ObjectUpsertOne) SetSequenceID(v uint64) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetSequenceID(v)
+	})
+}
+
+// AddSequenceID adds v to the "SequenceID" field.
+func (u *ObjectUpsertOne) AddSequenceID(v uint64) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.AddSequenceID(v)
+	})
+}
+
+// UpdateSequenceID sets the "SequenceID" field to the value that was provided on create.
+func (u *ObjectUpsertOne) UpdateSequenceID() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateSequenceID()
+	})
+}
+
+// Exec executes the query.
+func (u *ObjectUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ObjectCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ObjectUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ObjectUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ObjectUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ObjectCreateBulk is the builder for creating many Object entities in bulk.
 type ObjectCreateBulk struct {
 	config
 	builders []*ObjectCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Object entities in the database.
@@ -290,6 +637,7 @@ func (ocb *ObjectCreateBulk) Save(ctx context.Context) ([]*Object, error) {
 					_, err = mutators[i+1].Mutate(root, ocb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = ocb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ocb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -340,6 +688,226 @@ func (ocb *ObjectCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (ocb *ObjectCreateBulk) ExecX(ctx context.Context) {
 	if err := ocb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Object.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ObjectUpsert) {
+//			SetStatus(v+v).
+//		}).
+//		Exec(ctx)
+func (ocb *ObjectCreateBulk) OnConflict(opts ...sql.ConflictOption) *ObjectUpsertBulk {
+	ocb.conflict = opts
+	return &ObjectUpsertBulk{
+		create: ocb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Object.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ocb *ObjectCreateBulk) OnConflictColumns(columns ...string) *ObjectUpsertBulk {
+	ocb.conflict = append(ocb.conflict, sql.ConflictColumns(columns...))
+	return &ObjectUpsertBulk{
+		create: ocb,
+	}
+}
+
+// ObjectUpsertBulk is the builder for "upsert"-ing
+// a bulk of Object nodes.
+type ObjectUpsertBulk struct {
+	create *ObjectCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Object.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *ObjectUpsertBulk) UpdateNewValues() *ObjectUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Object.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ObjectUpsertBulk) Ignore() *ObjectUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ObjectUpsertBulk) DoNothing() *ObjectUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ObjectCreateBulk.OnConflict
+// documentation for more info.
+func (u *ObjectUpsertBulk) Update(set func(*ObjectUpsert)) *ObjectUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ObjectUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetStatus sets the "Status" field.
+func (u *ObjectUpsertBulk) SetStatus(v string) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "Status" field to the value that was provided on create.
+func (u *ObjectUpsertBulk) UpdateStatus() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetDataType sets the "DataType" field.
+func (u *ObjectUpsertBulk) SetDataType(v string) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetDataType(v)
+	})
+}
+
+// UpdateDataType sets the "DataType" field to the value that was provided on create.
+func (u *ObjectUpsertBulk) UpdateDataType() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateDataType()
+	})
+}
+
+// SetType sets the "Type" field.
+func (u *ObjectUpsertBulk) SetType(v string) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *ObjectUpsertBulk) UpdateType() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetHasPublicTransfer sets the "Has_public_transfer" field.
+func (u *ObjectUpsertBulk) SetHasPublicTransfer(v bool) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetHasPublicTransfer(v)
+	})
+}
+
+// UpdateHasPublicTransfer sets the "Has_public_transfer" field to the value that was provided on create.
+func (u *ObjectUpsertBulk) UpdateHasPublicTransfer() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateHasPublicTransfer()
+	})
+}
+
+// SetFields sets the "Fields" field.
+func (u *ObjectUpsertBulk) SetFields(v map[string]interface{}) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetFields(v)
+	})
+}
+
+// UpdateFields sets the "Fields" field to the value that was provided on create.
+func (u *ObjectUpsertBulk) UpdateFields() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateFields()
+	})
+}
+
+// SetOwner sets the "Owner" field.
+func (u *ObjectUpsertBulk) SetOwner(v string) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetOwner(v)
+	})
+}
+
+// UpdateOwner sets the "Owner" field to the value that was provided on create.
+func (u *ObjectUpsertBulk) UpdateOwner() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateOwner()
+	})
+}
+
+// SetObjectID sets the "ObjectID" field.
+func (u *ObjectUpsertBulk) SetObjectID(v string) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetObjectID(v)
+	})
+}
+
+// UpdateObjectID sets the "ObjectID" field to the value that was provided on create.
+func (u *ObjectUpsertBulk) UpdateObjectID() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateObjectID()
+	})
+}
+
+// SetSequenceID sets the "SequenceID" field.
+func (u *ObjectUpsertBulk) SetSequenceID(v uint64) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetSequenceID(v)
+	})
+}
+
+// AddSequenceID adds v to the "SequenceID" field.
+func (u *ObjectUpsertBulk) AddSequenceID(v uint64) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.AddSequenceID(v)
+	})
+}
+
+// UpdateSequenceID sets the "SequenceID" field to the value that was provided on create.
+func (u *ObjectUpsertBulk) UpdateSequenceID() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateSequenceID()
+	})
+}
+
+// Exec executes the query.
+func (u *ObjectUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ObjectCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for ObjectCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ObjectUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

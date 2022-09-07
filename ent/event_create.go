@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"rei.io/rei/ent/event"
@@ -17,6 +18,7 @@ type EventCreate struct {
 	config
 	mutation *EventMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetType sets the "Type" field.
@@ -181,6 +183,7 @@ func (ec *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = ec.conflict
 	if value, ok := ec.mutation.GetType(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -232,10 +235,315 @@ func (ec *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Event.Create().
+//		SetType(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.EventUpsert) {
+//			SetType(v+v).
+//		}).
+//		Exec(ctx)
+func (ec *EventCreate) OnConflict(opts ...sql.ConflictOption) *EventUpsertOne {
+	ec.conflict = opts
+	return &EventUpsertOne{
+		create: ec,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Event.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ec *EventCreate) OnConflictColumns(columns ...string) *EventUpsertOne {
+	ec.conflict = append(ec.conflict, sql.ConflictColumns(columns...))
+	return &EventUpsertOne{
+		create: ec,
+	}
+}
+
+type (
+	// EventUpsertOne is the builder for "upsert"-ing
+	//  one Event node.
+	EventUpsertOne struct {
+		create *EventCreate
+	}
+
+	// EventUpsert is the "OnConflict" setter.
+	EventUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetType sets the "Type" field.
+func (u *EventUpsert) SetType(v string) *EventUpsert {
+	u.Set(event.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *EventUpsert) UpdateType() *EventUpsert {
+	u.SetExcluded(event.FieldType)
+	return u
+}
+
+// SetSender sets the "Sender" field.
+func (u *EventUpsert) SetSender(v string) *EventUpsert {
+	u.Set(event.FieldSender, v)
+	return u
+}
+
+// UpdateSender sets the "Sender" field to the value that was provided on create.
+func (u *EventUpsert) UpdateSender() *EventUpsert {
+	u.SetExcluded(event.FieldSender)
+	return u
+}
+
+// SetRecipient sets the "Recipient" field.
+func (u *EventUpsert) SetRecipient(v string) *EventUpsert {
+	u.Set(event.FieldRecipient, v)
+	return u
+}
+
+// UpdateRecipient sets the "Recipient" field to the value that was provided on create.
+func (u *EventUpsert) UpdateRecipient() *EventUpsert {
+	u.SetExcluded(event.FieldRecipient)
+	return u
+}
+
+// ClearRecipient clears the value of the "Recipient" field.
+func (u *EventUpsert) ClearRecipient() *EventUpsert {
+	u.SetNull(event.FieldRecipient)
+	return u
+}
+
+// SetTransactionID sets the "TransactionID" field.
+func (u *EventUpsert) SetTransactionID(v string) *EventUpsert {
+	u.Set(event.FieldTransactionID, v)
+	return u
+}
+
+// UpdateTransactionID sets the "TransactionID" field to the value that was provided on create.
+func (u *EventUpsert) UpdateTransactionID() *EventUpsert {
+	u.SetExcluded(event.FieldTransactionID)
+	return u
+}
+
+// SetObjectID sets the "ObjectID" field.
+func (u *EventUpsert) SetObjectID(v string) *EventUpsert {
+	u.Set(event.FieldObjectID, v)
+	return u
+}
+
+// UpdateObjectID sets the "ObjectID" field to the value that was provided on create.
+func (u *EventUpsert) UpdateObjectID() *EventUpsert {
+	u.SetExcluded(event.FieldObjectID)
+	return u
+}
+
+// SetVersion sets the "Version" field.
+func (u *EventUpsert) SetVersion(v uint32) *EventUpsert {
+	u.Set(event.FieldVersion, v)
+	return u
+}
+
+// UpdateVersion sets the "Version" field to the value that was provided on create.
+func (u *EventUpsert) UpdateVersion() *EventUpsert {
+	u.SetExcluded(event.FieldVersion)
+	return u
+}
+
+// AddVersion adds v to the "Version" field.
+func (u *EventUpsert) AddVersion(v uint32) *EventUpsert {
+	u.Add(event.FieldVersion, v)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Event.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *EventUpsertOne) UpdateNewValues() *EventUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Event.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *EventUpsertOne) Ignore() *EventUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *EventUpsertOne) DoNothing() *EventUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the EventCreate.OnConflict
+// documentation for more info.
+func (u *EventUpsertOne) Update(set func(*EventUpsert)) *EventUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&EventUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetType sets the "Type" field.
+func (u *EventUpsertOne) SetType(v string) *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *EventUpsertOne) UpdateType() *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetSender sets the "Sender" field.
+func (u *EventUpsertOne) SetSender(v string) *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.SetSender(v)
+	})
+}
+
+// UpdateSender sets the "Sender" field to the value that was provided on create.
+func (u *EventUpsertOne) UpdateSender() *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateSender()
+	})
+}
+
+// SetRecipient sets the "Recipient" field.
+func (u *EventUpsertOne) SetRecipient(v string) *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.SetRecipient(v)
+	})
+}
+
+// UpdateRecipient sets the "Recipient" field to the value that was provided on create.
+func (u *EventUpsertOne) UpdateRecipient() *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateRecipient()
+	})
+}
+
+// ClearRecipient clears the value of the "Recipient" field.
+func (u *EventUpsertOne) ClearRecipient() *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.ClearRecipient()
+	})
+}
+
+// SetTransactionID sets the "TransactionID" field.
+func (u *EventUpsertOne) SetTransactionID(v string) *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.SetTransactionID(v)
+	})
+}
+
+// UpdateTransactionID sets the "TransactionID" field to the value that was provided on create.
+func (u *EventUpsertOne) UpdateTransactionID() *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateTransactionID()
+	})
+}
+
+// SetObjectID sets the "ObjectID" field.
+func (u *EventUpsertOne) SetObjectID(v string) *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.SetObjectID(v)
+	})
+}
+
+// UpdateObjectID sets the "ObjectID" field to the value that was provided on create.
+func (u *EventUpsertOne) UpdateObjectID() *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateObjectID()
+	})
+}
+
+// SetVersion sets the "Version" field.
+func (u *EventUpsertOne) SetVersion(v uint32) *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.SetVersion(v)
+	})
+}
+
+// AddVersion adds v to the "Version" field.
+func (u *EventUpsertOne) AddVersion(v uint32) *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.AddVersion(v)
+	})
+}
+
+// UpdateVersion sets the "Version" field to the value that was provided on create.
+func (u *EventUpsertOne) UpdateVersion() *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateVersion()
+	})
+}
+
+// Exec executes the query.
+func (u *EventUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for EventCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *EventUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *EventUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *EventUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // EventCreateBulk is the builder for creating many Event entities in bulk.
 type EventCreateBulk struct {
 	config
 	builders []*EventCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Event entities in the database.
@@ -261,6 +569,7 @@ func (ecb *EventCreateBulk) Save(ctx context.Context) ([]*Event, error) {
 					_, err = mutators[i+1].Mutate(root, ecb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = ecb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ecb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -311,6 +620,205 @@ func (ecb *EventCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (ecb *EventCreateBulk) ExecX(ctx context.Context) {
 	if err := ecb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Event.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.EventUpsert) {
+//			SetType(v+v).
+//		}).
+//		Exec(ctx)
+func (ecb *EventCreateBulk) OnConflict(opts ...sql.ConflictOption) *EventUpsertBulk {
+	ecb.conflict = opts
+	return &EventUpsertBulk{
+		create: ecb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Event.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ecb *EventCreateBulk) OnConflictColumns(columns ...string) *EventUpsertBulk {
+	ecb.conflict = append(ecb.conflict, sql.ConflictColumns(columns...))
+	return &EventUpsertBulk{
+		create: ecb,
+	}
+}
+
+// EventUpsertBulk is the builder for "upsert"-ing
+// a bulk of Event nodes.
+type EventUpsertBulk struct {
+	create *EventCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Event.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *EventUpsertBulk) UpdateNewValues() *EventUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Event.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *EventUpsertBulk) Ignore() *EventUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *EventUpsertBulk) DoNothing() *EventUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the EventCreateBulk.OnConflict
+// documentation for more info.
+func (u *EventUpsertBulk) Update(set func(*EventUpsert)) *EventUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&EventUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetType sets the "Type" field.
+func (u *EventUpsertBulk) SetType(v string) *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *EventUpsertBulk) UpdateType() *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetSender sets the "Sender" field.
+func (u *EventUpsertBulk) SetSender(v string) *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.SetSender(v)
+	})
+}
+
+// UpdateSender sets the "Sender" field to the value that was provided on create.
+func (u *EventUpsertBulk) UpdateSender() *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateSender()
+	})
+}
+
+// SetRecipient sets the "Recipient" field.
+func (u *EventUpsertBulk) SetRecipient(v string) *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.SetRecipient(v)
+	})
+}
+
+// UpdateRecipient sets the "Recipient" field to the value that was provided on create.
+func (u *EventUpsertBulk) UpdateRecipient() *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateRecipient()
+	})
+}
+
+// ClearRecipient clears the value of the "Recipient" field.
+func (u *EventUpsertBulk) ClearRecipient() *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.ClearRecipient()
+	})
+}
+
+// SetTransactionID sets the "TransactionID" field.
+func (u *EventUpsertBulk) SetTransactionID(v string) *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.SetTransactionID(v)
+	})
+}
+
+// UpdateTransactionID sets the "TransactionID" field to the value that was provided on create.
+func (u *EventUpsertBulk) UpdateTransactionID() *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateTransactionID()
+	})
+}
+
+// SetObjectID sets the "ObjectID" field.
+func (u *EventUpsertBulk) SetObjectID(v string) *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.SetObjectID(v)
+	})
+}
+
+// UpdateObjectID sets the "ObjectID" field to the value that was provided on create.
+func (u *EventUpsertBulk) UpdateObjectID() *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateObjectID()
+	})
+}
+
+// SetVersion sets the "Version" field.
+func (u *EventUpsertBulk) SetVersion(v uint32) *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.SetVersion(v)
+	})
+}
+
+// AddVersion adds v to the "Version" field.
+func (u *EventUpsertBulk) AddVersion(v uint32) *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.AddVersion(v)
+	})
+}
+
+// UpdateVersion sets the "Version" field to the value that was provided on create.
+func (u *EventUpsertBulk) UpdateVersion() *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.UpdateVersion()
+	})
+}
+
+// Exec executes the query.
+func (u *EventUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the EventCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for EventCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *EventUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

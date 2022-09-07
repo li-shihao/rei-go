@@ -26,12 +26,13 @@ func (r *accountResolver) Balance(ctx context.Context, obj *ent.Account) (int, e
 // Objects is the resolver for the Objects field.
 func (r *accountResolver) Objects(ctx context.Context, obj *ent.Account) ([]*model.AccObject, error) {
 	var objects []*model.AccObject
+
 	for _, j := range obj.Objects {
-		var object *model.AccObject
+		var object model.AccObject
 		object.ObjectID = j.ObjectId
 		object.Type = j.Type
 		object.Metadata = j.Metadata
-		objects = append(objects, object)
+		objects = append(objects, &object)
 	}
 	return objects, nil
 }

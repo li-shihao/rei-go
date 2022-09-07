@@ -27,5 +27,6 @@ func (r *queryResolver) Pkg(ctx context.Context, objectID *string, transactionID
 		}
 		return pkg, nil
 	}
+
 	return nil, errors.New("no parameters fulfilled")
 }

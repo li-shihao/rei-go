@@ -326,6 +326,20 @@ func BalanceLTE(v uint64) predicate.Account {
 	})
 }
 
+// TransactionsIsNil applies the IsNil predicate on the "Transactions" field.
+func TransactionsIsNil() predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldTransactions)))
+	})
+}
+
+// TransactionsNotNil applies the NotNil predicate on the "Transactions" field.
+func TransactionsNotNil() predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldTransactions)))
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Account) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {

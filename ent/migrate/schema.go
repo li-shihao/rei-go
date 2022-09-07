@@ -15,7 +15,7 @@ var (
 		{Name: "account_id", Type: field.TypeString},
 		{Name: "balance", Type: field.TypeUint64},
 		{Name: "objects", Type: field.TypeJSON},
-		{Name: "transactions", Type: field.TypeJSON},
+		{Name: "transactions", Type: field.TypeJSON, Nullable: true},
 	}
 	// AccountsTable holds the schema information for the "accounts" table.
 	AccountsTable = &schema.Table{

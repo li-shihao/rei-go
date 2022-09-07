@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"rei.io/rei/ent/transaction"
@@ -18,6 +19,7 @@ type TransactionCreate struct {
 	config
 	mutation *TransactionMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetType sets the "Type" field.
@@ -247,6 +249,7 @@ func (tc *TransactionCreate) createSpec() (*Transaction, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = tc.conflict
 	if value, ok := tc.mutation.GetType(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -338,10 +341,510 @@ func (tc *TransactionCreate) createSpec() (*Transaction, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Transaction.Create().
+//		SetType(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TransactionUpsert) {
+//			SetType(v+v).
+//		}).
+//		Exec(ctx)
+func (tc *TransactionCreate) OnConflict(opts ...sql.ConflictOption) *TransactionUpsertOne {
+	tc.conflict = opts
+	return &TransactionUpsertOne{
+		create: tc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Transaction.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (tc *TransactionCreate) OnConflictColumns(columns ...string) *TransactionUpsertOne {
+	tc.conflict = append(tc.conflict, sql.ConflictColumns(columns...))
+	return &TransactionUpsertOne{
+		create: tc,
+	}
+}
+
+type (
+	// TransactionUpsertOne is the builder for "upsert"-ing
+	//  one Transaction node.
+	TransactionUpsertOne struct {
+		create *TransactionCreate
+	}
+
+	// TransactionUpsert is the "OnConflict" setter.
+	TransactionUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetType sets the "Type" field.
+func (u *TransactionUpsert) SetType(v string) *TransactionUpsert {
+	u.Set(transaction.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateType() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldType)
+	return u
+}
+
+// SetTime sets the "Time" field.
+func (u *TransactionUpsert) SetTime(v time.Time) *TransactionUpsert {
+	u.Set(transaction.FieldTime, v)
+	return u
+}
+
+// UpdateTime sets the "Time" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateTime() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldTime)
+	return u
+}
+
+// SetTransactionID sets the "TransactionID" field.
+func (u *TransactionUpsert) SetTransactionID(v string) *TransactionUpsert {
+	u.Set(transaction.FieldTransactionID, v)
+	return u
+}
+
+// UpdateTransactionID sets the "TransactionID" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateTransactionID() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldTransactionID)
+	return u
+}
+
+// SetStatus sets the "Status" field.
+func (u *TransactionUpsert) SetStatus(v bool) *TransactionUpsert {
+	u.Set(transaction.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "Status" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateStatus() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldStatus)
+	return u
+}
+
+// SetSender sets the "Sender" field.
+func (u *TransactionUpsert) SetSender(v string) *TransactionUpsert {
+	u.Set(transaction.FieldSender, v)
+	return u
+}
+
+// UpdateSender sets the "Sender" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateSender() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldSender)
+	return u
+}
+
+// SetRecipient sets the "Recipient" field.
+func (u *TransactionUpsert) SetRecipient(v string) *TransactionUpsert {
+	u.Set(transaction.FieldRecipient, v)
+	return u
+}
+
+// UpdateRecipient sets the "Recipient" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateRecipient() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldRecipient)
+	return u
+}
+
+// ClearRecipient clears the value of the "Recipient" field.
+func (u *TransactionUpsert) ClearRecipient() *TransactionUpsert {
+	u.SetNull(transaction.FieldRecipient)
+	return u
+}
+
+// SetAmount sets the "Amount" field.
+func (u *TransactionUpsert) SetAmount(v float64) *TransactionUpsert {
+	u.Set(transaction.FieldAmount, v)
+	return u
+}
+
+// UpdateAmount sets the "Amount" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateAmount() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldAmount)
+	return u
+}
+
+// AddAmount adds v to the "Amount" field.
+func (u *TransactionUpsert) AddAmount(v float64) *TransactionUpsert {
+	u.Add(transaction.FieldAmount, v)
+	return u
+}
+
+// ClearAmount clears the value of the "Amount" field.
+func (u *TransactionUpsert) ClearAmount() *TransactionUpsert {
+	u.SetNull(transaction.FieldAmount)
+	return u
+}
+
+// SetPackage sets the "Package" field.
+func (u *TransactionUpsert) SetPackage(v string) *TransactionUpsert {
+	u.Set(transaction.FieldPackage, v)
+	return u
+}
+
+// UpdatePackage sets the "Package" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdatePackage() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldPackage)
+	return u
+}
+
+// ClearPackage clears the value of the "Package" field.
+func (u *TransactionUpsert) ClearPackage() *TransactionUpsert {
+	u.SetNull(transaction.FieldPackage)
+	return u
+}
+
+// SetModule sets the "Module" field.
+func (u *TransactionUpsert) SetModule(v string) *TransactionUpsert {
+	u.Set(transaction.FieldModule, v)
+	return u
+}
+
+// UpdateModule sets the "Module" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateModule() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldModule)
+	return u
+}
+
+// ClearModule clears the value of the "Module" field.
+func (u *TransactionUpsert) ClearModule() *TransactionUpsert {
+	u.SetNull(transaction.FieldModule)
+	return u
+}
+
+// SetFunction sets the "Function" field.
+func (u *TransactionUpsert) SetFunction(v string) *TransactionUpsert {
+	u.Set(transaction.FieldFunction, v)
+	return u
+}
+
+// UpdateFunction sets the "Function" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateFunction() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldFunction)
+	return u
+}
+
+// ClearFunction clears the value of the "Function" field.
+func (u *TransactionUpsert) ClearFunction() *TransactionUpsert {
+	u.SetNull(transaction.FieldFunction)
+	return u
+}
+
+// SetGas sets the "Gas" field.
+func (u *TransactionUpsert) SetGas(v uint32) *TransactionUpsert {
+	u.Set(transaction.FieldGas, v)
+	return u
+}
+
+// UpdateGas sets the "Gas" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateGas() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldGas)
+	return u
+}
+
+// AddGas adds v to the "Gas" field.
+func (u *TransactionUpsert) AddGas(v uint32) *TransactionUpsert {
+	u.Add(transaction.FieldGas, v)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Transaction.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *TransactionUpsertOne) UpdateNewValues() *TransactionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Transaction.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *TransactionUpsertOne) Ignore() *TransactionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TransactionUpsertOne) DoNothing() *TransactionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TransactionCreate.OnConflict
+// documentation for more info.
+func (u *TransactionUpsertOne) Update(set func(*TransactionUpsert)) *TransactionUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TransactionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetType sets the "Type" field.
+func (u *TransactionUpsertOne) SetType(v string) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateType() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetTime sets the "Time" field.
+func (u *TransactionUpsertOne) SetTime(v time.Time) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetTime(v)
+	})
+}
+
+// UpdateTime sets the "Time" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateTime() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateTime()
+	})
+}
+
+// SetTransactionID sets the "TransactionID" field.
+func (u *TransactionUpsertOne) SetTransactionID(v string) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetTransactionID(v)
+	})
+}
+
+// UpdateTransactionID sets the "TransactionID" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateTransactionID() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateTransactionID()
+	})
+}
+
+// SetStatus sets the "Status" field.
+func (u *TransactionUpsertOne) SetStatus(v bool) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "Status" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateStatus() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetSender sets the "Sender" field.
+func (u *TransactionUpsertOne) SetSender(v string) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetSender(v)
+	})
+}
+
+// UpdateSender sets the "Sender" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateSender() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateSender()
+	})
+}
+
+// SetRecipient sets the "Recipient" field.
+func (u *TransactionUpsertOne) SetRecipient(v string) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetRecipient(v)
+	})
+}
+
+// UpdateRecipient sets the "Recipient" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateRecipient() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateRecipient()
+	})
+}
+
+// ClearRecipient clears the value of the "Recipient" field.
+func (u *TransactionUpsertOne) ClearRecipient() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearRecipient()
+	})
+}
+
+// SetAmount sets the "Amount" field.
+func (u *TransactionUpsertOne) SetAmount(v float64) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetAmount(v)
+	})
+}
+
+// AddAmount adds v to the "Amount" field.
+func (u *TransactionUpsertOne) AddAmount(v float64) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.AddAmount(v)
+	})
+}
+
+// UpdateAmount sets the "Amount" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateAmount() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateAmount()
+	})
+}
+
+// ClearAmount clears the value of the "Amount" field.
+func (u *TransactionUpsertOne) ClearAmount() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearAmount()
+	})
+}
+
+// SetPackage sets the "Package" field.
+func (u *TransactionUpsertOne) SetPackage(v string) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetPackage(v)
+	})
+}
+
+// UpdatePackage sets the "Package" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdatePackage() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdatePackage()
+	})
+}
+
+// ClearPackage clears the value of the "Package" field.
+func (u *TransactionUpsertOne) ClearPackage() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearPackage()
+	})
+}
+
+// SetModule sets the "Module" field.
+func (u *TransactionUpsertOne) SetModule(v string) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetModule(v)
+	})
+}
+
+// UpdateModule sets the "Module" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateModule() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateModule()
+	})
+}
+
+// ClearModule clears the value of the "Module" field.
+func (u *TransactionUpsertOne) ClearModule() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearModule()
+	})
+}
+
+// SetFunction sets the "Function" field.
+func (u *TransactionUpsertOne) SetFunction(v string) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetFunction(v)
+	})
+}
+
+// UpdateFunction sets the "Function" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateFunction() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateFunction()
+	})
+}
+
+// ClearFunction clears the value of the "Function" field.
+func (u *TransactionUpsertOne) ClearFunction() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearFunction()
+	})
+}
+
+// SetGas sets the "Gas" field.
+func (u *TransactionUpsertOne) SetGas(v uint32) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetGas(v)
+	})
+}
+
+// AddGas adds v to the "Gas" field.
+func (u *TransactionUpsertOne) AddGas(v uint32) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.AddGas(v)
+	})
+}
+
+// UpdateGas sets the "Gas" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateGas() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateGas()
+	})
+}
+
+// Exec executes the query.
+func (u *TransactionUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TransactionCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TransactionUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *TransactionUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *TransactionUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // TransactionCreateBulk is the builder for creating many Transaction entities in bulk.
 type TransactionCreateBulk struct {
 	config
 	builders []*TransactionCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Transaction entities in the database.
@@ -367,6 +870,7 @@ func (tcb *TransactionCreateBulk) Save(ctx context.Context) ([]*Transaction, err
 					_, err = mutators[i+1].Mutate(root, tcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = tcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, tcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -417,6 +921,310 @@ func (tcb *TransactionCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (tcb *TransactionCreateBulk) ExecX(ctx context.Context) {
 	if err := tcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Transaction.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TransactionUpsert) {
+//			SetType(v+v).
+//		}).
+//		Exec(ctx)
+func (tcb *TransactionCreateBulk) OnConflict(opts ...sql.ConflictOption) *TransactionUpsertBulk {
+	tcb.conflict = opts
+	return &TransactionUpsertBulk{
+		create: tcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Transaction.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (tcb *TransactionCreateBulk) OnConflictColumns(columns ...string) *TransactionUpsertBulk {
+	tcb.conflict = append(tcb.conflict, sql.ConflictColumns(columns...))
+	return &TransactionUpsertBulk{
+		create: tcb,
+	}
+}
+
+// TransactionUpsertBulk is the builder for "upsert"-ing
+// a bulk of Transaction nodes.
+type TransactionUpsertBulk struct {
+	create *TransactionCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Transaction.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *TransactionUpsertBulk) UpdateNewValues() *TransactionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Transaction.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *TransactionUpsertBulk) Ignore() *TransactionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TransactionUpsertBulk) DoNothing() *TransactionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TransactionCreateBulk.OnConflict
+// documentation for more info.
+func (u *TransactionUpsertBulk) Update(set func(*TransactionUpsert)) *TransactionUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TransactionUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetType sets the "Type" field.
+func (u *TransactionUpsertBulk) SetType(v string) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "Type" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateType() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateType()
+	})
+}
+
+// SetTime sets the "Time" field.
+func (u *TransactionUpsertBulk) SetTime(v time.Time) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetTime(v)
+	})
+}
+
+// UpdateTime sets the "Time" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateTime() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateTime()
+	})
+}
+
+// SetTransactionID sets the "TransactionID" field.
+func (u *TransactionUpsertBulk) SetTransactionID(v string) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetTransactionID(v)
+	})
+}
+
+// UpdateTransactionID sets the "TransactionID" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateTransactionID() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateTransactionID()
+	})
+}
+
+// SetStatus sets the "Status" field.
+func (u *TransactionUpsertBulk) SetStatus(v bool) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "Status" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateStatus() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetSender sets the "Sender" field.
+func (u *TransactionUpsertBulk) SetSender(v string) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetSender(v)
+	})
+}
+
+// UpdateSender sets the "Sender" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateSender() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateSender()
+	})
+}
+
+// SetRecipient sets the "Recipient" field.
+func (u *TransactionUpsertBulk) SetRecipient(v string) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetRecipient(v)
+	})
+}
+
+// UpdateRecipient sets the "Recipient" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateRecipient() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateRecipient()
+	})
+}
+
+// ClearRecipient clears the value of the "Recipient" field.
+func (u *TransactionUpsertBulk) ClearRecipient() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearRecipient()
+	})
+}
+
+// SetAmount sets the "Amount" field.
+func (u *TransactionUpsertBulk) SetAmount(v float64) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetAmount(v)
+	})
+}
+
+// AddAmount adds v to the "Amount" field.
+func (u *TransactionUpsertBulk) AddAmount(v float64) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.AddAmount(v)
+	})
+}
+
+// UpdateAmount sets the "Amount" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateAmount() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateAmount()
+	})
+}
+
+// ClearAmount clears the value of the "Amount" field.
+func (u *TransactionUpsertBulk) ClearAmount() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearAmount()
+	})
+}
+
+// SetPackage sets the "Package" field.
+func (u *TransactionUpsertBulk) SetPackage(v string) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetPackage(v)
+	})
+}
+
+// UpdatePackage sets the "Package" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdatePackage() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdatePackage()
+	})
+}
+
+// ClearPackage clears the value of the "Package" field.
+func (u *TransactionUpsertBulk) ClearPackage() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearPackage()
+	})
+}
+
+// SetModule sets the "Module" field.
+func (u *TransactionUpsertBulk) SetModule(v string) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetModule(v)
+	})
+}
+
+// UpdateModule sets the "Module" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateModule() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateModule()
+	})
+}
+
+// ClearModule clears the value of the "Module" field.
+func (u *TransactionUpsertBulk) ClearModule() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearModule()
+	})
+}
+
+// SetFunction sets the "Function" field.
+func (u *TransactionUpsertBulk) SetFunction(v string) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetFunction(v)
+	})
+}
+
+// UpdateFunction sets the "Function" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateFunction() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateFunction()
+	})
+}
+
+// ClearFunction clears the value of the "Function" field.
+func (u *TransactionUpsertBulk) ClearFunction() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearFunction()
+	})
+}
+
+// SetGas sets the "Gas" field.
+func (u *TransactionUpsertBulk) SetGas(v uint32) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetGas(v)
+	})
+}
+
+// AddGas adds v to the "Gas" field.
+func (u *TransactionUpsertBulk) AddGas(v uint32) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.AddGas(v)
+	})
+}
+
+// UpdateGas sets the "Gas" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateGas() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateGas()
+	})
+}
+
+// Exec executes the query.
+func (u *TransactionUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the TransactionCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TransactionCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TransactionUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

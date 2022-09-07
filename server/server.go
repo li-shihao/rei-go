@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"rei.io/rei/internal/database"
 	"rei.io/rei/internal/helpers"
 	"rei.io/rei/server/api"
 	"rei.io/rei/server/auth"
@@ -20,6 +21,8 @@ func CreateServer(str string) *chi.Mux {
 
 	// Set db connection string from parameter
 	connStr = str
+	db := new(database.EntClient)
+	db.Init("postgres", connStr)
 
 	// TODO: CSRF
 	//csrfMiddleware := csrf.Protect([]byte("ir0LFQIIHiWbwGZlbkAqFGPcCGJi0U8k"))
@@ -55,7 +58,7 @@ func CreateServer(str string) *chi.Mux {
 		r.Use(auth.Authenticate)
 		r.Post("/auth", auth.Confirm)
 		r.Route("/api/v1", func(r chi.Router) {
-			r.Handle("/query", api.GraphQLHandler(connStr))
+			r.Handle("/query", api.GraphQLHandler(db))
 		})
 		r.Route("/admin", func(r chi.Router) {
 			r.Use(auth.AdminOnly)

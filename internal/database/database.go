@@ -25,6 +25,21 @@ func (c *EntClient) GetClient() *ent.Client {
 	return c.client
 }
 
+func (c *EntClient) FirstRun(dbType string, dbOption string) {
+	cl, err := ent.Open(dbType, dbOption)
+	if err != nil {
+		log.Fatalf("failed opening connection to postgres: %v", err)
+	}
+
+	if err := cl.Schema.Create(context.Background()); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
+
+	cl.User.Create().SetUsername("arthur").SetHash("ENZNT+7rT+h9XRHUB1DUCQx6LZKqX/o1y5irrbckJIzbcvqpGEUhEuEaau7InLxJjucV/WcRgiyO").Save(context.Background())
+
+	c.client = cl
+}
+
 func (c *EntClient) Init(dbType string, dbOption string) {
 	cl, err := ent.Open(dbType, dbOption)
 	if err != nil {
@@ -94,13 +109,52 @@ func (c *EntClient) CreateAccount(acc sui.Acc, sequence uint64) (*ent.Account, e
 	accc, err := c.client.Account.Create().
 		SetAccountID(acc.ID).
 		SetBalance(acc.Balance).
-		SetObjects(obj).
 		SetTransactions(acc.Transactions).
+		SetObjects(obj).
+		SetSequenceID(sequence).
+		Save(context.Background())
+
+	return accc, err
+}
+
+func (c *EntClient) UpsertAccount(acc sui.Acc, sequence uint64) error {
+
+	// Type conversion from AccObj struct to ent version
+	var obj []schema.AccObject
+	for _, v := range acc.Objects {
+		temp := schema.AccObject{}
+		temp.Type = v.Type
+		temp.Metadata = v.Metadata
+		temp.ObjectId = v.ObjectId
+		obj = append(obj, temp)
+	}
+
+	err := c.client.Account.Create().
+		SetAccountID(acc.ID).
+		SetBalance(acc.Balance).
+		SetObjects(obj).
+		SetSequenceID(sequence).
+		OnConflictColumns(account.FieldAccountID).
+		UpdateNewValues().
+		Exec(context.Background())
+
+	return err
+}
+
+func (c *EntClient) UpdateAccount(acc string, sequence uint64, transaction string) (*ent.Account, error) {
+
+	orig, err := c.client.Account.Query().Where(account.AccountIDEQ(acc)).Only(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("failed fetching account to be updated: %w", err)
+	}
+
+	accc, err := orig.Update().
+		SetTransactions(append(orig.Transactions, transaction)).
 		SetSequenceID(sequence).
 		Save(context.Background())
 
 	if err != nil {
-		return nil, fmt.Errorf("failed creating account: %w", err)
+		return nil, fmt.Errorf("failed updating account: %w", err)
 	}
 	return accc, nil
 }
@@ -164,33 +218,23 @@ func (c *EntClient) CreatePackage(pkg sui.Package) (*ent.Pkg, error) {
 	return pkgc, nil
 }
 
-func (c *EntClient) QueryAccountFirstLoad(accId string, until uint64) bool {
+func (c *EntClient) QueryAccountFirstLoad(accId string) bool {
 	accc, err := c.client.Account.
 		Query().
-		Where(
-			account.And(
-				account.AccountID(accId),
-				account.SequenceIDLTE(until),
-			),
-		).
+		Where(account.AccountIDEQ(accId)).
 		Exist(context.Background())
 
-	if err != nil || !accc {
+	if err != nil {
 		return false
-	} else {
-		return true
 	}
+
+	return accc
 }
 
-func (c *EntClient) QueryObjectFirstLoad(objId string, until uint64) bool {
+func (c *EntClient) QueryObjectFirstLoad(objId string) bool {
 	objc, err := c.client.Object.
 		Query().
-		Where(
-			object.And(
-				object.ObjectID(objId),
-				object.SequenceIDLTE(until),
-			),
-		).
+		Where(object.ObjectID(objId)).
 		Exist(context.Background())
 
 	if err != nil || !objc {

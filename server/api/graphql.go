@@ -13,10 +13,10 @@ import (
 	"rei.io/rei/internal/database"
 )
 
-func GraphQLHandler(connStr string) *handler.Server {
+func GraphQLHandler(db *database.EntClient) *handler.Server {
 	// Initialise db
-	db := new(database.EntClient)
-	db.Init("postgres", connStr)
+	// db := new(database.EntClient)
+	// db.Init("postgres", connStr)
 
 	h := handler.New(graph.NewSchema(db.GetClient()))
 

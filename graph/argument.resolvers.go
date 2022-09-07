@@ -13,6 +13,7 @@ import (
 // Argument is the resolver for the argument field.
 func (r *queryResolver) Argument(ctx context.Context, transactionID string) (*ent.Argument, error) {
 	argument, err := r.client.Argument.Query().Where(argument.TransactionIDEQ(transactionID)).Only(ctx)
+
 	if err != nil {
 		return nil, err
 	}
