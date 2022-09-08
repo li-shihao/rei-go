@@ -314,12 +314,12 @@ func (o *Object) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "ObjectID",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(o.SequenceID); err != nil {
+	if buf, err = json.Marshal(o.TransactionID); err != nil {
 		return nil, err
 	}
 	node.Fields[7] = &Field{
-		Type:  "uint64",
-		Name:  "SequenceID",
+		Type:  "string",
+		Name:  "TransactionID",
 		Value: string(buf),
 	}
 	return node, nil

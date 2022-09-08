@@ -2296,8 +2296,7 @@ type ObjectMutation struct {
 	_Fields              *map[string]interface{}
 	_Owner               *string
 	_ObjectID            *string
-	_SequenceID          *uint64
-	add_SequenceID       *int64
+	_TransactionID       *string
 	clearedFields        map[string]struct{}
 	done                 bool
 	oldValue             func(context.Context) (*Object, error)
@@ -2469,9 +2468,22 @@ func (m *ObjectMutation) OldDataType(ctx context.Context) (v string, err error) 
 	return oldValue.DataType, nil
 }
 
+// ClearDataType clears the value of the "DataType" field.
+func (m *ObjectMutation) ClearDataType() {
+	m._DataType = nil
+	m.clearedFields[object.FieldDataType] = struct{}{}
+}
+
+// DataTypeCleared returns if the "DataType" field was cleared in this mutation.
+func (m *ObjectMutation) DataTypeCleared() bool {
+	_, ok := m.clearedFields[object.FieldDataType]
+	return ok
+}
+
 // ResetDataType resets all changes to the "DataType" field.
 func (m *ObjectMutation) ResetDataType() {
 	m._DataType = nil
+	delete(m.clearedFields, object.FieldDataType)
 }
 
 // SetType sets the "Type" field.
@@ -2505,9 +2517,22 @@ func (m *ObjectMutation) OldType(ctx context.Context) (v string, err error) {
 	return oldValue.Type, nil
 }
 
+// ClearType clears the value of the "Type" field.
+func (m *ObjectMutation) ClearType() {
+	m._Type = nil
+	m.clearedFields[object.FieldType] = struct{}{}
+}
+
+// TypeCleared returns if the "Type" field was cleared in this mutation.
+func (m *ObjectMutation) TypeCleared() bool {
+	_, ok := m.clearedFields[object.FieldType]
+	return ok
+}
+
 // ResetType resets all changes to the "Type" field.
 func (m *ObjectMutation) ResetType() {
 	m._Type = nil
+	delete(m.clearedFields, object.FieldType)
 }
 
 // SetHasPublicTransfer sets the "Has_public_transfer" field.
@@ -2541,9 +2566,22 @@ func (m *ObjectMutation) OldHasPublicTransfer(ctx context.Context) (v bool, err 
 	return oldValue.HasPublicTransfer, nil
 }
 
+// ClearHasPublicTransfer clears the value of the "Has_public_transfer" field.
+func (m *ObjectMutation) ClearHasPublicTransfer() {
+	m._Has_public_transfer = nil
+	m.clearedFields[object.FieldHasPublicTransfer] = struct{}{}
+}
+
+// HasPublicTransferCleared returns if the "Has_public_transfer" field was cleared in this mutation.
+func (m *ObjectMutation) HasPublicTransferCleared() bool {
+	_, ok := m.clearedFields[object.FieldHasPublicTransfer]
+	return ok
+}
+
 // ResetHasPublicTransfer resets all changes to the "Has_public_transfer" field.
 func (m *ObjectMutation) ResetHasPublicTransfer() {
 	m._Has_public_transfer = nil
+	delete(m.clearedFields, object.FieldHasPublicTransfer)
 }
 
 // SetFields sets the "Fields" field.
@@ -2577,9 +2615,22 @@ func (m *ObjectMutation) OldFields(ctx context.Context) (v map[string]interface{
 	return oldValue.Fields, nil
 }
 
+// ClearFields clears the value of the "Fields" field.
+func (m *ObjectMutation) ClearFields() {
+	m._Fields = nil
+	m.clearedFields[object.FieldFields] = struct{}{}
+}
+
+// FieldsCleared returns if the "Fields" field was cleared in this mutation.
+func (m *ObjectMutation) FieldsCleared() bool {
+	_, ok := m.clearedFields[object.FieldFields]
+	return ok
+}
+
 // ResetFields resets all changes to the "Fields" field.
 func (m *ObjectMutation) ResetFields() {
 	m._Fields = nil
+	delete(m.clearedFields, object.FieldFields)
 }
 
 // SetOwner sets the "Owner" field.
@@ -2613,9 +2664,22 @@ func (m *ObjectMutation) OldOwner(ctx context.Context) (v string, err error) {
 	return oldValue.Owner, nil
 }
 
+// ClearOwner clears the value of the "Owner" field.
+func (m *ObjectMutation) ClearOwner() {
+	m._Owner = nil
+	m.clearedFields[object.FieldOwner] = struct{}{}
+}
+
+// OwnerCleared returns if the "Owner" field was cleared in this mutation.
+func (m *ObjectMutation) OwnerCleared() bool {
+	_, ok := m.clearedFields[object.FieldOwner]
+	return ok
+}
+
 // ResetOwner resets all changes to the "Owner" field.
 func (m *ObjectMutation) ResetOwner() {
 	m._Owner = nil
+	delete(m.clearedFields, object.FieldOwner)
 }
 
 // SetObjectID sets the "ObjectID" field.
@@ -2654,60 +2718,40 @@ func (m *ObjectMutation) ResetObjectID() {
 	m._ObjectID = nil
 }
 
-// SetSequenceID sets the "SequenceID" field.
-func (m *ObjectMutation) SetSequenceID(u uint64) {
-	m._SequenceID = &u
-	m.add_SequenceID = nil
+// SetTransactionID sets the "TransactionID" field.
+func (m *ObjectMutation) SetTransactionID(s string) {
+	m._TransactionID = &s
 }
 
-// SequenceID returns the value of the "SequenceID" field in the mutation.
-func (m *ObjectMutation) SequenceID() (r uint64, exists bool) {
-	v := m._SequenceID
+// TransactionID returns the value of the "TransactionID" field in the mutation.
+func (m *ObjectMutation) TransactionID() (r string, exists bool) {
+	v := m._TransactionID
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSequenceID returns the old "SequenceID" field's value of the Object entity.
+// OldTransactionID returns the old "TransactionID" field's value of the Object entity.
 // If the Object object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ObjectMutation) OldSequenceID(ctx context.Context) (v uint64, err error) {
+func (m *ObjectMutation) OldTransactionID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSequenceID is only allowed on UpdateOne operations")
+		return v, errors.New("OldTransactionID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSequenceID requires an ID field in the mutation")
+		return v, errors.New("OldTransactionID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSequenceID: %w", err)
+		return v, fmt.Errorf("querying old value for OldTransactionID: %w", err)
 	}
-	return oldValue.SequenceID, nil
+	return oldValue.TransactionID, nil
 }
 
-// AddSequenceID adds u to the "SequenceID" field.
-func (m *ObjectMutation) AddSequenceID(u int64) {
-	if m.add_SequenceID != nil {
-		*m.add_SequenceID += u
-	} else {
-		m.add_SequenceID = &u
-	}
-}
-
-// AddedSequenceID returns the value that was added to the "SequenceID" field in this mutation.
-func (m *ObjectMutation) AddedSequenceID() (r int64, exists bool) {
-	v := m.add_SequenceID
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetSequenceID resets all changes to the "SequenceID" field.
-func (m *ObjectMutation) ResetSequenceID() {
-	m._SequenceID = nil
-	m.add_SequenceID = nil
+// ResetTransactionID resets all changes to the "TransactionID" field.
+func (m *ObjectMutation) ResetTransactionID() {
+	m._TransactionID = nil
 }
 
 // Where appends a list predicates to the ObjectMutation builder.
@@ -2751,8 +2795,8 @@ func (m *ObjectMutation) Fields() []string {
 	if m._ObjectID != nil {
 		fields = append(fields, object.FieldObjectID)
 	}
-	if m._SequenceID != nil {
-		fields = append(fields, object.FieldSequenceID)
+	if m._TransactionID != nil {
+		fields = append(fields, object.FieldTransactionID)
 	}
 	return fields
 }
@@ -2776,8 +2820,8 @@ func (m *ObjectMutation) Field(name string) (ent.Value, bool) {
 		return m.Owner()
 	case object.FieldObjectID:
 		return m.ObjectID()
-	case object.FieldSequenceID:
-		return m.SequenceID()
+	case object.FieldTransactionID:
+		return m.TransactionID()
 	}
 	return nil, false
 }
@@ -2801,8 +2845,8 @@ func (m *ObjectMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldOwner(ctx)
 	case object.FieldObjectID:
 		return m.OldObjectID(ctx)
-	case object.FieldSequenceID:
-		return m.OldSequenceID(ctx)
+	case object.FieldTransactionID:
+		return m.OldTransactionID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Object field %s", name)
 }
@@ -2861,12 +2905,12 @@ func (m *ObjectMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetObjectID(v)
 		return nil
-	case object.FieldSequenceID:
-		v, ok := value.(uint64)
+	case object.FieldTransactionID:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSequenceID(v)
+		m.SetTransactionID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Object field %s", name)
@@ -2875,21 +2919,13 @@ func (m *ObjectMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ObjectMutation) AddedFields() []string {
-	var fields []string
-	if m.add_SequenceID != nil {
-		fields = append(fields, object.FieldSequenceID)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ObjectMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case object.FieldSequenceID:
-		return m.AddedSequenceID()
-	}
 	return nil, false
 }
 
@@ -2898,13 +2934,6 @@ func (m *ObjectMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ObjectMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case object.FieldSequenceID:
-		v, ok := value.(int64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddSequenceID(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Object numeric field %s", name)
 }
@@ -2912,7 +2941,23 @@ func (m *ObjectMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ObjectMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(object.FieldDataType) {
+		fields = append(fields, object.FieldDataType)
+	}
+	if m.FieldCleared(object.FieldType) {
+		fields = append(fields, object.FieldType)
+	}
+	if m.FieldCleared(object.FieldHasPublicTransfer) {
+		fields = append(fields, object.FieldHasPublicTransfer)
+	}
+	if m.FieldCleared(object.FieldFields) {
+		fields = append(fields, object.FieldFields)
+	}
+	if m.FieldCleared(object.FieldOwner) {
+		fields = append(fields, object.FieldOwner)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2925,6 +2970,23 @@ func (m *ObjectMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ObjectMutation) ClearField(name string) error {
+	switch name {
+	case object.FieldDataType:
+		m.ClearDataType()
+		return nil
+	case object.FieldType:
+		m.ClearType()
+		return nil
+	case object.FieldHasPublicTransfer:
+		m.ClearHasPublicTransfer()
+		return nil
+	case object.FieldFields:
+		m.ClearFields()
+		return nil
+	case object.FieldOwner:
+		m.ClearOwner()
+		return nil
+	}
 	return fmt.Errorf("unknown Object nullable field %s", name)
 }
 
@@ -2953,8 +3015,8 @@ func (m *ObjectMutation) ResetField(name string) error {
 	case object.FieldObjectID:
 		m.ResetObjectID()
 		return nil
-	case object.FieldSequenceID:
-		m.ResetSequenceID()
+	case object.FieldTransactionID:
+		m.ResetTransactionID()
 		return nil
 	}
 	return fmt.Errorf("unknown Object field %s", name)

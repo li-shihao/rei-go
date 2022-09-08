@@ -39,9 +39,37 @@ func (ou *ObjectUpdate) SetDataType(s string) *ObjectUpdate {
 	return ou
 }
 
+// SetNillableDataType sets the "DataType" field if the given value is not nil.
+func (ou *ObjectUpdate) SetNillableDataType(s *string) *ObjectUpdate {
+	if s != nil {
+		ou.SetDataType(*s)
+	}
+	return ou
+}
+
+// ClearDataType clears the value of the "DataType" field.
+func (ou *ObjectUpdate) ClearDataType() *ObjectUpdate {
+	ou.mutation.ClearDataType()
+	return ou
+}
+
 // SetType sets the "Type" field.
 func (ou *ObjectUpdate) SetType(s string) *ObjectUpdate {
 	ou.mutation.SetType(s)
+	return ou
+}
+
+// SetNillableType sets the "Type" field if the given value is not nil.
+func (ou *ObjectUpdate) SetNillableType(s *string) *ObjectUpdate {
+	if s != nil {
+		ou.SetType(*s)
+	}
+	return ou
+}
+
+// ClearType clears the value of the "Type" field.
+func (ou *ObjectUpdate) ClearType() *ObjectUpdate {
+	ou.mutation.ClearType()
 	return ou
 }
 
@@ -51,9 +79,29 @@ func (ou *ObjectUpdate) SetHasPublicTransfer(b bool) *ObjectUpdate {
 	return ou
 }
 
+// SetNillableHasPublicTransfer sets the "Has_public_transfer" field if the given value is not nil.
+func (ou *ObjectUpdate) SetNillableHasPublicTransfer(b *bool) *ObjectUpdate {
+	if b != nil {
+		ou.SetHasPublicTransfer(*b)
+	}
+	return ou
+}
+
+// ClearHasPublicTransfer clears the value of the "Has_public_transfer" field.
+func (ou *ObjectUpdate) ClearHasPublicTransfer() *ObjectUpdate {
+	ou.mutation.ClearHasPublicTransfer()
+	return ou
+}
+
 // SetFields sets the "Fields" field.
 func (ou *ObjectUpdate) SetFields(m map[string]interface{}) *ObjectUpdate {
 	ou.mutation.SetFields(m)
+	return ou
+}
+
+// ClearFields clears the value of the "Fields" field.
+func (ou *ObjectUpdate) ClearFields() *ObjectUpdate {
+	ou.mutation.ClearFields()
 	return ou
 }
 
@@ -63,22 +111,29 @@ func (ou *ObjectUpdate) SetOwner(s string) *ObjectUpdate {
 	return ou
 }
 
+// SetNillableOwner sets the "Owner" field if the given value is not nil.
+func (ou *ObjectUpdate) SetNillableOwner(s *string) *ObjectUpdate {
+	if s != nil {
+		ou.SetOwner(*s)
+	}
+	return ou
+}
+
+// ClearOwner clears the value of the "Owner" field.
+func (ou *ObjectUpdate) ClearOwner() *ObjectUpdate {
+	ou.mutation.ClearOwner()
+	return ou
+}
+
 // SetObjectID sets the "ObjectID" field.
 func (ou *ObjectUpdate) SetObjectID(s string) *ObjectUpdate {
 	ou.mutation.SetObjectID(s)
 	return ou
 }
 
-// SetSequenceID sets the "SequenceID" field.
-func (ou *ObjectUpdate) SetSequenceID(u uint64) *ObjectUpdate {
-	ou.mutation.ResetSequenceID()
-	ou.mutation.SetSequenceID(u)
-	return ou
-}
-
-// AddSequenceID adds u to the "SequenceID" field.
-func (ou *ObjectUpdate) AddSequenceID(u int64) *ObjectUpdate {
-	ou.mutation.AddSequenceID(u)
+// SetTransactionID sets the "TransactionID" field.
+func (ou *ObjectUpdate) SetTransactionID(s string) *ObjectUpdate {
+	ou.mutation.SetTransactionID(s)
 	return ou
 }
 
@@ -173,10 +228,22 @@ func (ou *ObjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: object.FieldDataType,
 		})
 	}
+	if ou.mutation.DataTypeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: object.FieldDataType,
+		})
+	}
 	if value, ok := ou.mutation.GetType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
+			Column: object.FieldType,
+		})
+	}
+	if ou.mutation.TypeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
 			Column: object.FieldType,
 		})
 	}
@@ -187,10 +254,22 @@ func (ou *ObjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: object.FieldHasPublicTransfer,
 		})
 	}
+	if ou.mutation.HasPublicTransferCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: object.FieldHasPublicTransfer,
+		})
+	}
 	if value, ok := ou.mutation.GetFields(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
+			Column: object.FieldFields,
+		})
+	}
+	if ou.mutation.FieldsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
 			Column: object.FieldFields,
 		})
 	}
@@ -201,6 +280,12 @@ func (ou *ObjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: object.FieldOwner,
 		})
 	}
+	if ou.mutation.OwnerCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: object.FieldOwner,
+		})
+	}
 	if value, ok := ou.mutation.ObjectID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -208,18 +293,11 @@ func (ou *ObjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: object.FieldObjectID,
 		})
 	}
-	if value, ok := ou.mutation.SequenceID(); ok {
+	if value, ok := ou.mutation.TransactionID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeString,
 			Value:  value,
-			Column: object.FieldSequenceID,
-		})
-	}
-	if value, ok := ou.mutation.AddedSequenceID(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
-			Value:  value,
-			Column: object.FieldSequenceID,
+			Column: object.FieldTransactionID,
 		})
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ou.driver, _spec); err != nil {
@@ -253,9 +331,37 @@ func (ouo *ObjectUpdateOne) SetDataType(s string) *ObjectUpdateOne {
 	return ouo
 }
 
+// SetNillableDataType sets the "DataType" field if the given value is not nil.
+func (ouo *ObjectUpdateOne) SetNillableDataType(s *string) *ObjectUpdateOne {
+	if s != nil {
+		ouo.SetDataType(*s)
+	}
+	return ouo
+}
+
+// ClearDataType clears the value of the "DataType" field.
+func (ouo *ObjectUpdateOne) ClearDataType() *ObjectUpdateOne {
+	ouo.mutation.ClearDataType()
+	return ouo
+}
+
 // SetType sets the "Type" field.
 func (ouo *ObjectUpdateOne) SetType(s string) *ObjectUpdateOne {
 	ouo.mutation.SetType(s)
+	return ouo
+}
+
+// SetNillableType sets the "Type" field if the given value is not nil.
+func (ouo *ObjectUpdateOne) SetNillableType(s *string) *ObjectUpdateOne {
+	if s != nil {
+		ouo.SetType(*s)
+	}
+	return ouo
+}
+
+// ClearType clears the value of the "Type" field.
+func (ouo *ObjectUpdateOne) ClearType() *ObjectUpdateOne {
+	ouo.mutation.ClearType()
 	return ouo
 }
 
@@ -265,9 +371,29 @@ func (ouo *ObjectUpdateOne) SetHasPublicTransfer(b bool) *ObjectUpdateOne {
 	return ouo
 }
 
+// SetNillableHasPublicTransfer sets the "Has_public_transfer" field if the given value is not nil.
+func (ouo *ObjectUpdateOne) SetNillableHasPublicTransfer(b *bool) *ObjectUpdateOne {
+	if b != nil {
+		ouo.SetHasPublicTransfer(*b)
+	}
+	return ouo
+}
+
+// ClearHasPublicTransfer clears the value of the "Has_public_transfer" field.
+func (ouo *ObjectUpdateOne) ClearHasPublicTransfer() *ObjectUpdateOne {
+	ouo.mutation.ClearHasPublicTransfer()
+	return ouo
+}
+
 // SetFields sets the "Fields" field.
 func (ouo *ObjectUpdateOne) SetFields(m map[string]interface{}) *ObjectUpdateOne {
 	ouo.mutation.SetFields(m)
+	return ouo
+}
+
+// ClearFields clears the value of the "Fields" field.
+func (ouo *ObjectUpdateOne) ClearFields() *ObjectUpdateOne {
+	ouo.mutation.ClearFields()
 	return ouo
 }
 
@@ -277,22 +403,29 @@ func (ouo *ObjectUpdateOne) SetOwner(s string) *ObjectUpdateOne {
 	return ouo
 }
 
+// SetNillableOwner sets the "Owner" field if the given value is not nil.
+func (ouo *ObjectUpdateOne) SetNillableOwner(s *string) *ObjectUpdateOne {
+	if s != nil {
+		ouo.SetOwner(*s)
+	}
+	return ouo
+}
+
+// ClearOwner clears the value of the "Owner" field.
+func (ouo *ObjectUpdateOne) ClearOwner() *ObjectUpdateOne {
+	ouo.mutation.ClearOwner()
+	return ouo
+}
+
 // SetObjectID sets the "ObjectID" field.
 func (ouo *ObjectUpdateOne) SetObjectID(s string) *ObjectUpdateOne {
 	ouo.mutation.SetObjectID(s)
 	return ouo
 }
 
-// SetSequenceID sets the "SequenceID" field.
-func (ouo *ObjectUpdateOne) SetSequenceID(u uint64) *ObjectUpdateOne {
-	ouo.mutation.ResetSequenceID()
-	ouo.mutation.SetSequenceID(u)
-	return ouo
-}
-
-// AddSequenceID adds u to the "SequenceID" field.
-func (ouo *ObjectUpdateOne) AddSequenceID(u int64) *ObjectUpdateOne {
-	ouo.mutation.AddSequenceID(u)
+// SetTransactionID sets the "TransactionID" field.
+func (ouo *ObjectUpdateOne) SetTransactionID(s string) *ObjectUpdateOne {
+	ouo.mutation.SetTransactionID(s)
 	return ouo
 }
 
@@ -417,10 +550,22 @@ func (ouo *ObjectUpdateOne) sqlSave(ctx context.Context) (_node *Object, err err
 			Column: object.FieldDataType,
 		})
 	}
+	if ouo.mutation.DataTypeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: object.FieldDataType,
+		})
+	}
 	if value, ok := ouo.mutation.GetType(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
+			Column: object.FieldType,
+		})
+	}
+	if ouo.mutation.TypeCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
 			Column: object.FieldType,
 		})
 	}
@@ -431,10 +576,22 @@ func (ouo *ObjectUpdateOne) sqlSave(ctx context.Context) (_node *Object, err err
 			Column: object.FieldHasPublicTransfer,
 		})
 	}
+	if ouo.mutation.HasPublicTransferCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Column: object.FieldHasPublicTransfer,
+		})
+	}
 	if value, ok := ouo.mutation.GetFields(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
+			Column: object.FieldFields,
+		})
+	}
+	if ouo.mutation.FieldsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
 			Column: object.FieldFields,
 		})
 	}
@@ -445,6 +602,12 @@ func (ouo *ObjectUpdateOne) sqlSave(ctx context.Context) (_node *Object, err err
 			Column: object.FieldOwner,
 		})
 	}
+	if ouo.mutation.OwnerCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: object.FieldOwner,
+		})
+	}
 	if value, ok := ouo.mutation.ObjectID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -452,18 +615,11 @@ func (ouo *ObjectUpdateOne) sqlSave(ctx context.Context) (_node *Object, err err
 			Column: object.FieldObjectID,
 		})
 	}
-	if value, ok := ouo.mutation.SequenceID(); ok {
+	if value, ok := ouo.mutation.TransactionID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeString,
 			Value:  value,
-			Column: object.FieldSequenceID,
-		})
-	}
-	if value, ok := ouo.mutation.AddedSequenceID(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
-			Value:  value,
-			Column: object.FieldSequenceID,
+			Column: object.FieldTransactionID,
 		})
 	}
 	_node = &Object{config: ouo.config}

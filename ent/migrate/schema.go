@@ -99,13 +99,13 @@ var (
 	ObjectsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "status", Type: field.TypeString},
-		{Name: "data_type", Type: field.TypeString},
-		{Name: "type", Type: field.TypeString},
-		{Name: "has_public_transfer", Type: field.TypeBool},
-		{Name: "fields", Type: field.TypeJSON},
-		{Name: "owner", Type: field.TypeString},
+		{Name: "data_type", Type: field.TypeString, Nullable: true},
+		{Name: "type", Type: field.TypeString, Nullable: true},
+		{Name: "has_public_transfer", Type: field.TypeBool, Nullable: true},
+		{Name: "fields", Type: field.TypeJSON, Nullable: true},
+		{Name: "owner", Type: field.TypeString, Nullable: true},
 		{Name: "object_id", Type: field.TypeString},
-		{Name: "sequence_id", Type: field.TypeUint64},
+		{Name: "transaction_id", Type: field.TypeString},
 	}
 	// ObjectsTable holds the schema information for the "objects" table.
 	ObjectsTable = &schema.Table{
@@ -114,7 +114,7 @@ var (
 		PrimaryKey: []*schema.Column{ObjectsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "object_sequence_id_object_id",
+				Name:    "object_transaction_id_object_id",
 				Unique:  true,
 				Columns: []*schema.Column{ObjectsColumns[8], ObjectsColumns[7]},
 			},

@@ -42,7 +42,6 @@ type ResolverRoot interface {
 	Account() AccountResolver
 	Event() EventResolver
 	NFT() NFTResolver
-	Object() ObjectResolver
 	Query() QueryResolver
 	Subscription() SubscriptionResolver
 	Transaction() TransactionResolver
@@ -82,7 +81,7 @@ type ComplexityRoot struct {
 	}
 
 	Event struct {
-		ObjectID      func(childComplexity int) int
+		Object        func(childComplexity int) int
 		Recipient     func(childComplexity int) int
 		Sender        func(childComplexity int) int
 		TransactionID func(childComplexity int) int
@@ -108,8 +107,8 @@ type ComplexityRoot struct {
 		HasPublicTransfer func(childComplexity int) int
 		ObjectID          func(childComplexity int) int
 		Owner             func(childComplexity int) int
-		SequenceID        func(childComplexity int) int
 		Status            func(childComplexity int) int
+		TransactionID     func(childComplexity int) int
 		Type              func(childComplexity int) int
 	}
 
@@ -162,13 +161,11 @@ type AccountResolver interface {
 	Objects(ctx context.Context, obj *ent.Account) ([]*model.AccObject, error)
 }
 type EventResolver interface {
+	Object(ctx context.Context, obj *ent.Event) (*ent.Object, error)
 	Version(ctx context.Context, obj *ent.Event) (int, error)
 }
 type NFTResolver interface {
 	SequenceID(ctx context.Context, obj *ent.NFT) (int, error)
-}
-type ObjectResolver interface {
-	SequenceID(ctx context.Context, obj *ent.Object) (int, error)
 }
 type QueryResolver interface {
 	Account(ctx context.Context, accountID string) (*ent.Account, error)
@@ -326,12 +323,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Argument.Type(childComplexity), true
 
-	case "Event.ObjectID":
-		if e.complexity.Event.ObjectID == nil {
+	case "Event.Object":
+		if e.complexity.Event.Object == nil {
 			break
 		}
 
-		return e.complexity.Event.ObjectID(childComplexity), true
+		return e.complexity.Event.Object(childComplexity), true
 
 	case "Event.Recipient":
 		if e.complexity.Event.Recipient == nil {
@@ -445,19 +442,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Object.Owner(childComplexity), true
 
-	case "Object.SequenceID":
-		if e.complexity.Object.SequenceID == nil {
-			break
-		}
-
-		return e.complexity.Object.SequenceID(childComplexity), true
-
 	case "Object.Status":
 		if e.complexity.Object.Status == nil {
 			break
 		}
 
 		return e.complexity.Object.Status(childComplexity), true
+
+	case "Object.TransactionID":
+		if e.complexity.Object.TransactionID == nil {
+			break
+		}
+
+		return e.complexity.Object.TransactionID(childComplexity), true
 
 	case "Object.Type":
 		if e.complexity.Object.Type == nil {
@@ -827,7 +824,7 @@ type Event {
   Sender: String!
   Recipient: String!
   TransactionID: String!
-  ObjectID: String!
+  Object: Object
   Version: Int!
 }
 
@@ -863,7 +860,7 @@ extend type Subscription {
   Fields: Map!
   Owner: String!
   ObjectID: String!
-  SequenceID: Int!
+  TransactionID: String!
 }
 
 extend type Query {
@@ -1355,8 +1352,8 @@ func (ec *executionContext) fieldContext_AccHistory_Events(ctx context.Context, 
 				return ec.fieldContext_Event_Recipient(ctx, field)
 			case "TransactionID":
 				return ec.fieldContext_Event_TransactionID(ctx, field)
-			case "ObjectID":
-				return ec.fieldContext_Event_ObjectID(ctx, field)
+			case "Object":
+				return ec.fieldContext_Event_Object(ctx, field)
 			case "Version":
 				return ec.fieldContext_Event_Version(ctx, field)
 			}
@@ -2075,8 +2072,8 @@ func (ec *executionContext) fieldContext_Event_TransactionID(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Event_ObjectID(ctx context.Context, field graphql.CollectedField, obj *ent.Event) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Event_ObjectID(ctx, field)
+func (ec *executionContext) _Event_Object(ctx context.Context, field graphql.CollectedField, obj *ent.Event) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Event_Object(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2089,31 +2086,46 @@ func (ec *executionContext) _Event_ObjectID(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ObjectID, nil
+		return ec.resolvers.Event().Object(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*ent.Object)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOObject2ᚖreiᚗioᚋreiᚋentᚐObject(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Event_ObjectID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Event_Object(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Event",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "Status":
+				return ec.fieldContext_Object_Status(ctx, field)
+			case "Datatype":
+				return ec.fieldContext_Object_Datatype(ctx, field)
+			case "Type":
+				return ec.fieldContext_Object_Type(ctx, field)
+			case "Has_public_transfer":
+				return ec.fieldContext_Object_Has_public_transfer(ctx, field)
+			case "Fields":
+				return ec.fieldContext_Object_Fields(ctx, field)
+			case "Owner":
+				return ec.fieldContext_Object_Owner(ctx, field)
+			case "ObjectID":
+				return ec.fieldContext_Object_ObjectID(ctx, field)
+			case "TransactionID":
+				return ec.fieldContext_Object_TransactionID(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Object", field.Name)
 		},
 	}
 	return fc, nil
@@ -2735,8 +2747,8 @@ func (ec *executionContext) fieldContext_Object_ObjectID(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Object_SequenceID(ctx context.Context, field graphql.CollectedField, obj *ent.Object) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Object_SequenceID(ctx, field)
+func (ec *executionContext) _Object_TransactionID(ctx context.Context, field graphql.CollectedField, obj *ent.Object) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Object_TransactionID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2749,7 +2761,7 @@ func (ec *executionContext) _Object_SequenceID(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Object().SequenceID(rctx, obj)
+		return obj.TransactionID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2761,19 +2773,19 @@ func (ec *executionContext) _Object_SequenceID(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Object_SequenceID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Object_TransactionID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Object",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3145,8 +3157,8 @@ func (ec *executionContext) fieldContext_Query_events(ctx context.Context, field
 				return ec.fieldContext_Event_Recipient(ctx, field)
 			case "TransactionID":
 				return ec.fieldContext_Event_TransactionID(ctx, field)
-			case "ObjectID":
-				return ec.fieldContext_Event_ObjectID(ctx, field)
+			case "Object":
+				return ec.fieldContext_Event_Object(ctx, field)
 			case "Version":
 				return ec.fieldContext_Event_Version(ctx, field)
 			}
@@ -3279,8 +3291,8 @@ func (ec *executionContext) fieldContext_Query_object(ctx context.Context, field
 				return ec.fieldContext_Object_Owner(ctx, field)
 			case "ObjectID":
 				return ec.fieldContext_Object_ObjectID(ctx, field)
-			case "SequenceID":
-				return ec.fieldContext_Object_SequenceID(ctx, field)
+			case "TransactionID":
+				return ec.fieldContext_Object_TransactionID(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Object", field.Name)
 		},
@@ -3349,8 +3361,8 @@ func (ec *executionContext) fieldContext_Query_Objects(ctx context.Context, fiel
 				return ec.fieldContext_Object_Owner(ctx, field)
 			case "ObjectID":
 				return ec.fieldContext_Object_ObjectID(ctx, field)
-			case "SequenceID":
-				return ec.fieldContext_Object_SequenceID(ctx, field)
+			case "TransactionID":
+				return ec.fieldContext_Object_TransactionID(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Object", field.Name)
 		},
@@ -6470,13 +6482,23 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "ObjectID":
+		case "Object":
+			field := field
 
-			out.Values[i] = ec._Event_ObjectID(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Event_Object(ctx, field, obj)
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "Version":
 			field := field
 
@@ -6620,70 +6642,57 @@ func (ec *executionContext) _Object(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = ec._Object_Status(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "Datatype":
 
 			out.Values[i] = ec._Object_Datatype(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "Type":
 
 			out.Values[i] = ec._Object_Type(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "Has_public_transfer":
 
 			out.Values[i] = ec._Object_Has_public_transfer(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "Fields":
 
 			out.Values[i] = ec._Object_Fields(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "Owner":
 
 			out.Values[i] = ec._Object_Owner(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "ObjectID":
 
 			out.Values[i] = ec._Object_ObjectID(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
-		case "SequenceID":
-			field := field
+		case "TransactionID":
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Object_SequenceID(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._Object_TransactionID(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
 			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

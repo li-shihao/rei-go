@@ -187,7 +187,7 @@ func (c *EntClient) CreateNFT(obj sui.AccObject, sequence uint64) (*ent.NFT, err
 	return nftc, nil
 }
 
-func (c *EntClient) CreateObject(obj sui.Obj, sequence uint64) (*ent.Object, error) {
+func (c *EntClient) CreateObject(obj sui.Obj, transactionID string) (*ent.Object, error) {
 	objc, err := c.client.Object.Create().
 		SetDataType(obj.GetObjectDataType()).
 		SetFields(obj.GetObjectMetadata()).
@@ -196,11 +196,19 @@ func (c *EntClient) CreateObject(obj sui.Obj, sequence uint64) (*ent.Object, err
 		SetOwner(obj.GetOwner()).
 		SetStatus(obj.GetObjectStatus()).
 		SetType(obj.GetObjectType()).
-		SetSequenceID(sequence).
+		SetTransactionID(transactionID).
 		Save(context.Background())
 
 	if err != nil {
 		return nil, fmt.Errorf("failed creating object: %w", err)
+	}
+	return objc, nil
+}
+
+func (c *EntClient) CreateDeletedObject(objectID string, transactionID string) (*ent.Object, error) {
+	objc, err := c.client.Object.Create().SetObjectID(objectID).SetTransactionID(transactionID).Save(context.Background())
+	if err != nil {
+		return nil, err
 	}
 	return objc, nil
 }

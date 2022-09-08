@@ -33,15 +33,39 @@ func (oc *ObjectCreate) SetDataType(s string) *ObjectCreate {
 	return oc
 }
 
+// SetNillableDataType sets the "DataType" field if the given value is not nil.
+func (oc *ObjectCreate) SetNillableDataType(s *string) *ObjectCreate {
+	if s != nil {
+		oc.SetDataType(*s)
+	}
+	return oc
+}
+
 // SetType sets the "Type" field.
 func (oc *ObjectCreate) SetType(s string) *ObjectCreate {
 	oc.mutation.SetType(s)
 	return oc
 }
 
+// SetNillableType sets the "Type" field if the given value is not nil.
+func (oc *ObjectCreate) SetNillableType(s *string) *ObjectCreate {
+	if s != nil {
+		oc.SetType(*s)
+	}
+	return oc
+}
+
 // SetHasPublicTransfer sets the "Has_public_transfer" field.
 func (oc *ObjectCreate) SetHasPublicTransfer(b bool) *ObjectCreate {
 	oc.mutation.SetHasPublicTransfer(b)
+	return oc
+}
+
+// SetNillableHasPublicTransfer sets the "Has_public_transfer" field if the given value is not nil.
+func (oc *ObjectCreate) SetNillableHasPublicTransfer(b *bool) *ObjectCreate {
+	if b != nil {
+		oc.SetHasPublicTransfer(*b)
+	}
 	return oc
 }
 
@@ -57,15 +81,23 @@ func (oc *ObjectCreate) SetOwner(s string) *ObjectCreate {
 	return oc
 }
 
+// SetNillableOwner sets the "Owner" field if the given value is not nil.
+func (oc *ObjectCreate) SetNillableOwner(s *string) *ObjectCreate {
+	if s != nil {
+		oc.SetOwner(*s)
+	}
+	return oc
+}
+
 // SetObjectID sets the "ObjectID" field.
 func (oc *ObjectCreate) SetObjectID(s string) *ObjectCreate {
 	oc.mutation.SetObjectID(s)
 	return oc
 }
 
-// SetSequenceID sets the "SequenceID" field.
-func (oc *ObjectCreate) SetSequenceID(u uint64) *ObjectCreate {
-	oc.mutation.SetSequenceID(u)
+// SetTransactionID sets the "TransactionID" field.
+func (oc *ObjectCreate) SetTransactionID(s string) *ObjectCreate {
+	oc.mutation.SetTransactionID(s)
 	return oc
 }
 
@@ -148,26 +180,11 @@ func (oc *ObjectCreate) check() error {
 	if _, ok := oc.mutation.Status(); !ok {
 		return &ValidationError{Name: "Status", err: errors.New(`ent: missing required field "Object.Status"`)}
 	}
-	if _, ok := oc.mutation.DataType(); !ok {
-		return &ValidationError{Name: "DataType", err: errors.New(`ent: missing required field "Object.DataType"`)}
-	}
-	if _, ok := oc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "Type", err: errors.New(`ent: missing required field "Object.Type"`)}
-	}
-	if _, ok := oc.mutation.HasPublicTransfer(); !ok {
-		return &ValidationError{Name: "Has_public_transfer", err: errors.New(`ent: missing required field "Object.Has_public_transfer"`)}
-	}
-	if _, ok := oc.mutation.GetFields(); !ok {
-		return &ValidationError{Name: "Fields", err: errors.New(`ent: missing required field "Object.Fields"`)}
-	}
-	if _, ok := oc.mutation.Owner(); !ok {
-		return &ValidationError{Name: "Owner", err: errors.New(`ent: missing required field "Object.Owner"`)}
-	}
 	if _, ok := oc.mutation.ObjectID(); !ok {
 		return &ValidationError{Name: "ObjectID", err: errors.New(`ent: missing required field "Object.ObjectID"`)}
 	}
-	if _, ok := oc.mutation.SequenceID(); !ok {
-		return &ValidationError{Name: "SequenceID", err: errors.New(`ent: missing required field "Object.SequenceID"`)}
+	if _, ok := oc.mutation.TransactionID(); !ok {
+		return &ValidationError{Name: "TransactionID", err: errors.New(`ent: missing required field "Object.TransactionID"`)}
 	}
 	return nil
 }
@@ -253,13 +270,13 @@ func (oc *ObjectCreate) createSpec() (*Object, *sqlgraph.CreateSpec) {
 		})
 		_node.ObjectID = value
 	}
-	if value, ok := oc.mutation.SequenceID(); ok {
+	if value, ok := oc.mutation.TransactionID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeString,
 			Value:  value,
-			Column: object.FieldSequenceID,
+			Column: object.FieldTransactionID,
 		})
-		_node.SequenceID = value
+		_node.TransactionID = value
 	}
 	return _node, _spec
 }
@@ -337,6 +354,12 @@ func (u *ObjectUpsert) UpdateDataType() *ObjectUpsert {
 	return u
 }
 
+// ClearDataType clears the value of the "DataType" field.
+func (u *ObjectUpsert) ClearDataType() *ObjectUpsert {
+	u.SetNull(object.FieldDataType)
+	return u
+}
+
 // SetType sets the "Type" field.
 func (u *ObjectUpsert) SetType(v string) *ObjectUpsert {
 	u.Set(object.FieldType, v)
@@ -346,6 +369,12 @@ func (u *ObjectUpsert) SetType(v string) *ObjectUpsert {
 // UpdateType sets the "Type" field to the value that was provided on create.
 func (u *ObjectUpsert) UpdateType() *ObjectUpsert {
 	u.SetExcluded(object.FieldType)
+	return u
+}
+
+// ClearType clears the value of the "Type" field.
+func (u *ObjectUpsert) ClearType() *ObjectUpsert {
+	u.SetNull(object.FieldType)
 	return u
 }
 
@@ -361,6 +390,12 @@ func (u *ObjectUpsert) UpdateHasPublicTransfer() *ObjectUpsert {
 	return u
 }
 
+// ClearHasPublicTransfer clears the value of the "Has_public_transfer" field.
+func (u *ObjectUpsert) ClearHasPublicTransfer() *ObjectUpsert {
+	u.SetNull(object.FieldHasPublicTransfer)
+	return u
+}
+
 // SetFields sets the "Fields" field.
 func (u *ObjectUpsert) SetFields(v map[string]interface{}) *ObjectUpsert {
 	u.Set(object.FieldFields, v)
@@ -370,6 +405,12 @@ func (u *ObjectUpsert) SetFields(v map[string]interface{}) *ObjectUpsert {
 // UpdateFields sets the "Fields" field to the value that was provided on create.
 func (u *ObjectUpsert) UpdateFields() *ObjectUpsert {
 	u.SetExcluded(object.FieldFields)
+	return u
+}
+
+// ClearFields clears the value of the "Fields" field.
+func (u *ObjectUpsert) ClearFields() *ObjectUpsert {
+	u.SetNull(object.FieldFields)
 	return u
 }
 
@@ -385,6 +426,12 @@ func (u *ObjectUpsert) UpdateOwner() *ObjectUpsert {
 	return u
 }
 
+// ClearOwner clears the value of the "Owner" field.
+func (u *ObjectUpsert) ClearOwner() *ObjectUpsert {
+	u.SetNull(object.FieldOwner)
+	return u
+}
+
 // SetObjectID sets the "ObjectID" field.
 func (u *ObjectUpsert) SetObjectID(v string) *ObjectUpsert {
 	u.Set(object.FieldObjectID, v)
@@ -397,21 +444,15 @@ func (u *ObjectUpsert) UpdateObjectID() *ObjectUpsert {
 	return u
 }
 
-// SetSequenceID sets the "SequenceID" field.
-func (u *ObjectUpsert) SetSequenceID(v uint64) *ObjectUpsert {
-	u.Set(object.FieldSequenceID, v)
+// SetTransactionID sets the "TransactionID" field.
+func (u *ObjectUpsert) SetTransactionID(v string) *ObjectUpsert {
+	u.Set(object.FieldTransactionID, v)
 	return u
 }
 
-// UpdateSequenceID sets the "SequenceID" field to the value that was provided on create.
-func (u *ObjectUpsert) UpdateSequenceID() *ObjectUpsert {
-	u.SetExcluded(object.FieldSequenceID)
-	return u
-}
-
-// AddSequenceID adds v to the "SequenceID" field.
-func (u *ObjectUpsert) AddSequenceID(v uint64) *ObjectUpsert {
-	u.Add(object.FieldSequenceID, v)
+// UpdateTransactionID sets the "TransactionID" field to the value that was provided on create.
+func (u *ObjectUpsert) UpdateTransactionID() *ObjectUpsert {
+	u.SetExcluded(object.FieldTransactionID)
 	return u
 }
 
@@ -483,6 +524,13 @@ func (u *ObjectUpsertOne) UpdateDataType() *ObjectUpsertOne {
 	})
 }
 
+// ClearDataType clears the value of the "DataType" field.
+func (u *ObjectUpsertOne) ClearDataType() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.ClearDataType()
+	})
+}
+
 // SetType sets the "Type" field.
 func (u *ObjectUpsertOne) SetType(v string) *ObjectUpsertOne {
 	return u.Update(func(s *ObjectUpsert) {
@@ -494,6 +542,13 @@ func (u *ObjectUpsertOne) SetType(v string) *ObjectUpsertOne {
 func (u *ObjectUpsertOne) UpdateType() *ObjectUpsertOne {
 	return u.Update(func(s *ObjectUpsert) {
 		s.UpdateType()
+	})
+}
+
+// ClearType clears the value of the "Type" field.
+func (u *ObjectUpsertOne) ClearType() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.ClearType()
 	})
 }
 
@@ -511,6 +566,13 @@ func (u *ObjectUpsertOne) UpdateHasPublicTransfer() *ObjectUpsertOne {
 	})
 }
 
+// ClearHasPublicTransfer clears the value of the "Has_public_transfer" field.
+func (u *ObjectUpsertOne) ClearHasPublicTransfer() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.ClearHasPublicTransfer()
+	})
+}
+
 // SetFields sets the "Fields" field.
 func (u *ObjectUpsertOne) SetFields(v map[string]interface{}) *ObjectUpsertOne {
 	return u.Update(func(s *ObjectUpsert) {
@@ -522,6 +584,13 @@ func (u *ObjectUpsertOne) SetFields(v map[string]interface{}) *ObjectUpsertOne {
 func (u *ObjectUpsertOne) UpdateFields() *ObjectUpsertOne {
 	return u.Update(func(s *ObjectUpsert) {
 		s.UpdateFields()
+	})
+}
+
+// ClearFields clears the value of the "Fields" field.
+func (u *ObjectUpsertOne) ClearFields() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.ClearFields()
 	})
 }
 
@@ -539,6 +608,13 @@ func (u *ObjectUpsertOne) UpdateOwner() *ObjectUpsertOne {
 	})
 }
 
+// ClearOwner clears the value of the "Owner" field.
+func (u *ObjectUpsertOne) ClearOwner() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.ClearOwner()
+	})
+}
+
 // SetObjectID sets the "ObjectID" field.
 func (u *ObjectUpsertOne) SetObjectID(v string) *ObjectUpsertOne {
 	return u.Update(func(s *ObjectUpsert) {
@@ -553,24 +629,17 @@ func (u *ObjectUpsertOne) UpdateObjectID() *ObjectUpsertOne {
 	})
 }
 
-// SetSequenceID sets the "SequenceID" field.
-func (u *ObjectUpsertOne) SetSequenceID(v uint64) *ObjectUpsertOne {
+// SetTransactionID sets the "TransactionID" field.
+func (u *ObjectUpsertOne) SetTransactionID(v string) *ObjectUpsertOne {
 	return u.Update(func(s *ObjectUpsert) {
-		s.SetSequenceID(v)
+		s.SetTransactionID(v)
 	})
 }
 
-// AddSequenceID adds v to the "SequenceID" field.
-func (u *ObjectUpsertOne) AddSequenceID(v uint64) *ObjectUpsertOne {
+// UpdateTransactionID sets the "TransactionID" field to the value that was provided on create.
+func (u *ObjectUpsertOne) UpdateTransactionID() *ObjectUpsertOne {
 	return u.Update(func(s *ObjectUpsert) {
-		s.AddSequenceID(v)
-	})
-}
-
-// UpdateSequenceID sets the "SequenceID" field to the value that was provided on create.
-func (u *ObjectUpsertOne) UpdateSequenceID() *ObjectUpsertOne {
-	return u.Update(func(s *ObjectUpsert) {
-		s.UpdateSequenceID()
+		s.UpdateTransactionID()
 	})
 }
 
@@ -801,6 +870,13 @@ func (u *ObjectUpsertBulk) UpdateDataType() *ObjectUpsertBulk {
 	})
 }
 
+// ClearDataType clears the value of the "DataType" field.
+func (u *ObjectUpsertBulk) ClearDataType() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.ClearDataType()
+	})
+}
+
 // SetType sets the "Type" field.
 func (u *ObjectUpsertBulk) SetType(v string) *ObjectUpsertBulk {
 	return u.Update(func(s *ObjectUpsert) {
@@ -812,6 +888,13 @@ func (u *ObjectUpsertBulk) SetType(v string) *ObjectUpsertBulk {
 func (u *ObjectUpsertBulk) UpdateType() *ObjectUpsertBulk {
 	return u.Update(func(s *ObjectUpsert) {
 		s.UpdateType()
+	})
+}
+
+// ClearType clears the value of the "Type" field.
+func (u *ObjectUpsertBulk) ClearType() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.ClearType()
 	})
 }
 
@@ -829,6 +912,13 @@ func (u *ObjectUpsertBulk) UpdateHasPublicTransfer() *ObjectUpsertBulk {
 	})
 }
 
+// ClearHasPublicTransfer clears the value of the "Has_public_transfer" field.
+func (u *ObjectUpsertBulk) ClearHasPublicTransfer() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.ClearHasPublicTransfer()
+	})
+}
+
 // SetFields sets the "Fields" field.
 func (u *ObjectUpsertBulk) SetFields(v map[string]interface{}) *ObjectUpsertBulk {
 	return u.Update(func(s *ObjectUpsert) {
@@ -840,6 +930,13 @@ func (u *ObjectUpsertBulk) SetFields(v map[string]interface{}) *ObjectUpsertBulk
 func (u *ObjectUpsertBulk) UpdateFields() *ObjectUpsertBulk {
 	return u.Update(func(s *ObjectUpsert) {
 		s.UpdateFields()
+	})
+}
+
+// ClearFields clears the value of the "Fields" field.
+func (u *ObjectUpsertBulk) ClearFields() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.ClearFields()
 	})
 }
 
@@ -857,6 +954,13 @@ func (u *ObjectUpsertBulk) UpdateOwner() *ObjectUpsertBulk {
 	})
 }
 
+// ClearOwner clears the value of the "Owner" field.
+func (u *ObjectUpsertBulk) ClearOwner() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.ClearOwner()
+	})
+}
+
 // SetObjectID sets the "ObjectID" field.
 func (u *ObjectUpsertBulk) SetObjectID(v string) *ObjectUpsertBulk {
 	return u.Update(func(s *ObjectUpsert) {
@@ -871,24 +975,17 @@ func (u *ObjectUpsertBulk) UpdateObjectID() *ObjectUpsertBulk {
 	})
 }
 
-// SetSequenceID sets the "SequenceID" field.
-func (u *ObjectUpsertBulk) SetSequenceID(v uint64) *ObjectUpsertBulk {
+// SetTransactionID sets the "TransactionID" field.
+func (u *ObjectUpsertBulk) SetTransactionID(v string) *ObjectUpsertBulk {
 	return u.Update(func(s *ObjectUpsert) {
-		s.SetSequenceID(v)
+		s.SetTransactionID(v)
 	})
 }
 
-// AddSequenceID adds v to the "SequenceID" field.
-func (u *ObjectUpsertBulk) AddSequenceID(v uint64) *ObjectUpsertBulk {
+// UpdateTransactionID sets the "TransactionID" field to the value that was provided on create.
+func (u *ObjectUpsertBulk) UpdateTransactionID() *ObjectUpsertBulk {
 	return u.Update(func(s *ObjectUpsert) {
-		s.AddSequenceID(v)
-	})
-}
-
-// UpdateSequenceID sets the "SequenceID" field to the value that was provided on create.
-func (u *ObjectUpsertBulk) UpdateSequenceID() *ObjectUpsertBulk {
-	return u.Update(func(s *ObjectUpsert) {
-		s.UpdateSequenceID()
+		s.UpdateTransactionID()
 	})
 }
 

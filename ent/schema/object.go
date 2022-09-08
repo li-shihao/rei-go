@@ -15,13 +15,13 @@ type Object struct {
 func (Object) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("Status"),
-		field.String("DataType"),
-		field.String("Type"),
-		field.Bool("Has_public_transfer"),
-		field.JSON("Fields", map[string]interface{}{}),
-		field.String("Owner"),
+		field.String("DataType").Optional(),
+		field.String("Type").Optional(),
+		field.Bool("Has_public_transfer").Optional(),
+		field.JSON("Fields", map[string]interface{}{}).Optional(),
+		field.String("Owner").Optional(),
 		field.String("ObjectID"),
-		field.Uint64("SequenceID"),
+		field.String("TransactionID"),
 	}
 }
 
@@ -32,6 +32,6 @@ func (Object) Edges() []ent.Edge {
 
 func (Object) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("SequenceID", "ObjectID").Unique(),
+		index.Fields("TransactionID", "ObjectID").Unique(),
 	}
 }

@@ -30,8 +30,8 @@ type Object struct {
 	Owner string `json:"Owner,omitempty"`
 	// ObjectID holds the value of the "ObjectID" field.
 	ObjectID string `json:"ObjectID,omitempty"`
-	// SequenceID holds the value of the "SequenceID" field.
-	SequenceID uint64 `json:"SequenceID,omitempty"`
+	// TransactionID holds the value of the "TransactionID" field.
+	TransactionID string `json:"TransactionID,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -43,9 +43,9 @@ func (*Object) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case object.FieldHasPublicTransfer:
 			values[i] = new(sql.NullBool)
-		case object.FieldID, object.FieldSequenceID:
+		case object.FieldID:
 			values[i] = new(sql.NullInt64)
-		case object.FieldStatus, object.FieldDataType, object.FieldType, object.FieldOwner, object.FieldObjectID:
+		case object.FieldStatus, object.FieldDataType, object.FieldType, object.FieldOwner, object.FieldObjectID, object.FieldTransactionID:
 			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Object", columns[i])
@@ -112,11 +112,11 @@ func (o *Object) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				o.ObjectID = value.String
 			}
-		case object.FieldSequenceID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field SequenceID", values[i])
+		case object.FieldTransactionID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field TransactionID", values[i])
 			} else if value.Valid {
-				o.SequenceID = uint64(value.Int64)
+				o.TransactionID = value.String
 			}
 		}
 	}
@@ -167,8 +167,8 @@ func (o *Object) String() string {
 	builder.WriteString("ObjectID=")
 	builder.WriteString(o.ObjectID)
 	builder.WriteString(", ")
-	builder.WriteString("SequenceID=")
-	builder.WriteString(fmt.Sprintf("%v", o.SequenceID))
+	builder.WriteString("TransactionID=")
+	builder.WriteString(o.TransactionID)
 	builder.WriteByte(')')
 	return builder.String()
 }

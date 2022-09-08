@@ -144,29 +144,18 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 			}
 
 			// First 78k dont need multiple insertions for objects also
-			if cnt > firstLoadLimit {
-				obj, err := sc.GetObject(k.ObjectId)
-				if obj != nil {
+			obj, err := sc.GetObject(k.ObjectId)
+			if err != nil {
+				if err.Error() == "not valid object" {
+					db.CreateDeletedObject(k.ObjectId, tx.GetID())
+				} else {
 					check(err)
-					db.CreateObject(*obj, cnt)
 				}
-			} else {
-				c.Lock()
-				condition := cache[k.ObjectId]
-				c.Unlock()
-				if !condition {
-					c.Lock()
-					if cache[k.ObjectId] {
-						panic(1)
-					}
-					cache[k.ObjectId] = true
-					c.Unlock()
-					obj, err := sc.GetObject(k.ObjectId)
-					if obj != nil {
-						check(err)
-						db.CreateObject(*obj, cnt)
-					}
-				}
+			}
+			if obj != nil {
+				check(err)
+				db.CreateObject(*obj, tx.GetID())
+
 			}
 		}
 	}

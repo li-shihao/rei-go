@@ -1,12 +1,12 @@
 type Object {
   Status: String!
-  Datatype: String!
-  Type: String!
-  Has_public_transfer: Boolean!
-  Fields: Map!
-  Owner: String!
+  Datatype: String
+  Type: String
+  Has_public_transfer: Boolean
+  Fields: Map
+  Owner: String
   ObjectID: String!
-  SequenceID: Int!
+  TransactionID: String!
 }
 
 extend type Query {

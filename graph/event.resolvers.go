@@ -5,11 +5,23 @@ package graph
 
 import (
 	"context"
+	"log"
 
 	"rei.io/rei/ent"
 	"rei.io/rei/ent/event"
+	"rei.io/rei/ent/object"
 	"rei.io/rei/graph/generated"
 )
+
+// Object is the resolver for the Object field.
+func (r *eventResolver) Object(ctx context.Context, obj *ent.Event) (*ent.Object, error) {
+	objc, err := r.client.Object.Query().Where(object.And(object.TransactionIDEQ(obj.TransactionID), object.ObjectIDEQ(obj.ObjectID))).Only(context.Background())
+	if err != nil {
+		log.Println(obj.ObjectID)
+		return nil, err
+	}
+	return objc, nil
+}
 
 // Version is the resolver for the Version field.
 func (r *eventResolver) Version(ctx context.Context, obj *ent.Event) (int, error) {

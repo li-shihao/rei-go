@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"log"
 	"sort"
 	"time"
 
@@ -76,7 +75,6 @@ func (r *queryResolver) AccountHistory(ctx context.Context, accountID string) (*
 	for _, k := range account.Transactions {
 		transaction, err := r.client.Transaction.Query().Where(transaction.TransactionIDEQ(k)).Only(context.Background())
 		if err != nil {
-			log.Println(k)
 			return nil, err
 		}
 

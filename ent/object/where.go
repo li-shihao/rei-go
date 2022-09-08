@@ -120,10 +120,10 @@ func ObjectID(v string) predicate.Object {
 	})
 }
 
-// SequenceID applies equality check predicate on the "SequenceID" field. It's identical to SequenceIDEQ.
-func SequenceID(v uint64) predicate.Object {
+// TransactionID applies equality check predicate on the "TransactionID" field. It's identical to TransactionIDEQ.
+func TransactionID(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldSequenceID), v))
+		s.Where(sql.EQ(s.C(FieldTransactionID), v))
 	})
 }
 
@@ -311,6 +311,20 @@ func DataTypeHasSuffix(v string) predicate.Object {
 	})
 }
 
+// DataTypeIsNil applies the IsNil predicate on the "DataType" field.
+func DataTypeIsNil() predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldDataType)))
+	})
+}
+
+// DataTypeNotNil applies the NotNil predicate on the "DataType" field.
+func DataTypeNotNil() predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldDataType)))
+	})
+}
+
 // DataTypeEqualFold applies the EqualFold predicate on the "DataType" field.
 func DataTypeEqualFold(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
@@ -410,6 +424,20 @@ func TypeHasSuffix(v string) predicate.Object {
 	})
 }
 
+// TypeIsNil applies the IsNil predicate on the "Type" field.
+func TypeIsNil() predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldType)))
+	})
+}
+
+// TypeNotNil applies the NotNil predicate on the "Type" field.
+func TypeNotNil() predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldType)))
+	})
+}
+
 // TypeEqualFold applies the EqualFold predicate on the "Type" field.
 func TypeEqualFold(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
@@ -435,6 +463,34 @@ func HasPublicTransferEQ(v bool) predicate.Object {
 func HasPublicTransferNEQ(v bool) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldHasPublicTransfer), v))
+	})
+}
+
+// HasPublicTransferIsNil applies the IsNil predicate on the "Has_public_transfer" field.
+func HasPublicTransferIsNil() predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldHasPublicTransfer)))
+	})
+}
+
+// HasPublicTransferNotNil applies the NotNil predicate on the "Has_public_transfer" field.
+func HasPublicTransferNotNil() predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldHasPublicTransfer)))
+	})
+}
+
+// FieldsIsNil applies the IsNil predicate on the "Fields" field.
+func FieldsIsNil() predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldFields)))
+	})
+}
+
+// FieldsNotNil applies the NotNil predicate on the "Fields" field.
+func FieldsNotNil() predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldFields)))
 	})
 }
 
@@ -520,6 +576,20 @@ func OwnerHasPrefix(v string) predicate.Object {
 func OwnerHasSuffix(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
 		s.Where(sql.HasSuffix(s.C(FieldOwner), v))
+	})
+}
+
+// OwnerIsNil applies the IsNil predicate on the "Owner" field.
+func OwnerIsNil() predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldOwner)))
+	})
+}
+
+// OwnerNotNil applies the NotNil predicate on the "Owner" field.
+func OwnerNotNil() predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldOwner)))
 	})
 }
 
@@ -636,67 +706,102 @@ func ObjectIDContainsFold(v string) predicate.Object {
 	})
 }
 
-// SequenceIDEQ applies the EQ predicate on the "SequenceID" field.
-func SequenceIDEQ(v uint64) predicate.Object {
+// TransactionIDEQ applies the EQ predicate on the "TransactionID" field.
+func TransactionIDEQ(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldSequenceID), v))
+		s.Where(sql.EQ(s.C(FieldTransactionID), v))
 	})
 }
 
-// SequenceIDNEQ applies the NEQ predicate on the "SequenceID" field.
-func SequenceIDNEQ(v uint64) predicate.Object {
+// TransactionIDNEQ applies the NEQ predicate on the "TransactionID" field.
+func TransactionIDNEQ(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldSequenceID), v))
+		s.Where(sql.NEQ(s.C(FieldTransactionID), v))
 	})
 }
 
-// SequenceIDIn applies the In predicate on the "SequenceID" field.
-func SequenceIDIn(vs ...uint64) predicate.Object {
+// TransactionIDIn applies the In predicate on the "TransactionID" field.
+func TransactionIDIn(vs ...string) predicate.Object {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Object(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldSequenceID), v...))
+		s.Where(sql.In(s.C(FieldTransactionID), v...))
 	})
 }
 
-// SequenceIDNotIn applies the NotIn predicate on the "SequenceID" field.
-func SequenceIDNotIn(vs ...uint64) predicate.Object {
+// TransactionIDNotIn applies the NotIn predicate on the "TransactionID" field.
+func TransactionIDNotIn(vs ...string) predicate.Object {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Object(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldSequenceID), v...))
+		s.Where(sql.NotIn(s.C(FieldTransactionID), v...))
 	})
 }
 
-// SequenceIDGT applies the GT predicate on the "SequenceID" field.
-func SequenceIDGT(v uint64) predicate.Object {
+// TransactionIDGT applies the GT predicate on the "TransactionID" field.
+func TransactionIDGT(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldSequenceID), v))
+		s.Where(sql.GT(s.C(FieldTransactionID), v))
 	})
 }
 
-// SequenceIDGTE applies the GTE predicate on the "SequenceID" field.
-func SequenceIDGTE(v uint64) predicate.Object {
+// TransactionIDGTE applies the GTE predicate on the "TransactionID" field.
+func TransactionIDGTE(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldSequenceID), v))
+		s.Where(sql.GTE(s.C(FieldTransactionID), v))
 	})
 }
 
-// SequenceIDLT applies the LT predicate on the "SequenceID" field.
-func SequenceIDLT(v uint64) predicate.Object {
+// TransactionIDLT applies the LT predicate on the "TransactionID" field.
+func TransactionIDLT(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldSequenceID), v))
+		s.Where(sql.LT(s.C(FieldTransactionID), v))
 	})
 }
 
-// SequenceIDLTE applies the LTE predicate on the "SequenceID" field.
-func SequenceIDLTE(v uint64) predicate.Object {
+// TransactionIDLTE applies the LTE predicate on the "TransactionID" field.
+func TransactionIDLTE(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldSequenceID), v))
+		s.Where(sql.LTE(s.C(FieldTransactionID), v))
+	})
+}
+
+// TransactionIDContains applies the Contains predicate on the "TransactionID" field.
+func TransactionIDContains(v string) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldTransactionID), v))
+	})
+}
+
+// TransactionIDHasPrefix applies the HasPrefix predicate on the "TransactionID" field.
+func TransactionIDHasPrefix(v string) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldTransactionID), v))
+	})
+}
+
+// TransactionIDHasSuffix applies the HasSuffix predicate on the "TransactionID" field.
+func TransactionIDHasSuffix(v string) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldTransactionID), v))
+	})
+}
+
+// TransactionIDEqualFold applies the EqualFold predicate on the "TransactionID" field.
+func TransactionIDEqualFold(v string) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldTransactionID), v))
+	})
+}
+
+// TransactionIDContainsFold applies the ContainsFold predicate on the "TransactionID" field.
+func TransactionIDContainsFold(v string) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldTransactionID), v))
 	})
 }
 

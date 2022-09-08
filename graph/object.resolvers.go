@@ -8,13 +8,7 @@ import (
 
 	"rei.io/rei/ent"
 	"rei.io/rei/ent/object"
-	"rei.io/rei/graph/generated"
 )
-
-// SequenceID is the resolver for the SequenceID field.
-func (r *objectResolver) SequenceID(ctx context.Context, obj *ent.Object) (int, error) {
-	return int(obj.SequenceID), nil
-}
 
 // Object is the resolver for the object field.
 func (r *queryResolver) Object(ctx context.Context, objectID string) (*ent.Object, error) {
@@ -33,8 +27,3 @@ func (r *queryResolver) Objects(ctx context.Context, owner string) ([]*ent.Objec
 	}
 	return objects, nil
 }
-
-// Object returns generated.ObjectResolver implementation.
-func (r *Resolver) Object() generated.ObjectResolver { return &objectResolver{r} }
-
-type objectResolver struct{ *Resolver }
