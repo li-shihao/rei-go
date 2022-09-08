@@ -13,7 +13,6 @@ import (
 
 // Version is the resolver for the Version field.
 func (r *eventResolver) Version(ctx context.Context, obj *ent.Event) (int, error) {
-
 	return int(obj.Version), nil
 }
 

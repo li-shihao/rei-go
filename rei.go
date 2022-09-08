@@ -16,12 +16,10 @@ import (
 )
 
 var check = helpers.Check
-var mu sync.Mutex
+var cache = make(map[string]bool)
+var c sync.Mutex
 
 func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *database.EntClient, cnt uint64, firstLoadLimit uint64) {
-
-	// Each account should only add one transaction ONCE
-	accountsUpdated := make(map[string]bool)
 
 	tx, err := sc.GetTransaction(transactionId)
 	check(err)
@@ -51,11 +49,34 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 			recipient := k.Recipient
 
 			// Haven't accessed yet
-			if !accountsUpdated[sender] {
 
-				// First 78k dont need multiple insertions for accounts
-				if cnt > firstLoadLimit {
+			// First 78k dont need multiple insertions for accounts
+			if cnt > firstLoadLimit {
 
+				// Insert sender account
+				sdr, err := sc.GetAccount(sender)
+				check(err)
+				db.CreateAccount(sdr, cnt)
+				//db.UpdateAccount(sender, cnt, tx.GetID())
+
+				// Insert sender NFTs
+				if sdr.GetAccountNFTs() != nil {
+					for _, k := range sdr.GetAccountNFTs() {
+						db.CreateNFT(k, cnt)
+					}
+				}
+
+			} else {
+				c.Lock()
+				condition := cache[sender]
+				c.Unlock()
+				if !condition {
+					c.Lock()
+					if cache[sender] {
+						panic(1)
+					}
+					cache[sender] = true
+					c.Unlock()
 					// Insert sender account
 					sdr, err := sc.GetAccount(sender)
 					check(err)
@@ -68,36 +89,16 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 							db.CreateNFT(k, cnt)
 						}
 					}
-					accountsUpdated[sender] = true
+
 				}
-
-				if cnt < firstLoadLimit {
-					mu.Lock()
-					if !db.QueryAccountFirstLoad(sender) {
-						// Insert sender account
-						sdr, err := sc.GetAccount(sender)
-						check(err)
-						db.CreateAccount(sdr, cnt)
-						//db.UpdateAccount(sender, cnt, tx.GetID())
-
-						// Insert sender NFTs
-						if sdr.GetAccountNFTs() != nil {
-							for _, k := range sdr.GetAccountNFTs() {
-								db.CreateNFT(k, cnt)
-							}
-						}
-						accountsUpdated[sender] = true
-					}
-					mu.Unlock()
-				}
-
-				// } else {
-				// 	db.UpdateAccount(sender, cnt, tx.GetID())
-				// 	accountsUpdated[sender] = true
-				// }
 			}
 
-			if recipient != nil && strings.HasPrefix(*recipient, "0x") && !accountsUpdated[*recipient] {
+			// } else {
+			// 	db.UpdateAccount(sender, cnt, tx.GetID())
+			// 	accountsUpdated[sender] = true
+			// }
+
+			if recipient != nil && strings.HasPrefix(*recipient, "0x") {
 
 				if cnt > firstLoadLimit {
 					// Check if recipient exist && recipient is actually an address (not 'shared' or smth else)
@@ -111,12 +112,17 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 							db.CreateNFT(k, cnt)
 						}
 					}
-					accountsUpdated[*recipient] = true
-				}
-
-				if cnt < firstLoadLimit {
-					mu.Lock()
-					if !db.QueryAccountFirstLoad(*recipient) {
+				} else {
+					c.Lock()
+					condition := cache[*recipient]
+					c.Unlock()
+					if !condition {
+						c.Lock()
+						if cache[*recipient] {
+							panic(1)
+						}
+						cache[*recipient] = true
+						c.Unlock()
 						// Check if recipient exist && recipient is actually an address (not 'shared' or smth else)
 						rcp, err := sc.GetAccount(*recipient)
 						check(err)
@@ -128,9 +134,7 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 								db.CreateNFT(k, cnt)
 							}
 						}
-						accountsUpdated[*recipient] = true
 					}
-					mu.Unlock()
 				}
 
 				// } else {
@@ -140,11 +144,28 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 			}
 
 			// First 78k dont need multiple insertions for objects also
-			if cnt > firstLoadLimit || !db.QueryObjectFirstLoad(k.ObjectId) {
+			if cnt > firstLoadLimit {
 				obj, err := sc.GetObject(k.ObjectId)
 				if obj != nil {
 					check(err)
 					db.CreateObject(*obj, cnt)
+				}
+			} else {
+				c.Lock()
+				condition := cache[k.ObjectId]
+				c.Unlock()
+				if !condition {
+					c.Lock()
+					if cache[k.ObjectId] {
+						panic(1)
+					}
+					cache[k.ObjectId] = true
+					c.Unlock()
+					obj, err := sc.GetObject(k.ObjectId)
+					if obj != nil {
+						check(err)
+						db.CreateObject(*obj, cnt)
+					}
 				}
 			}
 		}
@@ -154,7 +175,6 @@ func processTX(thread chan int, transactionId string, sc *sui.SUIClient, db *dat
 	log.Printf("%s: Finished processing %d\n", tx.GetID(), cnt)
 	<-thread
 }
-
 func main() {
 
 	// File for count record

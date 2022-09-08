@@ -78,6 +78,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	// Initialise db
 	db := new(database.EntClient)
 	db.Init("postgres", connStr)
+	defer db.GetClient().Close()
 
 	exist, err := db.QueryUserExist(incomeRequest.Username)
 	if err != nil {
@@ -181,6 +182,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// Initialise db
 	db := new(database.EntClient)
 	db.Init("postgres", connStr)
+	defer db.GetClient().Close()
 
 	correct, err := db.QueryUserCredentials(incomeRequest.Username, incomeRequest.Password)
 	if correct == nil || !*correct {
@@ -245,6 +247,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	// Initialise db
 	db := new(database.EntClient)
 	db.Init("postgres", connStr)
+	defer db.GetClient().Close()
 
 	if loggedIn, _, err := db.QuerySession(user); err != nil || loggedIn == nil || !*loggedIn {
 

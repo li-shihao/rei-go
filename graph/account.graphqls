@@ -14,9 +14,17 @@ type AccObject {
   Metadata: Map!
 }
 
+type AccHistory {
+  AccountID: String!
+  Balance: Int!
+  Objects: [AccObject]
+  Transactions: [Transaction]
+  Events: [Event]
+}
+
 extend type Query {
   account(AccountID: String!): Account
-  accountHistory(AccountID: String!): [Account]
+  accountHistory(AccountID: String!): AccHistory
 }
 
 extend type Subscription {

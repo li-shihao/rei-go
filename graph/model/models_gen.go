@@ -2,6 +2,18 @@
 
 package model
 
+import (
+	"rei.io/rei/ent"
+)
+
+type AccHistory struct {
+	AccountID    string             `json:"AccountID"`
+	Balance      int                `json:"Balance"`
+	Objects      []*AccObject       `json:"Objects"`
+	Transactions []*ent.Transaction `json:"Transactions"`
+	Events       []*ent.Event       `json:"Events"`
+}
+
 type AccObject struct {
 	ObjectID string                 `json:"ObjectId"`
 	Type     string                 `json:"Type"`

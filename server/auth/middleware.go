@@ -40,6 +40,7 @@ func Authenticate(next http.Handler) http.Handler {
 		// Initialise db
 		db := new(database.EntClient)
 		db.Init("postgres", connStr)
+		defer db.GetClient().Close()
 
 		loggedIn, ip, err := db.QuerySession(any["username"].(string))
 

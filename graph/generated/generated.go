@@ -52,6 +52,14 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AccHistory struct {
+		AccountID    func(childComplexity int) int
+		Balance      func(childComplexity int) int
+		Events       func(childComplexity int) int
+		Objects      func(childComplexity int) int
+		Transactions func(childComplexity int) int
+	}
+
 	AccObject struct {
 		Metadata func(childComplexity int) int
 		ObjectID func(childComplexity int) int
@@ -164,7 +172,7 @@ type ObjectResolver interface {
 }
 type QueryResolver interface {
 	Account(ctx context.Context, accountID string) (*ent.Account, error)
-	AccountHistory(ctx context.Context, accountID string) ([]*ent.Account, error)
+	AccountHistory(ctx context.Context, accountID string) (*model.AccHistory, error)
 	Argument(ctx context.Context, transactionID string) (*ent.Argument, error)
 	Events(ctx context.Context, transactionID string) ([]*ent.Event, error)
 	Nft(ctx context.Context, objectID string) (*ent.NFT, error)
@@ -198,6 +206,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AccHistory.AccountID":
+		if e.complexity.AccHistory.AccountID == nil {
+			break
+		}
+
+		return e.complexity.AccHistory.AccountID(childComplexity), true
+
+	case "AccHistory.Balance":
+		if e.complexity.AccHistory.Balance == nil {
+			break
+		}
+
+		return e.complexity.AccHistory.Balance(childComplexity), true
+
+	case "AccHistory.Events":
+		if e.complexity.AccHistory.Events == nil {
+			break
+		}
+
+		return e.complexity.AccHistory.Events(childComplexity), true
+
+	case "AccHistory.Objects":
+		if e.complexity.AccHistory.Objects == nil {
+			break
+		}
+
+		return e.complexity.AccHistory.Objects(childComplexity), true
+
+	case "AccHistory.Transactions":
+		if e.complexity.AccHistory.Transactions == nil {
+			break
+		}
+
+		return e.complexity.AccHistory.Transactions(childComplexity), true
 
 	case "AccObject.Metadata":
 		if e.complexity.AccObject.Metadata == nil {
@@ -749,9 +792,17 @@ type AccObject {
   Metadata: Map!
 }
 
+type AccHistory {
+  AccountID: String!
+  Balance: Int!
+  Objects: [AccObject]
+  Transactions: [Transaction]
+  Events: [Event]
+}
+
 extend type Query {
   account(AccountID: String!): Account
-  accountHistory(AccountID: String!): [Account]
+  accountHistory(AccountID: String!): AccHistory
 }
 
 extend type Subscription {
@@ -1057,6 +1108,263 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AccHistory_AccountID(ctx context.Context, field graphql.CollectedField, obj *model.AccHistory) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AccHistory_AccountID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AccountID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AccHistory_AccountID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AccHistory",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AccHistory_Balance(ctx context.Context, field graphql.CollectedField, obj *model.AccHistory) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AccHistory_Balance(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Balance, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AccHistory_Balance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AccHistory",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AccHistory_Objects(ctx context.Context, field graphql.CollectedField, obj *model.AccHistory) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AccHistory_Objects(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Objects, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.AccObject)
+	fc.Result = res
+	return ec.marshalOAccObject2ᚕᚖreiᚗioᚋreiᚋgraphᚋmodelᚐAccObject(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AccHistory_Objects(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AccHistory",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ObjectId":
+				return ec.fieldContext_AccObject_ObjectId(ctx, field)
+			case "Type":
+				return ec.fieldContext_AccObject_Type(ctx, field)
+			case "Metadata":
+				return ec.fieldContext_AccObject_Metadata(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AccObject", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AccHistory_Transactions(ctx context.Context, field graphql.CollectedField, obj *model.AccHistory) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AccHistory_Transactions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Transactions, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Transaction)
+	fc.Result = res
+	return ec.marshalOTransaction2ᚕᚖreiᚗioᚋreiᚋentᚐTransaction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AccHistory_Transactions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AccHistory",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Type":
+				return ec.fieldContext_Transaction_Type(ctx, field)
+			case "Time":
+				return ec.fieldContext_Transaction_Time(ctx, field)
+			case "TransactionID":
+				return ec.fieldContext_Transaction_TransactionID(ctx, field)
+			case "Status":
+				return ec.fieldContext_Transaction_Status(ctx, field)
+			case "Sender":
+				return ec.fieldContext_Transaction_Sender(ctx, field)
+			case "Recipient":
+				return ec.fieldContext_Transaction_Recipient(ctx, field)
+			case "Amount":
+				return ec.fieldContext_Transaction_Amount(ctx, field)
+			case "Package":
+				return ec.fieldContext_Transaction_Package(ctx, field)
+			case "Module":
+				return ec.fieldContext_Transaction_Module(ctx, field)
+			case "Function":
+				return ec.fieldContext_Transaction_Function(ctx, field)
+			case "Gas":
+				return ec.fieldContext_Transaction_Gas(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AccHistory_Events(ctx context.Context, field graphql.CollectedField, obj *model.AccHistory) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AccHistory_Events(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Events, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚕᚖreiᚗioᚋreiᚋentᚐEvent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AccHistory_Events(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AccHistory",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "Type":
+				return ec.fieldContext_Event_Type(ctx, field)
+			case "Sender":
+				return ec.fieldContext_Event_Sender(ctx, field)
+			case "Recipient":
+				return ec.fieldContext_Event_Recipient(ctx, field)
+			case "TransactionID":
+				return ec.fieldContext_Event_TransactionID(ctx, field)
+			case "ObjectID":
+				return ec.fieldContext_Event_ObjectID(ctx, field)
+			case "Version":
+				return ec.fieldContext_Event_Version(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Event", field.Name)
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _AccObject_ObjectId(ctx context.Context, field graphql.CollectedField, obj *model.AccObject) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AccObject_ObjectId(ctx, field)
@@ -2690,9 +2998,9 @@ func (ec *executionContext) _Query_accountHistory(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.Account)
+	res := resTmp.(*model.AccHistory)
 	fc.Result = res
-	return ec.marshalOAccount2ᚕᚖreiᚗioᚋreiᚋentᚐAccount(ctx, field.Selections, res)
+	return ec.marshalOAccHistory2ᚖreiᚗioᚋreiᚋgraphᚋmodelᚐAccHistory(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_accountHistory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2703,18 +3011,18 @@ func (ec *executionContext) fieldContext_Query_accountHistory(ctx context.Contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "SequenceID":
-				return ec.fieldContext_Account_SequenceID(ctx, field)
 			case "AccountID":
-				return ec.fieldContext_Account_AccountID(ctx, field)
+				return ec.fieldContext_AccHistory_AccountID(ctx, field)
 			case "Balance":
-				return ec.fieldContext_Account_Balance(ctx, field)
-			case "Transactions":
-				return ec.fieldContext_Account_Transactions(ctx, field)
+				return ec.fieldContext_AccHistory_Balance(ctx, field)
 			case "Objects":
-				return ec.fieldContext_Account_Objects(ctx, field)
+				return ec.fieldContext_AccHistory_Objects(ctx, field)
+			case "Transactions":
+				return ec.fieldContext_AccHistory_Transactions(ctx, field)
+			case "Events":
+				return ec.fieldContext_AccHistory_Events(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Account", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type AccHistory", field.Name)
 		},
 	}
 	defer func() {
@@ -5894,6 +6202,53 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** object.gotpl ****************************
 
+var accHistoryImplementors = []string{"AccHistory"}
+
+func (ec *executionContext) _AccHistory(ctx context.Context, sel ast.SelectionSet, obj *model.AccHistory) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, accHistoryImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AccHistory")
+		case "AccountID":
+
+			out.Values[i] = ec._AccHistory_AccountID(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Balance":
+
+			out.Values[i] = ec._AccHistory_Balance(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Objects":
+
+			out.Values[i] = ec._AccHistory_Objects(ctx, field, obj)
+
+		case "Transactions":
+
+			out.Values[i] = ec._AccHistory_Transactions(ctx, field, obj)
+
+		case "Events":
+
+			out.Values[i] = ec._AccHistory_Events(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var accObjectImplementors = []string{"AccObject"}
 
 func (ec *executionContext) _AccObject(ctx context.Context, sel ast.SelectionSet, obj *model.AccObject) graphql.Marshaler {
@@ -7458,6 +7813,13 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalOAccHistory2ᚖreiᚗioᚋreiᚋgraphᚋmodelᚐAccHistory(ctx context.Context, sel ast.SelectionSet, v *model.AccHistory) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AccHistory(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOAccObject2ᚕᚖreiᚗioᚋreiᚋgraphᚋmodelᚐAccObject(ctx context.Context, sel ast.SelectionSet, v []*model.AccObject) graphql.Marshaler {
