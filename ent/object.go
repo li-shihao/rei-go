@@ -32,6 +32,8 @@ type Object struct {
 	ObjectID string `json:"ObjectID,omitempty"`
 	// TransactionID holds the value of the "TransactionID" field.
 	TransactionID string `json:"TransactionID,omitempty"`
+	// Version holds the value of the "Version" field.
+	Version int `json:"Version,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -43,7 +45,7 @@ func (*Object) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case object.FieldHasPublicTransfer:
 			values[i] = new(sql.NullBool)
-		case object.FieldID:
+		case object.FieldID, object.FieldVersion:
 			values[i] = new(sql.NullInt64)
 		case object.FieldStatus, object.FieldDataType, object.FieldType, object.FieldOwner, object.FieldObjectID, object.FieldTransactionID:
 			values[i] = new(sql.NullString)
@@ -118,6 +120,12 @@ func (o *Object) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				o.TransactionID = value.String
 			}
+		case object.FieldVersion:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field Version", values[i])
+			} else if value.Valid {
+				o.Version = int(value.Int64)
+			}
 		}
 	}
 	return nil
@@ -169,6 +177,9 @@ func (o *Object) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("TransactionID=")
 	builder.WriteString(o.TransactionID)
+	builder.WriteString(", ")
+	builder.WriteString("Version=")
+	builder.WriteString(fmt.Sprintf("%v", o.Version))
 	builder.WriteByte(')')
 	return builder.String()
 }

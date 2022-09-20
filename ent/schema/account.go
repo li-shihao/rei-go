@@ -3,7 +3,6 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
-	"entgo.io/ent/schema/index"
 )
 
 // Account holds the schema definition for the Account entity.
@@ -20,10 +19,10 @@ type AccObject struct {
 // Fields of the Account.
 func (Account) Fields() []ent.Field {
 	return []ent.Field{
-		field.Uint64("SequenceID"),
-		field.String("AccountID"),
-		field.Uint64("Balance"),
-		field.JSON("Objects", []AccObject{}),
+		field.Int64("SequenceID"),
+		field.String("AccountID").Unique(),
+		field.Int64("Balance").Optional(),
+		field.JSON("Objects", []AccObject{}).Optional(),
 		field.Strings("Transactions").Optional(),
 	}
 }
@@ -34,7 +33,8 @@ func (Account) Edges() []ent.Edge {
 }
 
 func (Account) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("SequenceID", "AccountID").Unique(),
-	}
+	// return []ent.Index{
+	// 	index.Fields("SequenceID", "AccountID").Unique(),
+	// }
+	return nil
 }

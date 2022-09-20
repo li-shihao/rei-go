@@ -40,8 +40,8 @@ func (nc *NFTCreate) SetMetadata(m map[string]interface{}) *NFTCreate {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (nc *NFTCreate) SetSequenceID(u uint64) *NFTCreate {
-	nc.mutation.SetSequenceID(u)
+func (nc *NFTCreate) SetSequenceID(i int64) *NFTCreate {
+	nc.mutation.SetSequenceID(i)
 	return nc
 }
 
@@ -187,7 +187,7 @@ func (nc *NFTCreate) createSpec() (*NFT, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := nc.mutation.SequenceID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: nft.FieldSequenceID,
 		})
@@ -282,7 +282,7 @@ func (u *NFTUpsert) UpdateMetadata() *NFTUpsert {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (u *NFTUpsert) SetSequenceID(v uint64) *NFTUpsert {
+func (u *NFTUpsert) SetSequenceID(v int64) *NFTUpsert {
 	u.Set(nft.FieldSequenceID, v)
 	return u
 }
@@ -294,7 +294,7 @@ func (u *NFTUpsert) UpdateSequenceID() *NFTUpsert {
 }
 
 // AddSequenceID adds v to the "SequenceID" field.
-func (u *NFTUpsert) AddSequenceID(v uint64) *NFTUpsert {
+func (u *NFTUpsert) AddSequenceID(v int64) *NFTUpsert {
 	u.Add(nft.FieldSequenceID, v)
 	return u
 }
@@ -382,14 +382,14 @@ func (u *NFTUpsertOne) UpdateMetadata() *NFTUpsertOne {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (u *NFTUpsertOne) SetSequenceID(v uint64) *NFTUpsertOne {
+func (u *NFTUpsertOne) SetSequenceID(v int64) *NFTUpsertOne {
 	return u.Update(func(s *NFTUpsert) {
 		s.SetSequenceID(v)
 	})
 }
 
 // AddSequenceID adds v to the "SequenceID" field.
-func (u *NFTUpsertOne) AddSequenceID(v uint64) *NFTUpsertOne {
+func (u *NFTUpsertOne) AddSequenceID(v int64) *NFTUpsertOne {
 	return u.Update(func(s *NFTUpsert) {
 		s.AddSequenceID(v)
 	})
@@ -644,14 +644,14 @@ func (u *NFTUpsertBulk) UpdateMetadata() *NFTUpsertBulk {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (u *NFTUpsertBulk) SetSequenceID(v uint64) *NFTUpsertBulk {
+func (u *NFTUpsertBulk) SetSequenceID(v int64) *NFTUpsertBulk {
 	return u.Update(func(s *NFTUpsert) {
 		s.SetSequenceID(v)
 	})
 }
 
 // AddSequenceID adds v to the "SequenceID" field.
-func (u *NFTUpsertBulk) AddSequenceID(v uint64) *NFTUpsertBulk {
+func (u *NFTUpsertBulk) AddSequenceID(v int64) *NFTUpsertBulk {
 	return u.Update(func(s *NFTUpsert) {
 		s.AddSequenceID(v)
 	})

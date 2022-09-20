@@ -23,7 +23,7 @@ type NFT struct {
 	// Metadata holds the value of the "Metadata" field.
 	Metadata map[string]interface{} `json:"Metadata,omitempty"`
 	// SequenceID holds the value of the "SequenceID" field.
-	SequenceID uint64 `json:"SequenceID,omitempty"`
+	SequenceID int64 `json:"SequenceID,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -82,7 +82,7 @@ func (n *NFT) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field SequenceID", values[i])
 			} else if value.Valid {
-				n.SequenceID = uint64(value.Int64)
+				n.SequenceID = value.Int64
 			}
 		}
 	}

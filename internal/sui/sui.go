@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
+	"net"
 	"net/http"
 	"reflect"
+	"time"
 
 	"github.com/mitchellh/mapstructure"
 	"rei.io/rei/internal/helpers"
@@ -22,13 +25,32 @@ type SUIClient struct {
 }
 
 // Constructor for SUI Client
-func (sc *SUIClient) Init(ip string) {
+func (sc *SUIClient) Init(ip string) chan int {
+
+	r := make(chan int)
+
 	sc.ip = ip
 	sc.client = http.Client{}
+
+	// Keep retrying connection
+	go func() {
+		for {
+			_, err := net.DialTimeout("tcp", "127.0.0.1:9000", time.Second)
+			if err != nil {
+				log.Println("API server unreachable: ", err)
+				time.Sleep(10 * time.Second)
+			} else {
+				break
+			}
+		}
+		r <- 1
+	}()
+
+	return r
 }
 
 // Get total transactions count
-func (sc *SUIClient) GetTotalTransactionNumber() uint64 {
+func (sc *SUIClient) GetTotalTransactionNumber() int64 {
 
 	body := []byte(`{"jsonrpc":"2.0", "id":1, "method": "sui_getTotalTransactionNumber", "params": []}`)
 
@@ -59,7 +81,7 @@ func (sc *SUIClient) GetTotalTransactionNumber() uint64 {
 	check(err)
 
 	// Casting float64 result to uint32
-	return uint64(x.Result)
+	return int64(x.Result)
 }
 
 // Get specific transaction
@@ -141,8 +163,13 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 					case "transferObject":
 						tmp.Type = "transfer"
 						tmp.Sender = k.(map[string]interface{})["sender"].(string)
+						var temp string
 						if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf(map[string]interface{}{}) {
-							temp := k.(map[string]interface{})["recipient"].(map[string]interface{})["AddressOwner"].(string)
+							if k.(map[string]interface{})["recipient"].(map[string]interface{})["AddressOwner"] == nil {
+								temp = k.(map[string]interface{})["recipient"].(map[string]interface{})["ObjectOwner"].(string)
+							} else {
+								temp = k.(map[string]interface{})["recipient"].(map[string]interface{})["AddressOwner"].(string)
+							}
 							tmp.Recipient = &temp
 						} else if reflect.TypeOf(k.(map[string]interface{})["recipient"]) == reflect.TypeOf("") {
 							temp := k.(map[string]interface{})["recipient"].(string)
@@ -251,11 +278,49 @@ func (sc *SUIClient) GetTransaction(id string) (TX, error) {
 		}
 	}
 
+	// Part 4: Get all items involved
+	/*****************************************************
+	Go through all of the mutated categories
+	*****************************************************/
+
+	var tmp []Changed
+	if len(x.Result.Effects.Mutated) > 0 {
+		for _, j := range x.Result.Effects.Mutated {
+			tmp = append(tmp, Changed{Version: int(j.Reference.Version), ObjectId: j.Reference.ObjectId, Type: "mutated"})
+		}
+	}
+	if len(x.Result.Effects.Created) > 0 {
+		for _, j := range x.Result.Effects.Created {
+			tmp = append(tmp, Changed{Version: int(j.Reference.Version), ObjectId: j.Reference.ObjectId, Type: "created"})
+		}
+	}
+	if len(x.Result.Effects.Deleted) > 0 {
+		for _, j := range x.Result.Effects.Deleted {
+			tmp = append(tmp, Changed{Version: int(j.Version), ObjectId: j.ObjectId, Type: "deleted"})
+		}
+	}
+	if len(x.Result.Effects.SharedObjects) > 0 {
+		for _, j := range x.Result.Effects.SharedObjects {
+			tmp = append(tmp, Changed{Version: int(j.Version), ObjectId: j.ObjectId, Type: "sharedObjects"})
+		}
+	}
+	if len(x.Result.Effects.Wrapped) > 0 {
+		for _, j := range x.Result.Effects.Wrapped {
+			tmp = append(tmp, Changed{Version: int(j.Version), ObjectId: j.ObjectId, Type: "wrapped"})
+		}
+	}
+	if len(x.Result.Effects.Unwrapped) > 0 {
+		for _, j := range x.Result.Effects.Unwrapped {
+			tmp = append(tmp, Changed{Version: int(j.Reference.Version), ObjectId: j.Reference.ObjectId, Type: "unwrapped"})
+		}
+	}
+	x.Changed = &tmp
+
 	return x, nil
 }
 
 // Get transactions in specific range
-func (sc *SUIClient) GetTransactionsInRange(start uint64, end uint64) ([]string, error) {
+func (sc *SUIClient) GetTransactionsInRange(start int64, end int64) ([]string, error) {
 
 	if start > end {
 		return []string{}, errors.New("start must not exceed end")
@@ -338,14 +403,24 @@ func (sc *SUIClient) GetObject(id string) (*Obj, error) {
 	err = json.Unmarshal(arr, &z)
 	check(err)
 
+	if z["result"].(map[string]interface{})["status"] == "Deleted" {
+		return nil, errors.New("deleted")
+	}
+
+	if z["result"].(map[string]interface{})["status"] == "NotExists" {
+		return nil, errors.New("not exists")
+	}
+
 	// Convert map to struct
 	err = mapstructure.Decode(z, &x)
 
 	if err != nil {
+		log.Fatalln(z)
 		return nil, errors.New("not valid object")
 	}
 
 	if reflect.ValueOf(x.Result).IsZero() {
+		log.Fatalln(z)
 		return nil, errors.New("not valid object")
 	}
 
@@ -474,7 +549,7 @@ func (sc *SUIClient) GetAccount(id string) (Acc, error) {
 
 			// check if object balance is of float64 type
 			if reflect.TypeOf(bal) == reflect.TypeOf(1.0) {
-				x.Balance += uint64(bal.(float64))
+				x.Balance += int64(bal.(float64))
 			}
 		}
 
@@ -557,6 +632,6 @@ func (sc *SUIClient) GetAccount(id string) (Acc, error) {
 	}
 
 	// Set the transactions in account to be the populated list
-	x.Transactions = list
+	x.Transactions = helpers.RemoveDuplicate(list)
 	return x, nil
 }

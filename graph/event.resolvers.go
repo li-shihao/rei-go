@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"log"
 
 	"rei.io/rei/ent"
 	"rei.io/rei/ent/event"
@@ -17,7 +16,6 @@ import (
 func (r *eventResolver) Object(ctx context.Context, obj *ent.Event) (*ent.Object, error) {
 	objc, err := r.client.Object.Query().Where(object.And(object.TransactionIDEQ(obj.TransactionID), object.ObjectIDEQ(obj.ObjectID))).Only(context.Background())
 	if err != nil {
-		log.Println(obj.ObjectID)
 		return nil, err
 	}
 	return objc, nil

@@ -23,8 +23,8 @@ type AccountCreate struct {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (ac *AccountCreate) SetSequenceID(u uint64) *AccountCreate {
-	ac.mutation.SetSequenceID(u)
+func (ac *AccountCreate) SetSequenceID(i int64) *AccountCreate {
+	ac.mutation.SetSequenceID(i)
 	return ac
 }
 
@@ -35,8 +35,16 @@ func (ac *AccountCreate) SetAccountID(s string) *AccountCreate {
 }
 
 // SetBalance sets the "Balance" field.
-func (ac *AccountCreate) SetBalance(u uint64) *AccountCreate {
-	ac.mutation.SetBalance(u)
+func (ac *AccountCreate) SetBalance(i int64) *AccountCreate {
+	ac.mutation.SetBalance(i)
+	return ac
+}
+
+// SetNillableBalance sets the "Balance" field if the given value is not nil.
+func (ac *AccountCreate) SetNillableBalance(i *int64) *AccountCreate {
+	if i != nil {
+		ac.SetBalance(*i)
+	}
 	return ac
 }
 
@@ -134,12 +142,6 @@ func (ac *AccountCreate) check() error {
 	if _, ok := ac.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "AccountID", err: errors.New(`ent: missing required field "Account.AccountID"`)}
 	}
-	if _, ok := ac.mutation.Balance(); !ok {
-		return &ValidationError{Name: "Balance", err: errors.New(`ent: missing required field "Account.Balance"`)}
-	}
-	if _, ok := ac.mutation.Objects(); !ok {
-		return &ValidationError{Name: "Objects", err: errors.New(`ent: missing required field "Account.Objects"`)}
-	}
 	return nil
 }
 
@@ -170,7 +172,7 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 	_spec.OnConflict = ac.conflict
 	if value, ok := ac.mutation.SequenceID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: account.FieldSequenceID,
 		})
@@ -186,7 +188,7 @@ func (ac *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := ac.mutation.Balance(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: account.FieldBalance,
 		})
@@ -261,7 +263,7 @@ type (
 )
 
 // SetSequenceID sets the "SequenceID" field.
-func (u *AccountUpsert) SetSequenceID(v uint64) *AccountUpsert {
+func (u *AccountUpsert) SetSequenceID(v int64) *AccountUpsert {
 	u.Set(account.FieldSequenceID, v)
 	return u
 }
@@ -273,7 +275,7 @@ func (u *AccountUpsert) UpdateSequenceID() *AccountUpsert {
 }
 
 // AddSequenceID adds v to the "SequenceID" field.
-func (u *AccountUpsert) AddSequenceID(v uint64) *AccountUpsert {
+func (u *AccountUpsert) AddSequenceID(v int64) *AccountUpsert {
 	u.Add(account.FieldSequenceID, v)
 	return u
 }
@@ -291,7 +293,7 @@ func (u *AccountUpsert) UpdateAccountID() *AccountUpsert {
 }
 
 // SetBalance sets the "Balance" field.
-func (u *AccountUpsert) SetBalance(v uint64) *AccountUpsert {
+func (u *AccountUpsert) SetBalance(v int64) *AccountUpsert {
 	u.Set(account.FieldBalance, v)
 	return u
 }
@@ -303,8 +305,14 @@ func (u *AccountUpsert) UpdateBalance() *AccountUpsert {
 }
 
 // AddBalance adds v to the "Balance" field.
-func (u *AccountUpsert) AddBalance(v uint64) *AccountUpsert {
+func (u *AccountUpsert) AddBalance(v int64) *AccountUpsert {
 	u.Add(account.FieldBalance, v)
+	return u
+}
+
+// ClearBalance clears the value of the "Balance" field.
+func (u *AccountUpsert) ClearBalance() *AccountUpsert {
+	u.SetNull(account.FieldBalance)
 	return u
 }
 
@@ -317,6 +325,12 @@ func (u *AccountUpsert) SetObjects(v []schema.AccObject) *AccountUpsert {
 // UpdateObjects sets the "Objects" field to the value that was provided on create.
 func (u *AccountUpsert) UpdateObjects() *AccountUpsert {
 	u.SetExcluded(account.FieldObjects)
+	return u
+}
+
+// ClearObjects clears the value of the "Objects" field.
+func (u *AccountUpsert) ClearObjects() *AccountUpsert {
+	u.SetNull(account.FieldObjects)
 	return u
 }
 
@@ -379,14 +393,14 @@ func (u *AccountUpsertOne) Update(set func(*AccountUpsert)) *AccountUpsertOne {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (u *AccountUpsertOne) SetSequenceID(v uint64) *AccountUpsertOne {
+func (u *AccountUpsertOne) SetSequenceID(v int64) *AccountUpsertOne {
 	return u.Update(func(s *AccountUpsert) {
 		s.SetSequenceID(v)
 	})
 }
 
 // AddSequenceID adds v to the "SequenceID" field.
-func (u *AccountUpsertOne) AddSequenceID(v uint64) *AccountUpsertOne {
+func (u *AccountUpsertOne) AddSequenceID(v int64) *AccountUpsertOne {
 	return u.Update(func(s *AccountUpsert) {
 		s.AddSequenceID(v)
 	})
@@ -414,14 +428,14 @@ func (u *AccountUpsertOne) UpdateAccountID() *AccountUpsertOne {
 }
 
 // SetBalance sets the "Balance" field.
-func (u *AccountUpsertOne) SetBalance(v uint64) *AccountUpsertOne {
+func (u *AccountUpsertOne) SetBalance(v int64) *AccountUpsertOne {
 	return u.Update(func(s *AccountUpsert) {
 		s.SetBalance(v)
 	})
 }
 
 // AddBalance adds v to the "Balance" field.
-func (u *AccountUpsertOne) AddBalance(v uint64) *AccountUpsertOne {
+func (u *AccountUpsertOne) AddBalance(v int64) *AccountUpsertOne {
 	return u.Update(func(s *AccountUpsert) {
 		s.AddBalance(v)
 	})
@@ -431,6 +445,13 @@ func (u *AccountUpsertOne) AddBalance(v uint64) *AccountUpsertOne {
 func (u *AccountUpsertOne) UpdateBalance() *AccountUpsertOne {
 	return u.Update(func(s *AccountUpsert) {
 		s.UpdateBalance()
+	})
+}
+
+// ClearBalance clears the value of the "Balance" field.
+func (u *AccountUpsertOne) ClearBalance() *AccountUpsertOne {
+	return u.Update(func(s *AccountUpsert) {
+		s.ClearBalance()
 	})
 }
 
@@ -445,6 +466,13 @@ func (u *AccountUpsertOne) SetObjects(v []schema.AccObject) *AccountUpsertOne {
 func (u *AccountUpsertOne) UpdateObjects() *AccountUpsertOne {
 	return u.Update(func(s *AccountUpsert) {
 		s.UpdateObjects()
+	})
+}
+
+// ClearObjects clears the value of the "Objects" field.
+func (u *AccountUpsertOne) ClearObjects() *AccountUpsertOne {
+	return u.Update(func(s *AccountUpsert) {
+		s.ClearObjects()
 	})
 }
 
@@ -669,14 +697,14 @@ func (u *AccountUpsertBulk) Update(set func(*AccountUpsert)) *AccountUpsertBulk 
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (u *AccountUpsertBulk) SetSequenceID(v uint64) *AccountUpsertBulk {
+func (u *AccountUpsertBulk) SetSequenceID(v int64) *AccountUpsertBulk {
 	return u.Update(func(s *AccountUpsert) {
 		s.SetSequenceID(v)
 	})
 }
 
 // AddSequenceID adds v to the "SequenceID" field.
-func (u *AccountUpsertBulk) AddSequenceID(v uint64) *AccountUpsertBulk {
+func (u *AccountUpsertBulk) AddSequenceID(v int64) *AccountUpsertBulk {
 	return u.Update(func(s *AccountUpsert) {
 		s.AddSequenceID(v)
 	})
@@ -704,14 +732,14 @@ func (u *AccountUpsertBulk) UpdateAccountID() *AccountUpsertBulk {
 }
 
 // SetBalance sets the "Balance" field.
-func (u *AccountUpsertBulk) SetBalance(v uint64) *AccountUpsertBulk {
+func (u *AccountUpsertBulk) SetBalance(v int64) *AccountUpsertBulk {
 	return u.Update(func(s *AccountUpsert) {
 		s.SetBalance(v)
 	})
 }
 
 // AddBalance adds v to the "Balance" field.
-func (u *AccountUpsertBulk) AddBalance(v uint64) *AccountUpsertBulk {
+func (u *AccountUpsertBulk) AddBalance(v int64) *AccountUpsertBulk {
 	return u.Update(func(s *AccountUpsert) {
 		s.AddBalance(v)
 	})
@@ -721,6 +749,13 @@ func (u *AccountUpsertBulk) AddBalance(v uint64) *AccountUpsertBulk {
 func (u *AccountUpsertBulk) UpdateBalance() *AccountUpsertBulk {
 	return u.Update(func(s *AccountUpsert) {
 		s.UpdateBalance()
+	})
+}
+
+// ClearBalance clears the value of the "Balance" field.
+func (u *AccountUpsertBulk) ClearBalance() *AccountUpsertBulk {
+	return u.Update(func(s *AccountUpsert) {
+		s.ClearBalance()
 	})
 }
 
@@ -735,6 +770,13 @@ func (u *AccountUpsertBulk) SetObjects(v []schema.AccObject) *AccountUpsertBulk 
 func (u *AccountUpsertBulk) UpdateObjects() *AccountUpsertBulk {
 	return u.Update(func(s *AccountUpsert) {
 		s.UpdateObjects()
+	})
+}
+
+// ClearObjects clears the value of the "Objects" field.
+func (u *AccountUpsertBulk) ClearObjects() *AccountUpsertBulk {
+	return u.Update(func(s *AccountUpsert) {
+		s.ClearObjects()
 	})
 }
 

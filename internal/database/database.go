@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"reflect"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -14,6 +15,7 @@ import (
 	"rei.io/rei/ent/session"
 	"rei.io/rei/ent/user"
 	"rei.io/rei/internal/crypto"
+	"rei.io/rei/internal/helpers"
 	"rei.io/rei/internal/sui"
 )
 
@@ -36,7 +38,6 @@ func (c *EntClient) FirstRun(dbType string, dbOption string) {
 	}
 
 	cl.User.Create().SetUsername("arthur").SetHash("ENZNT+7rT+h9XRHUB1DUCQx6LZKqX/o1y5irrbckJIzbcvqpGEUhEuEaau7InLxJjucV/WcRgiyO").Save(context.Background())
-
 	c.client = cl
 }
 
@@ -58,6 +59,16 @@ func (c *EntClient) CreateTransaction(tx sui.TX) (*ent.Transaction, error) {
 	mod := tx.GetContractModule()
 	fn := tx.GetContractFunction()
 
+	var entChanged []schema.Changed
+	for _, k := range *tx.Changed {
+		var tmp schema.Changed
+		tmp.ObjectId = k.ObjectId
+		tmp.Version = k.Version
+		tmp.Type = k.Type
+
+		entChanged = append(entChanged, tmp)
+	}
+
 	txc, err := c.client.Transaction.Create().
 		SetType(tx.GetType()).
 		SetTime(tx.GetTime()).
@@ -70,6 +81,161 @@ func (c *EntClient) CreateTransaction(tx sui.TX) (*ent.Transaction, error) {
 		SetNillableModule(mod).
 		SetNillableFunction(fn).
 		SetGas(tx.GetGas()).
+		SetChanged(entChanged).
+		Save(context.Background())
+
+	if err != nil {
+		return nil, fmt.Errorf("failed creating transaction: %w", err)
+	}
+	return txc, nil
+}
+
+func (c *EntClient) CreateTransactionFromSocket(tx sui.SocketTX) (*ent.Transaction, error) {
+
+	// Get type
+	var _type string
+	for k := range tx.Certificate.Kind.Single {
+		_type = k
+	}
+
+	// Get status
+	var _status bool
+	switch tx.Effects.Status {
+	case "Success":
+		_status = true
+	default:
+		_status = false
+	}
+
+	// Get changed
+	var changedSet []schema.Changed
+	if len(tx.Effects.Created.([]interface{})) > 0 {
+		for _, j := range tx.Effects.Created.([]interface{}) {
+			var temp schema.Changed
+			temp.ObjectId = j.([]interface{})[0].([]interface{})[0].(string)
+			temp.Type = "Created"
+			temp.Version = int(j.([]interface{})[0].([]interface{})[1].(float64))
+			changedSet = append(changedSet, temp)
+		}
+	}
+	if len(tx.Effects.Mutated.([]interface{})) > 0 {
+		for _, j := range tx.Effects.Created.([]interface{}) {
+			var temp schema.Changed
+			temp.ObjectId = j.([]interface{})[0].([]interface{})[0].(string)
+			temp.Type = "Mutated"
+			temp.Version = int(j.([]interface{})[0].([]interface{})[1].(float64))
+			changedSet = append(changedSet, temp)
+		}
+	}
+	if len(tx.Effects.Deleted.([]interface{})) > 0 {
+		for _, j := range tx.Effects.Created.([]interface{}) {
+			var temp schema.Changed
+			temp.ObjectId = j.([]interface{})[0].([]interface{})[0].(string)
+			temp.Type = "Deleted"
+			temp.Version = int(j.([]interface{})[0].([]interface{})[1].(float64))
+			changedSet = append(changedSet, temp)
+		}
+	}
+	if len(tx.Effects.Shared_objects.([]interface{})) > 0 {
+		for _, j := range tx.Effects.Created.([]interface{}) {
+			var temp schema.Changed
+			temp.ObjectId = j.([]interface{})[0].([]interface{})[0].(string)
+			temp.Type = "Shared"
+			temp.Version = int(j.([]interface{})[0].([]interface{})[1].(float64))
+			changedSet = append(changedSet, temp)
+		}
+	}
+	if len(tx.Effects.Wrapped.([]interface{})) > 0 {
+		for _, j := range tx.Effects.Created.([]interface{}) {
+			var temp schema.Changed
+			temp.ObjectId = j.([]interface{})[0].([]interface{})[0].(string)
+			temp.Type = "Wrapped"
+			temp.Version = int(j.([]interface{})[0].([]interface{})[1].(float64))
+			changedSet = append(changedSet, temp)
+		}
+	}
+	if len(tx.Effects.Unwrapped.([]interface{})) > 0 {
+		for _, j := range tx.Effects.Created.([]interface{}) {
+			var temp schema.Changed
+			temp.ObjectId = j.([]interface{})[0].([]interface{})[0].(string)
+			temp.Type = "Unwrapped"
+			temp.Version = int(j.([]interface{})[0].([]interface{})[1].(float64))
+			changedSet = append(changedSet, temp)
+		}
+	}
+	if len(tx.Effects.Gas_object.([]interface{})) > 0 {
+		for _, j := range tx.Effects.Created.([]interface{}) {
+			var temp schema.Changed
+			temp.ObjectId = j.([]interface{})[0].([]interface{})[0].(string)
+			temp.Type = "Gas"
+			temp.Version = int(j.([]interface{})[0].([]interface{})[1].(float64))
+			changedSet = append(changedSet, temp)
+		}
+	}
+
+	// Get recipient
+	var recipient *string
+	rec := helpers.RecurseKey(tx.Certificate.Kind.Single, "recipient")
+	if rec != nil {
+		if reflect.TypeOf(rec) == reflect.TypeOf(map[string]interface{}{}) {
+			if v, ok := rec.(map[string]interface{})["ObjectOwner"]; ok {
+				ptr := v.(string)
+				recipient = &ptr
+			} else if v, ok := rec.(map[string]interface{})["AddressOwner"]; ok {
+				ptr := v.(string)
+				recipient = &ptr
+			}
+		} else {
+			ptr := rec.(string)
+			recipient = &ptr
+		}
+	}
+
+	// Get recipient
+	var amount *float64
+	amt := helpers.RecurseKey(tx.Certificate.Kind.Single, "amount")
+	if amt != nil {
+		ptr := amt.(float64)
+		amount = &ptr
+	}
+
+	// Get pkg
+	var _pkg *string
+	pkg := helpers.RecurseKey(tx.Certificate.Kind.Single, "package")
+	if pkg != nil {
+		temp := pkg.([]interface{})[0].(string)
+		_pkg = &temp
+	}
+
+	// Get module
+	var _mod *string
+	mod := helpers.RecurseKey(tx.Certificate.Kind.Single, "module")
+	if mod != nil {
+		temp := mod.(string)
+		_mod = &temp
+	}
+
+	// Get function
+	var _function *string
+	function := helpers.RecurseKey(tx.Certificate.Kind.Single, "function")
+	if function != nil {
+		temp := function.(string)
+		_function = &temp
+	}
+
+	txc, err := c.client.Transaction.Create().
+		SetType(_type).
+		SetTime(time.Unix(int64(tx.Time/1000), 0)).
+		SetTransactionID(tx.Effects.Transaction_digest).
+		SetStatus(_status).
+		SetSender(tx.Certificate.Sender).
+		SetNillableRecipient(recipient).
+		SetNillableAmount(amount).
+		SetNillablePackage(_pkg).
+		SetNillableModule(_mod).
+		SetNillableFunction(_function).
+		SetChanged(changedSet).
+		SetGas(uint32(tx.Effects.Gas_used.Computation_cost + tx.Effects.Gas_used.Storage_cost)).
 		Save(context.Background())
 
 	if err != nil {
@@ -94,7 +260,7 @@ func (c *EntClient) CreateEvent(evt sui.Event) (*ent.Event, error) {
 	return evtc, nil
 }
 
-func (c *EntClient) CreateAccount(acc sui.Acc, sequence uint64) (*ent.Account, error) {
+func (c *EntClient) CreateAccount(acc sui.Acc, sequence int64) (*ent.Account, error) {
 
 	// Type conversion from AccObj struct to ent version
 	var obj []schema.AccObject
@@ -114,10 +280,23 @@ func (c *EntClient) CreateAccount(acc sui.Acc, sequence uint64) (*ent.Account, e
 		SetSequenceID(sequence).
 		Save(context.Background())
 
+	log.Println(accc)
+
 	return accc, err
 }
 
-func (c *EntClient) UpsertAccount(acc sui.Acc, sequence uint64) error {
+func (c *EntClient) CreateDeletedAccount(id string, sequence int64) (*ent.Account, error) {
+
+	// Type conversion from AccObj struct to ent version
+	accc, err := c.client.Account.Create().
+		SetAccountID(id).
+		SetSequenceID(sequence).
+		Save(context.Background())
+
+	return accc, err
+}
+
+func (c *EntClient) UpsertAccount(acc sui.Acc, sequence int64) error {
 
 	// Type conversion from AccObj struct to ent version
 	var obj []schema.AccObject
@@ -141,7 +320,7 @@ func (c *EntClient) UpsertAccount(acc sui.Acc, sequence uint64) error {
 	return err
 }
 
-func (c *EntClient) UpdateAccount(acc string, sequence uint64, transaction string) (*ent.Account, error) {
+func (c *EntClient) UpdateAccount(acc string, sequence int64, transaction string) (*ent.Account, error) {
 
 	orig, err := c.client.Account.Query().Where(account.AccountIDEQ(acc)).Only(context.Background())
 	if err != nil {
@@ -154,6 +333,7 @@ func (c *EntClient) UpdateAccount(acc string, sequence uint64, transaction strin
 		Save(context.Background())
 
 	if err != nil {
+		helpers.Check(err)
 		return nil, fmt.Errorf("failed updating account: %w", err)
 	}
 	return accc, nil
@@ -173,7 +353,7 @@ func (c *EntClient) CreateArgument(arg sui.Arg) (*ent.Argument, error) {
 	return argc, nil
 }
 
-func (c *EntClient) CreateNFT(obj sui.AccObject, sequence uint64) (*ent.NFT, error) {
+func (c *EntClient) CreateNFT(obj sui.AccObject, sequence int64) (*ent.NFT, error) {
 	nftc, err := c.client.NFT.Create().
 		SetType(obj.Type).
 		SetMetadata(obj.Metadata).
@@ -187,7 +367,7 @@ func (c *EntClient) CreateNFT(obj sui.AccObject, sequence uint64) (*ent.NFT, err
 	return nftc, nil
 }
 
-func (c *EntClient) CreateObject(obj sui.Obj, transactionID string) (*ent.Object, error) {
+func (c *EntClient) CreateObject(obj sui.Obj, transactionID string, version int) (*ent.Object, error) {
 	objc, err := c.client.Object.Create().
 		SetDataType(obj.GetObjectDataType()).
 		SetFields(obj.GetObjectMetadata()).
@@ -197,6 +377,7 @@ func (c *EntClient) CreateObject(obj sui.Obj, transactionID string) (*ent.Object
 		SetStatus(obj.GetObjectStatus()).
 		SetType(obj.GetObjectType()).
 		SetTransactionID(transactionID).
+		SetVersion(version).
 		Save(context.Background())
 
 	if err != nil {
@@ -205,8 +386,28 @@ func (c *EntClient) CreateObject(obj sui.Obj, transactionID string) (*ent.Object
 	return objc, nil
 }
 
-func (c *EntClient) CreateDeletedObject(objectID string, transactionID string) (*ent.Object, error) {
-	objc, err := c.client.Object.Create().SetObjectID(objectID).SetTransactionID(transactionID).Save(context.Background())
+func (c *EntClient) CreateObjectFromSocket(obj sui.SocketObj) (*ent.Object, error) {
+
+	delete(obj.Fields.SuiMoveStruct, "id")
+
+	objc, err := c.client.Object.Create().
+		SetFields(obj.Fields.SuiMoveStruct).
+		SetObjectID(obj.Id).
+		SetOwner(obj.Owner).
+		SetStatus(obj.Status).
+		SetType(obj.Type_).
+		SetTransactionID(obj.Transaction_id).
+		SetVersion(obj.Version).
+		Save(context.Background())
+
+	if err != nil {
+		return nil, fmt.Errorf("failed creating object: %w", err)
+	}
+	return objc, nil
+}
+
+func (c *EntClient) CreateDeletedObject(objectID string, transactionID string, version int) (*ent.Object, error) {
+	objc, err := c.client.Object.Create().SetFields(map[string]interface{}{}).SetVersion(version).SetStatus("Not Exists").SetObjectID(objectID).SetTransactionID(transactionID).Save(context.Background())
 	if err != nil {
 		return nil, err
 	}

@@ -92,13 +92,23 @@ func (r *queryResolver) AccountHistory(ctx context.Context, accountID string) (*
 }
 
 // Accounts is the resolver for the accounts field.
-func (r *subscriptionResolver) Accounts(ctx context.Context) (<-chan []*ent.Account, error) {
-	c := make(chan []*ent.Account)
+func (r *subscriptionResolver) Accounts(ctx context.Context) (<-chan []*model.HomeAcc, error) {
+	c := make(chan []*model.HomeAcc)
+
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
-			acc, _ := r.client.Account.Query().Order(ent.Desc(account.FieldBalance)).Limit(10).All(ctx)
-			c <- acc
+			test, _ := r.client.QueryContext(context.Background(), "SELECT balance, account_id FROM accounts u1 WHERE sequence_id = (SELECT MAX(sequence_id) FROM accounts u2 WHERE u1.account_id = u2.account_id) ORDER BY balance DESC LIMIT 10;")
+
+			var ns []*model.HomeAcc
+
+			for test.Next() {
+				var r model.HomeAcc
+				test.Scan(&r.Balance, &r.AccountID)
+				ns = append(ns, &r)
+			}
+
+			c <- ns
 		}
 	}()
 	return c, nil

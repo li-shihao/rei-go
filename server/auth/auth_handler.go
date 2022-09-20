@@ -2,7 +2,6 @@ package auth
 
 import (
 	"io"
-	"log"
 	"net"
 	"net/http"
 
@@ -186,9 +185,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	correct, err := db.QueryUserCredentials(incomeRequest.Username, incomeRequest.Password)
 	if correct == nil || !*correct {
-		log.Println(incomeRequest.Username)
-		log.Println(incomeRequest.Password)
-		log.Println(correct)
 		render.New().JSON(w, 400, map[string]string{"Error": "Incorrect credentials, try again"})
 		return
 	}

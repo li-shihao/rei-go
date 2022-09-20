@@ -3,6 +3,8 @@
 package model
 
 import (
+	"time"
+
 	"rei.io/rei/ent"
 )
 
@@ -18,6 +20,29 @@ type AccObject struct {
 	ObjectID string                 `json:"ObjectId"`
 	Type     string                 `json:"Type"`
 	Metadata map[string]interface{} `json:"Metadata"`
+}
+
+type Change struct {
+	Version int         `json:"Version"`
+	Type    string      `json:"Type"`
+	Before  *ent.Object `json:"Before"`
+	After   *ent.Object `json:"After"`
+}
+
+type Frequency struct {
+	Time  time.Time `json:"Time"`
+	Count int       `json:"Count"`
+}
+
+type HomeAcc struct {
+	AccountID string `json:"AccountID"`
+	Balance   int    `json:"Balance"`
+}
+
+type HotModule struct {
+	Package string `json:"Package"`
+	Module  string `json:"Module"`
+	Count   int    `json:"Count"`
 }
 
 type NFTCount struct {

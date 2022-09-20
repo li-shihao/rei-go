@@ -23,8 +23,8 @@ type AccountQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Account
-	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*Account) error
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -255,7 +255,7 @@ func (aq *AccountQuery) Clone() *AccountQuery {
 // Example:
 //
 //	var v []struct {
-//		SequenceID uint64 `json:"SequenceID,omitempty"`
+//		SequenceID int64 `json:"SequenceID,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -283,7 +283,7 @@ func (aq *AccountQuery) GroupBy(field string, fields ...string) *AccountGroupBy 
 // Example:
 //
 //	var v []struct {
-//		SequenceID uint64 `json:"SequenceID,omitempty"`
+//		SequenceID int64 `json:"SequenceID,omitempty"`
 //	}
 //
 //	client.Account.Query().
@@ -429,6 +429,9 @@ func (aq *AccountQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if aq.unique != nil && *aq.unique {
 		selector.Distinct()
 	}
+	for _, m := range aq.modifiers {
+		m(selector)
+	}
 	for _, p := range aq.predicates {
 		p(selector)
 	}
@@ -444,6 +447,12 @@ func (aq *AccountQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (aq *AccountQuery) Modify(modifiers ...func(s *sql.Selector)) *AccountSelect {
+	aq.modifiers = append(aq.modifiers, modifiers...)
+	return aq.Select()
 }
 
 // AccountGroupBy is the group-by builder for Account entities.
@@ -536,4 +545,10 @@ func (as *AccountSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (as *AccountSelect) Modify(modifiers ...func(s *sql.Selector)) *AccountSelect {
+	as.modifiers = append(as.modifiers, modifiers...)
+	return as
 }

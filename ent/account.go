@@ -18,11 +18,11 @@ type Account struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// SequenceID holds the value of the "SequenceID" field.
-	SequenceID uint64 `json:"SequenceID,omitempty"`
+	SequenceID int64 `json:"SequenceID,omitempty"`
 	// AccountID holds the value of the "AccountID" field.
 	AccountID string `json:"AccountID,omitempty"`
 	// Balance holds the value of the "Balance" field.
-	Balance uint64 `json:"Balance,omitempty"`
+	Balance int64 `json:"Balance,omitempty"`
 	// Objects holds the value of the "Objects" field.
 	Objects []schema.AccObject `json:"Objects,omitempty"`
 	// Transactions holds the value of the "Transactions" field.
@@ -65,7 +65,7 @@ func (a *Account) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field SequenceID", values[i])
 			} else if value.Valid {
-				a.SequenceID = uint64(value.Int64)
+				a.SequenceID = value.Int64
 			}
 		case account.FieldAccountID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -77,7 +77,7 @@ func (a *Account) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field Balance", values[i])
 			} else if value.Valid {
-				a.Balance = uint64(value.Int64)
+				a.Balance = value.Int64
 			}
 		case account.FieldObjects:
 			if value, ok := values[i].(*[]byte); !ok {

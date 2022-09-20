@@ -12,14 +12,16 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"rei.io/rei/ent/predicate"
+	"rei.io/rei/ent/schema"
 	"rei.io/rei/ent/transaction"
 )
 
 // TransactionUpdate is the builder for updating Transaction entities.
 type TransactionUpdate struct {
 	config
-	hooks    []Hook
-	mutation *TransactionMutation
+	hooks     []Hook
+	mutation  *TransactionMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the TransactionUpdate builder.
@@ -178,6 +180,18 @@ func (tu *TransactionUpdate) AddGas(u int32) *TransactionUpdate {
 	return tu
 }
 
+// SetChanged sets the "Changed" field.
+func (tu *TransactionUpdate) SetChanged(s []schema.Changed) *TransactionUpdate {
+	tu.mutation.SetChanged(s)
+	return tu
+}
+
+// ClearChanged clears the value of the "Changed" field.
+func (tu *TransactionUpdate) ClearChanged() *TransactionUpdate {
+	tu.mutation.ClearChanged()
+	return tu
+}
+
 // Mutation returns the TransactionMutation object of the builder.
 func (tu *TransactionUpdate) Mutation() *TransactionMutation {
 	return tu.mutation
@@ -235,6 +249,12 @@ func (tu *TransactionUpdate) ExecX(ctx context.Context) {
 	if err := tu.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (tu *TransactionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TransactionUpdate {
+	tu.modifiers = append(tu.modifiers, modifiers...)
+	return tu
 }
 
 func (tu *TransactionUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -376,6 +396,20 @@ func (tu *TransactionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: transaction.FieldGas,
 		})
 	}
+	if value, ok := tu.mutation.Changed(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: transaction.FieldChanged,
+		})
+	}
+	if tu.mutation.ChangedCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: transaction.FieldChanged,
+		})
+	}
+	_spec.Modifiers = tu.modifiers
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{transaction.Label}
@@ -390,9 +424,10 @@ func (tu *TransactionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // TransactionUpdateOne is the builder for updating a single Transaction entity.
 type TransactionUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *TransactionMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *TransactionMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetType sets the "Type" field.
@@ -545,6 +580,18 @@ func (tuo *TransactionUpdateOne) AddGas(u int32) *TransactionUpdateOne {
 	return tuo
 }
 
+// SetChanged sets the "Changed" field.
+func (tuo *TransactionUpdateOne) SetChanged(s []schema.Changed) *TransactionUpdateOne {
+	tuo.mutation.SetChanged(s)
+	return tuo
+}
+
+// ClearChanged clears the value of the "Changed" field.
+func (tuo *TransactionUpdateOne) ClearChanged() *TransactionUpdateOne {
+	tuo.mutation.ClearChanged()
+	return tuo
+}
+
 // Mutation returns the TransactionMutation object of the builder.
 func (tuo *TransactionUpdateOne) Mutation() *TransactionMutation {
 	return tuo.mutation
@@ -615,6 +662,12 @@ func (tuo *TransactionUpdateOne) ExecX(ctx context.Context) {
 	if err := tuo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (tuo *TransactionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TransactionUpdateOne {
+	tuo.modifiers = append(tuo.modifiers, modifiers...)
+	return tuo
 }
 
 func (tuo *TransactionUpdateOne) sqlSave(ctx context.Context) (_node *Transaction, err error) {
@@ -773,6 +826,20 @@ func (tuo *TransactionUpdateOne) sqlSave(ctx context.Context) (_node *Transactio
 			Column: transaction.FieldGas,
 		})
 	}
+	if value, ok := tuo.mutation.Changed(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: transaction.FieldChanged,
+		})
+	}
+	if tuo.mutation.ChangedCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Column: transaction.FieldChanged,
+		})
+	}
+	_spec.Modifiers = tuo.modifiers
 	_node = &Transaction{config: tuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

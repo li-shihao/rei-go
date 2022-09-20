@@ -50,10 +50,10 @@ type AccountMutation struct {
 	op             Op
 	typ            string
 	id             *int
-	_SequenceID    *uint64
+	_SequenceID    *int64
 	add_SequenceID *int64
 	_AccountID     *string
-	_Balance       *uint64
+	_Balance       *int64
 	add_Balance    *int64
 	_Objects       *[]schema.AccObject
 	_Transactions  *[]string
@@ -162,13 +162,13 @@ func (m *AccountMutation) IDs(ctx context.Context) ([]int, error) {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (m *AccountMutation) SetSequenceID(u uint64) {
-	m._SequenceID = &u
+func (m *AccountMutation) SetSequenceID(i int64) {
+	m._SequenceID = &i
 	m.add_SequenceID = nil
 }
 
 // SequenceID returns the value of the "SequenceID" field in the mutation.
-func (m *AccountMutation) SequenceID() (r uint64, exists bool) {
+func (m *AccountMutation) SequenceID() (r int64, exists bool) {
 	v := m._SequenceID
 	if v == nil {
 		return
@@ -179,7 +179,7 @@ func (m *AccountMutation) SequenceID() (r uint64, exists bool) {
 // OldSequenceID returns the old "SequenceID" field's value of the Account entity.
 // If the Account object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AccountMutation) OldSequenceID(ctx context.Context) (v uint64, err error) {
+func (m *AccountMutation) OldSequenceID(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSequenceID is only allowed on UpdateOne operations")
 	}
@@ -193,12 +193,12 @@ func (m *AccountMutation) OldSequenceID(ctx context.Context) (v uint64, err erro
 	return oldValue.SequenceID, nil
 }
 
-// AddSequenceID adds u to the "SequenceID" field.
-func (m *AccountMutation) AddSequenceID(u int64) {
+// AddSequenceID adds i to the "SequenceID" field.
+func (m *AccountMutation) AddSequenceID(i int64) {
 	if m.add_SequenceID != nil {
-		*m.add_SequenceID += u
+		*m.add_SequenceID += i
 	} else {
-		m.add_SequenceID = &u
+		m.add_SequenceID = &i
 	}
 }
 
@@ -254,13 +254,13 @@ func (m *AccountMutation) ResetAccountID() {
 }
 
 // SetBalance sets the "Balance" field.
-func (m *AccountMutation) SetBalance(u uint64) {
-	m._Balance = &u
+func (m *AccountMutation) SetBalance(i int64) {
+	m._Balance = &i
 	m.add_Balance = nil
 }
 
 // Balance returns the value of the "Balance" field in the mutation.
-func (m *AccountMutation) Balance() (r uint64, exists bool) {
+func (m *AccountMutation) Balance() (r int64, exists bool) {
 	v := m._Balance
 	if v == nil {
 		return
@@ -271,7 +271,7 @@ func (m *AccountMutation) Balance() (r uint64, exists bool) {
 // OldBalance returns the old "Balance" field's value of the Account entity.
 // If the Account object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AccountMutation) OldBalance(ctx context.Context) (v uint64, err error) {
+func (m *AccountMutation) OldBalance(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldBalance is only allowed on UpdateOne operations")
 	}
@@ -285,12 +285,12 @@ func (m *AccountMutation) OldBalance(ctx context.Context) (v uint64, err error) 
 	return oldValue.Balance, nil
 }
 
-// AddBalance adds u to the "Balance" field.
-func (m *AccountMutation) AddBalance(u int64) {
+// AddBalance adds i to the "Balance" field.
+func (m *AccountMutation) AddBalance(i int64) {
 	if m.add_Balance != nil {
-		*m.add_Balance += u
+		*m.add_Balance += i
 	} else {
-		m.add_Balance = &u
+		m.add_Balance = &i
 	}
 }
 
@@ -303,10 +303,24 @@ func (m *AccountMutation) AddedBalance() (r int64, exists bool) {
 	return *v, true
 }
 
+// ClearBalance clears the value of the "Balance" field.
+func (m *AccountMutation) ClearBalance() {
+	m._Balance = nil
+	m.add_Balance = nil
+	m.clearedFields[account.FieldBalance] = struct{}{}
+}
+
+// BalanceCleared returns if the "Balance" field was cleared in this mutation.
+func (m *AccountMutation) BalanceCleared() bool {
+	_, ok := m.clearedFields[account.FieldBalance]
+	return ok
+}
+
 // ResetBalance resets all changes to the "Balance" field.
 func (m *AccountMutation) ResetBalance() {
 	m._Balance = nil
 	m.add_Balance = nil
+	delete(m.clearedFields, account.FieldBalance)
 }
 
 // SetObjects sets the "Objects" field.
@@ -340,9 +354,22 @@ func (m *AccountMutation) OldObjects(ctx context.Context) (v []schema.AccObject,
 	return oldValue.Objects, nil
 }
 
+// ClearObjects clears the value of the "Objects" field.
+func (m *AccountMutation) ClearObjects() {
+	m._Objects = nil
+	m.clearedFields[account.FieldObjects] = struct{}{}
+}
+
+// ObjectsCleared returns if the "Objects" field was cleared in this mutation.
+func (m *AccountMutation) ObjectsCleared() bool {
+	_, ok := m.clearedFields[account.FieldObjects]
+	return ok
+}
+
 // ResetObjects resets all changes to the "Objects" field.
 func (m *AccountMutation) ResetObjects() {
 	m._Objects = nil
+	delete(m.clearedFields, account.FieldObjects)
 }
 
 // SetTransactions sets the "Transactions" field.
@@ -476,7 +503,7 @@ func (m *AccountMutation) OldField(ctx context.Context, name string) (ent.Value,
 func (m *AccountMutation) SetField(name string, value ent.Value) error {
 	switch name {
 	case account.FieldSequenceID:
-		v, ok := value.(uint64)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -490,7 +517,7 @@ func (m *AccountMutation) SetField(name string, value ent.Value) error {
 		m.SetAccountID(v)
 		return nil
 	case account.FieldBalance:
-		v, ok := value.(uint64)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -567,6 +594,12 @@ func (m *AccountMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AccountMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(account.FieldBalance) {
+		fields = append(fields, account.FieldBalance)
+	}
+	if m.FieldCleared(account.FieldObjects) {
+		fields = append(fields, account.FieldObjects)
+	}
 	if m.FieldCleared(account.FieldTransactions) {
 		fields = append(fields, account.FieldTransactions)
 	}
@@ -584,6 +617,12 @@ func (m *AccountMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AccountMutation) ClearField(name string) error {
 	switch name {
+	case account.FieldBalance:
+		m.ClearBalance()
+		return nil
+	case account.FieldObjects:
+		m.ClearObjects()
+		return nil
 	case account.FieldTransactions:
 		m.ClearTransactions()
 		return nil
@@ -1783,7 +1822,7 @@ type NFTMutation struct {
 	_ObjectID      *string
 	_Type          *string
 	_Metadata      *map[string]interface{}
-	_SequenceID    *uint64
+	_SequenceID    *int64
 	add_SequenceID *int64
 	clearedFields  map[string]struct{}
 	done           bool
@@ -1998,13 +2037,13 @@ func (m *NFTMutation) ResetMetadata() {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (m *NFTMutation) SetSequenceID(u uint64) {
-	m._SequenceID = &u
+func (m *NFTMutation) SetSequenceID(i int64) {
+	m._SequenceID = &i
 	m.add_SequenceID = nil
 }
 
 // SequenceID returns the value of the "SequenceID" field in the mutation.
-func (m *NFTMutation) SequenceID() (r uint64, exists bool) {
+func (m *NFTMutation) SequenceID() (r int64, exists bool) {
 	v := m._SequenceID
 	if v == nil {
 		return
@@ -2015,7 +2054,7 @@ func (m *NFTMutation) SequenceID() (r uint64, exists bool) {
 // OldSequenceID returns the old "SequenceID" field's value of the NFT entity.
 // If the NFT object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NFTMutation) OldSequenceID(ctx context.Context) (v uint64, err error) {
+func (m *NFTMutation) OldSequenceID(ctx context.Context) (v int64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSequenceID is only allowed on UpdateOne operations")
 	}
@@ -2029,12 +2068,12 @@ func (m *NFTMutation) OldSequenceID(ctx context.Context) (v uint64, err error) {
 	return oldValue.SequenceID, nil
 }
 
-// AddSequenceID adds u to the "SequenceID" field.
-func (m *NFTMutation) AddSequenceID(u int64) {
+// AddSequenceID adds i to the "SequenceID" field.
+func (m *NFTMutation) AddSequenceID(i int64) {
 	if m.add_SequenceID != nil {
-		*m.add_SequenceID += u
+		*m.add_SequenceID += i
 	} else {
-		m.add_SequenceID = &u
+		m.add_SequenceID = &i
 	}
 }
 
@@ -2149,7 +2188,7 @@ func (m *NFTMutation) SetField(name string, value ent.Value) error {
 		m.SetMetadata(v)
 		return nil
 	case nft.FieldSequenceID:
-		v, ok := value.(uint64)
+		v, ok := value.(int64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -2297,6 +2336,8 @@ type ObjectMutation struct {
 	_Owner               *string
 	_ObjectID            *string
 	_TransactionID       *string
+	_Version             *int
+	add_Version          *int
 	clearedFields        map[string]struct{}
 	done                 bool
 	oldValue             func(context.Context) (*Object, error)
@@ -2754,6 +2795,62 @@ func (m *ObjectMutation) ResetTransactionID() {
 	m._TransactionID = nil
 }
 
+// SetVersion sets the "Version" field.
+func (m *ObjectMutation) SetVersion(i int) {
+	m._Version = &i
+	m.add_Version = nil
+}
+
+// Version returns the value of the "Version" field in the mutation.
+func (m *ObjectMutation) Version() (r int, exists bool) {
+	v := m._Version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVersion returns the old "Version" field's value of the Object entity.
+// If the Object object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ObjectMutation) OldVersion(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVersion: %w", err)
+	}
+	return oldValue.Version, nil
+}
+
+// AddVersion adds i to the "Version" field.
+func (m *ObjectMutation) AddVersion(i int) {
+	if m.add_Version != nil {
+		*m.add_Version += i
+	} else {
+		m.add_Version = &i
+	}
+}
+
+// AddedVersion returns the value that was added to the "Version" field in this mutation.
+func (m *ObjectMutation) AddedVersion() (r int, exists bool) {
+	v := m.add_Version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetVersion resets all changes to the "Version" field.
+func (m *ObjectMutation) ResetVersion() {
+	m._Version = nil
+	m.add_Version = nil
+}
+
 // Where appends a list predicates to the ObjectMutation builder.
 func (m *ObjectMutation) Where(ps ...predicate.Object) {
 	m.predicates = append(m.predicates, ps...)
@@ -2773,7 +2870,7 @@ func (m *ObjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ObjectMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m._Status != nil {
 		fields = append(fields, object.FieldStatus)
 	}
@@ -2797,6 +2894,9 @@ func (m *ObjectMutation) Fields() []string {
 	}
 	if m._TransactionID != nil {
 		fields = append(fields, object.FieldTransactionID)
+	}
+	if m._Version != nil {
+		fields = append(fields, object.FieldVersion)
 	}
 	return fields
 }
@@ -2822,6 +2922,8 @@ func (m *ObjectMutation) Field(name string) (ent.Value, bool) {
 		return m.ObjectID()
 	case object.FieldTransactionID:
 		return m.TransactionID()
+	case object.FieldVersion:
+		return m.Version()
 	}
 	return nil, false
 }
@@ -2847,6 +2949,8 @@ func (m *ObjectMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldObjectID(ctx)
 	case object.FieldTransactionID:
 		return m.OldTransactionID(ctx)
+	case object.FieldVersion:
+		return m.OldVersion(ctx)
 	}
 	return nil, fmt.Errorf("unknown Object field %s", name)
 }
@@ -2912,6 +3016,13 @@ func (m *ObjectMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTransactionID(v)
 		return nil
+	case object.FieldVersion:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVersion(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Object field %s", name)
 }
@@ -2919,13 +3030,21 @@ func (m *ObjectMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ObjectMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.add_Version != nil {
+		fields = append(fields, object.FieldVersion)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ObjectMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case object.FieldVersion:
+		return m.AddedVersion()
+	}
 	return nil, false
 }
 
@@ -2934,6 +3053,13 @@ func (m *ObjectMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ObjectMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case object.FieldVersion:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddVersion(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Object numeric field %s", name)
 }
@@ -3017,6 +3143,9 @@ func (m *ObjectMutation) ResetField(name string) error {
 		return nil
 	case object.FieldTransactionID:
 		m.ResetTransactionID()
+		return nil
+	case object.FieldVersion:
+		m.ResetVersion()
 		return nil
 	}
 	return fmt.Errorf("unknown Object field %s", name)
@@ -3927,6 +4056,7 @@ type TransactionMutation struct {
 	_Function      *string
 	_Gas           *uint32
 	add_Gas        *int32
+	_Changed       *[]schema.Changed
 	clearedFields  map[string]struct{}
 	done           bool
 	oldValue       func(context.Context) (*Transaction, error)
@@ -4533,6 +4663,55 @@ func (m *TransactionMutation) ResetGas() {
 	m.add_Gas = nil
 }
 
+// SetChanged sets the "Changed" field.
+func (m *TransactionMutation) SetChanged(s []schema.Changed) {
+	m._Changed = &s
+}
+
+// Changed returns the value of the "Changed" field in the mutation.
+func (m *TransactionMutation) Changed() (r []schema.Changed, exists bool) {
+	v := m._Changed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChanged returns the old "Changed" field's value of the Transaction entity.
+// If the Transaction object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransactionMutation) OldChanged(ctx context.Context) (v []schema.Changed, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChanged is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChanged requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChanged: %w", err)
+	}
+	return oldValue.Changed, nil
+}
+
+// ClearChanged clears the value of the "Changed" field.
+func (m *TransactionMutation) ClearChanged() {
+	m._Changed = nil
+	m.clearedFields[transaction.FieldChanged] = struct{}{}
+}
+
+// ChangedCleared returns if the "Changed" field was cleared in this mutation.
+func (m *TransactionMutation) ChangedCleared() bool {
+	_, ok := m.clearedFields[transaction.FieldChanged]
+	return ok
+}
+
+// ResetChanged resets all changes to the "Changed" field.
+func (m *TransactionMutation) ResetChanged() {
+	m._Changed = nil
+	delete(m.clearedFields, transaction.FieldChanged)
+}
+
 // Where appends a list predicates to the TransactionMutation builder.
 func (m *TransactionMutation) Where(ps ...predicate.Transaction) {
 	m.predicates = append(m.predicates, ps...)
@@ -4552,7 +4731,7 @@ func (m *TransactionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TransactionMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m._Type != nil {
 		fields = append(fields, transaction.FieldType)
 	}
@@ -4586,6 +4765,9 @@ func (m *TransactionMutation) Fields() []string {
 	if m._Gas != nil {
 		fields = append(fields, transaction.FieldGas)
 	}
+	if m._Changed != nil {
+		fields = append(fields, transaction.FieldChanged)
+	}
 	return fields
 }
 
@@ -4616,6 +4798,8 @@ func (m *TransactionMutation) Field(name string) (ent.Value, bool) {
 		return m.Function()
 	case transaction.FieldGas:
 		return m.Gas()
+	case transaction.FieldChanged:
+		return m.Changed()
 	}
 	return nil, false
 }
@@ -4647,6 +4831,8 @@ func (m *TransactionMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldFunction(ctx)
 	case transaction.FieldGas:
 		return m.OldGas(ctx)
+	case transaction.FieldChanged:
+		return m.OldChanged(ctx)
 	}
 	return nil, fmt.Errorf("unknown Transaction field %s", name)
 }
@@ -4733,6 +4919,13 @@ func (m *TransactionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetGas(v)
 		return nil
+	case transaction.FieldChanged:
+		v, ok := value.([]schema.Changed)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChanged(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Transaction field %s", name)
 }
@@ -4805,6 +4998,9 @@ func (m *TransactionMutation) ClearedFields() []string {
 	if m.FieldCleared(transaction.FieldFunction) {
 		fields = append(fields, transaction.FieldFunction)
 	}
+	if m.FieldCleared(transaction.FieldChanged) {
+		fields = append(fields, transaction.FieldChanged)
+	}
 	return fields
 }
 
@@ -4833,6 +5029,9 @@ func (m *TransactionMutation) ClearField(name string) error {
 		return nil
 	case transaction.FieldFunction:
 		m.ClearFunction()
+		return nil
+	case transaction.FieldChanged:
+		m.ClearChanged()
 		return nil
 	}
 	return fmt.Errorf("unknown Transaction nullable field %s", name)
@@ -4874,6 +5073,9 @@ func (m *TransactionMutation) ResetField(name string) error {
 		return nil
 	case transaction.FieldGas:
 		m.ResetGas()
+		return nil
+	case transaction.FieldChanged:
+		m.ResetChanged()
 		return nil
 	}
 	return fmt.Errorf("unknown Transaction field %s", name)

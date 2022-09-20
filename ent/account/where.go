@@ -79,7 +79,7 @@ func IDLTE(id int) predicate.Account {
 }
 
 // SequenceID applies equality check predicate on the "SequenceID" field. It's identical to SequenceIDEQ.
-func SequenceID(v uint64) predicate.Account {
+func SequenceID(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldSequenceID), v))
 	})
@@ -93,28 +93,28 @@ func AccountID(v string) predicate.Account {
 }
 
 // Balance applies equality check predicate on the "Balance" field. It's identical to BalanceEQ.
-func Balance(v uint64) predicate.Account {
+func Balance(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBalance), v))
 	})
 }
 
 // SequenceIDEQ applies the EQ predicate on the "SequenceID" field.
-func SequenceIDEQ(v uint64) predicate.Account {
+func SequenceIDEQ(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldSequenceID), v))
 	})
 }
 
 // SequenceIDNEQ applies the NEQ predicate on the "SequenceID" field.
-func SequenceIDNEQ(v uint64) predicate.Account {
+func SequenceIDNEQ(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldSequenceID), v))
 	})
 }
 
 // SequenceIDIn applies the In predicate on the "SequenceID" field.
-func SequenceIDIn(vs ...uint64) predicate.Account {
+func SequenceIDIn(vs ...int64) predicate.Account {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -125,7 +125,7 @@ func SequenceIDIn(vs ...uint64) predicate.Account {
 }
 
 // SequenceIDNotIn applies the NotIn predicate on the "SequenceID" field.
-func SequenceIDNotIn(vs ...uint64) predicate.Account {
+func SequenceIDNotIn(vs ...int64) predicate.Account {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -136,28 +136,28 @@ func SequenceIDNotIn(vs ...uint64) predicate.Account {
 }
 
 // SequenceIDGT applies the GT predicate on the "SequenceID" field.
-func SequenceIDGT(v uint64) predicate.Account {
+func SequenceIDGT(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldSequenceID), v))
 	})
 }
 
 // SequenceIDGTE applies the GTE predicate on the "SequenceID" field.
-func SequenceIDGTE(v uint64) predicate.Account {
+func SequenceIDGTE(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldSequenceID), v))
 	})
 }
 
 // SequenceIDLT applies the LT predicate on the "SequenceID" field.
-func SequenceIDLT(v uint64) predicate.Account {
+func SequenceIDLT(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldSequenceID), v))
 	})
 }
 
 // SequenceIDLTE applies the LTE predicate on the "SequenceID" field.
-func SequenceIDLTE(v uint64) predicate.Account {
+func SequenceIDLTE(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldSequenceID), v))
 	})
@@ -263,21 +263,21 @@ func AccountIDContainsFold(v string) predicate.Account {
 }
 
 // BalanceEQ applies the EQ predicate on the "Balance" field.
-func BalanceEQ(v uint64) predicate.Account {
+func BalanceEQ(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceNEQ applies the NEQ predicate on the "Balance" field.
-func BalanceNEQ(v uint64) predicate.Account {
+func BalanceNEQ(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceIn applies the In predicate on the "Balance" field.
-func BalanceIn(vs ...uint64) predicate.Account {
+func BalanceIn(vs ...int64) predicate.Account {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -288,7 +288,7 @@ func BalanceIn(vs ...uint64) predicate.Account {
 }
 
 // BalanceNotIn applies the NotIn predicate on the "Balance" field.
-func BalanceNotIn(vs ...uint64) predicate.Account {
+func BalanceNotIn(vs ...int64) predicate.Account {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -299,30 +299,58 @@ func BalanceNotIn(vs ...uint64) predicate.Account {
 }
 
 // BalanceGT applies the GT predicate on the "Balance" field.
-func BalanceGT(v uint64) predicate.Account {
+func BalanceGT(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceGTE applies the GTE predicate on the "Balance" field.
-func BalanceGTE(v uint64) predicate.Account {
+func BalanceGTE(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceLT applies the LT predicate on the "Balance" field.
-func BalanceLT(v uint64) predicate.Account {
+func BalanceLT(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldBalance), v))
 	})
 }
 
 // BalanceLTE applies the LTE predicate on the "Balance" field.
-func BalanceLTE(v uint64) predicate.Account {
+func BalanceLTE(v int64) predicate.Account {
 	return predicate.Account(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldBalance), v))
+	})
+}
+
+// BalanceIsNil applies the IsNil predicate on the "Balance" field.
+func BalanceIsNil() predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldBalance)))
+	})
+}
+
+// BalanceNotNil applies the NotNil predicate on the "Balance" field.
+func BalanceNotNil() predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldBalance)))
+	})
+}
+
+// ObjectsIsNil applies the IsNil predicate on the "Objects" field.
+func ObjectsIsNil() predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldObjects)))
+	})
+}
+
+// ObjectsNotNil applies the NotNil predicate on the "Objects" field.
+func ObjectsNotNil() predicate.Account {
+	return predicate.Account(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldObjects)))
 	})
 }
 

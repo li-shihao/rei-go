@@ -11,10 +11,10 @@ var (
 	// AccountsColumns holds the columns for the "accounts" table.
 	AccountsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "sequence_id", Type: field.TypeUint64},
-		{Name: "account_id", Type: field.TypeString},
-		{Name: "balance", Type: field.TypeUint64},
-		{Name: "objects", Type: field.TypeJSON},
+		{Name: "sequence_id", Type: field.TypeInt64},
+		{Name: "account_id", Type: field.TypeString, Unique: true},
+		{Name: "balance", Type: field.TypeInt64, Nullable: true},
+		{Name: "objects", Type: field.TypeJSON, Nullable: true},
 		{Name: "transactions", Type: field.TypeJSON, Nullable: true},
 	}
 	// AccountsTable holds the schema information for the "accounts" table.
@@ -22,13 +22,6 @@ var (
 		Name:       "accounts",
 		Columns:    AccountsColumns,
 		PrimaryKey: []*schema.Column{AccountsColumns[0]},
-		Indexes: []*schema.Index{
-			{
-				Name:    "account_sequence_id_account_id",
-				Unique:  true,
-				Columns: []*schema.Column{AccountsColumns[1], AccountsColumns[2]},
-			},
-		},
 	}
 	// ArgumentsColumns holds the columns for the "arguments" table.
 	ArgumentsColumns = []*schema.Column{
@@ -80,7 +73,7 @@ var (
 		{Name: "object_id", Type: field.TypeString},
 		{Name: "type", Type: field.TypeString},
 		{Name: "metadata", Type: field.TypeJSON},
-		{Name: "sequence_id", Type: field.TypeUint64},
+		{Name: "sequence_id", Type: field.TypeInt64},
 	}
 	// NfTsTable holds the schema information for the "nf_ts" table.
 	NfTsTable = &schema.Table{
@@ -106,6 +99,7 @@ var (
 		{Name: "owner", Type: field.TypeString, Nullable: true},
 		{Name: "object_id", Type: field.TypeString},
 		{Name: "transaction_id", Type: field.TypeString},
+		{Name: "version", Type: field.TypeInt},
 	}
 	// ObjectsTable holds the schema information for the "objects" table.
 	ObjectsTable = &schema.Table{
@@ -114,9 +108,9 @@ var (
 		PrimaryKey: []*schema.Column{ObjectsColumns[0]},
 		Indexes: []*schema.Index{
 			{
-				Name:    "object_transaction_id_object_id",
+				Name:    "object_version_object_id",
 				Unique:  true,
-				Columns: []*schema.Column{ObjectsColumns[8], ObjectsColumns[7]},
+				Columns: []*schema.Column{ObjectsColumns[9], ObjectsColumns[7]},
 			},
 		},
 	}
@@ -167,6 +161,7 @@ var (
 		{Name: "module", Type: field.TypeString, Nullable: true},
 		{Name: "function", Type: field.TypeString, Nullable: true},
 		{Name: "gas", Type: field.TypeUint32},
+		{Name: "changed", Type: field.TypeJSON, Nullable: true},
 	}
 	// TransactionsTable holds the schema information for the "transactions" table.
 	TransactionsTable = &schema.Table{

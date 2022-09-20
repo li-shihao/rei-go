@@ -3,11 +3,13 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"rei.io/rei/ent/schema"
 	"rei.io/rei/ent/transaction"
 )
 
@@ -38,6 +40,8 @@ type Transaction struct {
 	Function string `json:"Function,omitempty"`
 	// Gas holds the value of the "Gas" field.
 	Gas uint32 `json:"Gas,omitempty"`
+	// Changed holds the value of the "Changed" field.
+	Changed []schema.Changed `json:"Changed,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -45,6 +49,8 @@ func (*Transaction) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case transaction.FieldChanged:
+			values[i] = new([]byte)
 		case transaction.FieldStatus:
 			values[i] = new(sql.NullBool)
 		case transaction.FieldAmount:
@@ -142,6 +148,14 @@ func (t *Transaction) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.Gas = uint32(value.Int64)
 			}
+		case transaction.FieldChanged:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field Changed", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &t.Changed); err != nil {
+					return fmt.Errorf("unmarshal field Changed: %w", err)
+				}
+			}
 		}
 	}
 	return nil
@@ -202,6 +216,9 @@ func (t *Transaction) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("Gas=")
 	builder.WriteString(fmt.Sprintf("%v", t.Gas))
+	builder.WriteString(", ")
+	builder.WriteString("Changed=")
+	builder.WriteString(fmt.Sprintf("%v", t.Changed))
 	builder.WriteByte(')')
 	return builder.String()
 }

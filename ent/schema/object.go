@@ -22,6 +22,7 @@ func (Object) Fields() []ent.Field {
 		field.String("Owner").Optional(),
 		field.String("ObjectID"),
 		field.String("TransactionID"),
+		field.Int("Version"),
 	}
 }
 
@@ -32,6 +33,6 @@ func (Object) Edges() []ent.Edge {
 
 func (Object) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("TransactionID", "ObjectID").Unique(),
+		index.Fields("Version", "ObjectID").Unique(),
 	}
 }

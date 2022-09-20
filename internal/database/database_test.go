@@ -246,7 +246,7 @@ func TestCreateObject(t *testing.T) {
 	db.Init("postgres", connStr)
 
 	testOBJ1, _ := sc.GetObject("0xfd4da6455ea26fde9f71596015ee50d35bb147e9")
-	db.CreateObject(*testOBJ1, "")
+	db.CreateObject(*testOBJ1, "", 0)
 
 	if got1, _ := db.client.Object.Query().Where(
 		object.DataTypeEQ("moveObject")).Exist(context.Background()); !got1 {
@@ -254,7 +254,7 @@ func TestCreateObject(t *testing.T) {
 	}
 
 	testOBJ2, _ := sc.GetObject("0xa1733e5df5241daf7d8ff32d29b6e2b77b6db90e")
-	db.CreateObject(*testOBJ2, "")
+	db.CreateObject(*testOBJ2, "", 0)
 
 	if got2, _ := db.client.Object.Query().Where(
 		object.OwnerEQ("0xcfd56e539d7bf7675e3c21215a1156bb23aab042")).Exist(context.Background()); !got2 {

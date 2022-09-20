@@ -17,8 +17,9 @@ import (
 // ArgumentUpdate is the builder for updating Argument entities.
 type ArgumentUpdate struct {
 	config
-	hooks    []Hook
-	mutation *ArgumentMutation
+	hooks     []Hook
+	mutation  *ArgumentMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the ArgumentUpdate builder.
@@ -110,6 +111,12 @@ func (au *ArgumentUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (au *ArgumentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ArgumentUpdate {
+	au.modifiers = append(au.modifiers, modifiers...)
+	return au
+}
+
 func (au *ArgumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -156,6 +163,7 @@ func (au *ArgumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: argument.FieldData,
 		})
 	}
+	_spec.Modifiers = au.modifiers
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{argument.Label}
@@ -170,9 +178,10 @@ func (au *ArgumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // ArgumentUpdateOne is the builder for updating a single Argument entity.
 type ArgumentUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *ArgumentMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *ArgumentMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetName sets the "Name" field.
@@ -271,6 +280,12 @@ func (auo *ArgumentUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (auo *ArgumentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ArgumentUpdateOne {
+	auo.modifiers = append(auo.modifiers, modifiers...)
+	return auo
+}
+
 func (auo *ArgumentUpdateOne) sqlSave(ctx context.Context) (_node *Argument, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -334,6 +349,7 @@ func (auo *ArgumentUpdateOne) sqlSave(ctx context.Context) (_node *Argument, err
 			Column: argument.FieldData,
 		})
 	}
+	_spec.Modifiers = auo.modifiers
 	_node = &Argument{config: auo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

@@ -23,8 +23,8 @@ type SessionQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Session
-	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*Session) error
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -429,6 +429,9 @@ func (sq *SessionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if sq.unique != nil && *sq.unique {
 		selector.Distinct()
 	}
+	for _, m := range sq.modifiers {
+		m(selector)
+	}
 	for _, p := range sq.predicates {
 		p(selector)
 	}
@@ -444,6 +447,12 @@ func (sq *SessionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (sq *SessionQuery) Modify(modifiers ...func(s *sql.Selector)) *SessionSelect {
+	sq.modifiers = append(sq.modifiers, modifiers...)
+	return sq.Select()
 }
 
 // SessionGroupBy is the group-by builder for Session entities.
@@ -536,4 +545,10 @@ func (ss *SessionSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ss *SessionSelect) Modify(modifiers ...func(s *sql.Selector)) *SessionSelect {
+	ss.modifiers = append(ss.modifiers, modifiers...)
+	return ss
 }

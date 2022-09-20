@@ -23,8 +23,8 @@ type TransactionQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Transaction
-	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*Transaction) error
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -429,6 +429,9 @@ func (tq *TransactionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if tq.unique != nil && *tq.unique {
 		selector.Distinct()
 	}
+	for _, m := range tq.modifiers {
+		m(selector)
+	}
 	for _, p := range tq.predicates {
 		p(selector)
 	}
@@ -444,6 +447,12 @@ func (tq *TransactionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (tq *TransactionQuery) Modify(modifiers ...func(s *sql.Selector)) *TransactionSelect {
+	tq.modifiers = append(tq.modifiers, modifiers...)
+	return tq.Select()
 }
 
 // TransactionGroupBy is the group-by builder for Transaction entities.
@@ -536,4 +545,10 @@ func (ts *TransactionSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ts *TransactionSelect) Modify(modifiers ...func(s *sql.Selector)) *TransactionSelect {
+	ts.modifiers = append(ts.modifiers, modifiers...)
+	return ts
 }

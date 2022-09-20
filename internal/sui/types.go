@@ -52,33 +52,39 @@ type TX struct {
 			Mutated []struct {
 				Owner     interface{} `json:"owner"`
 				Reference struct {
-					ObjectId string `json:"objectId"`
+					ObjectId string  `json:"objectId"`
+					Version  float64 `json:"version"`
 				} `json:"reference"`
 			} `json:"mutated"`
 
 			Created []struct {
 				Owner     interface{} `json:"owner"`
 				Reference struct {
-					ObjectId string `json:"objectId"`
+					ObjectId string  `json:"objectId"`
+					Version  float64 `json:"version"`
 				} `json:"reference"`
 			} `json:"created"`
 
 			Deleted []struct {
-				ObjectId string `json:"objectId"`
+				ObjectId string  `json:"objectId"`
+				Version  float64 `json:"version"`
 			} `json:"deleted"`
 
 			SharedObjects []struct {
-				ObjectId string `json:"objectId"`
+				ObjectId string  `json:"objectId"`
+				Version  float64 `json:"version"`
 			} `json:"sharedObjects"`
 
 			Wrapped []struct {
-				ObjectId string `json:"objectId"`
+				ObjectId string  `json:"objectId"`
+				Version  float64 `json:"version"`
 			} `json:"wrapped"`
 
 			Unwrapped []struct {
 				Owner     interface{} `json:"owner"`
 				Reference struct {
-					ObjectId string `json:"objectId"`
+					ObjectId string  `json:"objectId"`
+					Version  float64 `json:"version"`
 				} `json:"reference"`
 			} `json:"unwrapped"`
 			// Need keys to iterate
@@ -88,6 +94,25 @@ type TX struct {
 	} `json:"result"`
 	Arguments *[]Arg
 	Events    *[]Event
+	Changed   *[]Changed
+}
+
+type Changed struct {
+	Version  int
+	Type     string
+	ObjectId string
+}
+
+type SocketObj struct {
+	Fields struct {
+		SuiMoveStruct map[string]interface{} `json:"SuiMoveStruct"`
+	} `json:"fields"`
+	Id             string `json:"id"`
+	Owner          string `json:"owner"`
+	Type_          string `json:"type_"`
+	Version        int    `json:"version"`
+	Status         string `json:"status"`
+	Transaction_id string `json:"transaction_id"`
 }
 
 // Object Structure
@@ -112,6 +137,37 @@ type Obj struct {
 	} `json:"result"`
 }
 
+type SocketTX struct {
+	Certificate struct {
+		Gas_budget  int         `json:"gas_budget"`
+		Gas_payment interface{} `json:"gas_payment"`
+		Gas_price   int         `json:"gas_price"`
+		Kind        struct {
+			Single map[string]interface{} `json:"single"`
+			Batch  []interface{}          `json:"batch"`
+		} `json:"kind"`
+		Sender string `json:"sender"`
+	} `json:"certificate"`
+	Effects struct {
+		Created    interface{} `json:"created"`
+		Deleted    interface{} `json:"deleted"`
+		Events     interface{} `json:"events"`
+		Gas_object interface{} `json:"gas_object"`
+		Gas_used   struct {
+			Computation_cost int `json:"computation_cost"`
+			Storage_cost     int `json:"storage_cost"`
+			Storage_rebate   int `json:"storage_rebate"`
+		} `json:"gas_used"`
+		Mutated            interface{} `json:"mutated"`
+		Shared_objects     interface{} `json:"shared_objects"`
+		Unwrapped          interface{} `json:"unwrapped"`
+		Wrapped            interface{} `json:"wrapped"`
+		Status             interface{} `json:"status"`
+		Transaction_digest string      `json:"transaction_digest"`
+	} `json:"effects"`
+	Time uint64 `json:"time"`
+}
+
 // Response structure from calling sui_getObjectsOwnedByAddress
 type AccResponse struct {
 	Result []struct {
@@ -124,7 +180,7 @@ type AccResponse struct {
 // Account Structure
 type Acc struct {
 	ID           string
-	Balance      uint64
+	Balance      int64
 	Objects      []AccObject
 	Transactions []string
 }

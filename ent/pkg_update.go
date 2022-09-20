@@ -17,8 +17,9 @@ import (
 // PkgUpdate is the builder for updating Pkg entities.
 type PkgUpdate struct {
 	config
-	hooks    []Hook
-	mutation *PkgMutation
+	hooks     []Hook
+	mutation  *PkgMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the PkgUpdate builder.
@@ -104,6 +105,12 @@ func (pu *PkgUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (pu *PkgUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PkgUpdate {
+	pu.modifiers = append(pu.modifiers, modifiers...)
+	return pu
+}
+
 func (pu *PkgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -143,6 +150,7 @@ func (pu *PkgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: pkg.FieldBytecode,
 		})
 	}
+	_spec.Modifiers = pu.modifiers
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{pkg.Label}
@@ -157,9 +165,10 @@ func (pu *PkgUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // PkgUpdateOne is the builder for updating a single Pkg entity.
 type PkgUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *PkgMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *PkgMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetTransactionID sets the "TransactionID" field.
@@ -252,6 +261,12 @@ func (puo *PkgUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (puo *PkgUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PkgUpdateOne {
+	puo.modifiers = append(puo.modifiers, modifiers...)
+	return puo
+}
+
 func (puo *PkgUpdateOne) sqlSave(ctx context.Context) (_node *Pkg, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -308,6 +323,7 @@ func (puo *PkgUpdateOne) sqlSave(ctx context.Context) (_node *Pkg, err error) {
 			Column: pkg.FieldBytecode,
 		})
 	}
+	_spec.Modifiers = puo.modifiers
 	_node = &Pkg{config: puo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

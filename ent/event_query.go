@@ -23,8 +23,8 @@ type EventQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Event
-	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*Event) error
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -429,6 +429,9 @@ func (eq *EventQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if eq.unique != nil && *eq.unique {
 		selector.Distinct()
 	}
+	for _, m := range eq.modifiers {
+		m(selector)
+	}
 	for _, p := range eq.predicates {
 		p(selector)
 	}
@@ -444,6 +447,12 @@ func (eq *EventQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (eq *EventQuery) Modify(modifiers ...func(s *sql.Selector)) *EventSelect {
+	eq.modifiers = append(eq.modifiers, modifiers...)
+	return eq.Select()
 }
 
 // EventGroupBy is the group-by builder for Event entities.
@@ -536,4 +545,10 @@ func (es *EventSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (es *EventSelect) Modify(modifiers ...func(s *sql.Selector)) *EventSelect {
+	es.modifiers = append(es.modifiers, modifiers...)
+	return es
 }

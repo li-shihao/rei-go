@@ -1126,6 +1126,20 @@ func GasLTE(v uint32) predicate.Transaction {
 	})
 }
 
+// ChangedIsNil applies the IsNil predicate on the "Changed" field.
+func ChangedIsNil() predicate.Transaction {
+	return predicate.Transaction(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldChanged)))
+	})
+}
+
+// ChangedNotNil applies the NotNil predicate on the "Changed" field.
+func ChangedNotNil() predicate.Transaction {
+	return predicate.Transaction(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldChanged)))
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Transaction) predicate.Transaction {
 	return predicate.Transaction(func(s *sql.Selector) {

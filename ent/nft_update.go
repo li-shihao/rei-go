@@ -17,8 +17,9 @@ import (
 // NFTUpdate is the builder for updating NFT entities.
 type NFTUpdate struct {
 	config
-	hooks    []Hook
-	mutation *NFTMutation
+	hooks     []Hook
+	mutation  *NFTMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the NFTUpdate builder.
@@ -46,15 +47,15 @@ func (nu *NFTUpdate) SetMetadata(m map[string]interface{}) *NFTUpdate {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (nu *NFTUpdate) SetSequenceID(u uint64) *NFTUpdate {
+func (nu *NFTUpdate) SetSequenceID(i int64) *NFTUpdate {
 	nu.mutation.ResetSequenceID()
-	nu.mutation.SetSequenceID(u)
+	nu.mutation.SetSequenceID(i)
 	return nu
 }
 
-// AddSequenceID adds u to the "SequenceID" field.
-func (nu *NFTUpdate) AddSequenceID(u int64) *NFTUpdate {
-	nu.mutation.AddSequenceID(u)
+// AddSequenceID adds i to the "SequenceID" field.
+func (nu *NFTUpdate) AddSequenceID(i int64) *NFTUpdate {
+	nu.mutation.AddSequenceID(i)
 	return nu
 }
 
@@ -117,6 +118,12 @@ func (nu *NFTUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (nu *NFTUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *NFTUpdate {
+	nu.modifiers = append(nu.modifiers, modifiers...)
+	return nu
+}
+
 func (nu *NFTUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -158,18 +165,19 @@ func (nu *NFTUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := nu.mutation.SequenceID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: nft.FieldSequenceID,
 		})
 	}
 	if value, ok := nu.mutation.AddedSequenceID(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: nft.FieldSequenceID,
 		})
 	}
+	_spec.Modifiers = nu.modifiers
 	if n, err = sqlgraph.UpdateNodes(ctx, nu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{nft.Label}
@@ -184,9 +192,10 @@ func (nu *NFTUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // NFTUpdateOne is the builder for updating a single NFT entity.
 type NFTUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *NFTMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *NFTMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetObjectID sets the "ObjectID" field.
@@ -208,15 +217,15 @@ func (nuo *NFTUpdateOne) SetMetadata(m map[string]interface{}) *NFTUpdateOne {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (nuo *NFTUpdateOne) SetSequenceID(u uint64) *NFTUpdateOne {
+func (nuo *NFTUpdateOne) SetSequenceID(i int64) *NFTUpdateOne {
 	nuo.mutation.ResetSequenceID()
-	nuo.mutation.SetSequenceID(u)
+	nuo.mutation.SetSequenceID(i)
 	return nuo
 }
 
-// AddSequenceID adds u to the "SequenceID" field.
-func (nuo *NFTUpdateOne) AddSequenceID(u int64) *NFTUpdateOne {
-	nuo.mutation.AddSequenceID(u)
+// AddSequenceID adds i to the "SequenceID" field.
+func (nuo *NFTUpdateOne) AddSequenceID(i int64) *NFTUpdateOne {
+	nuo.mutation.AddSequenceID(i)
 	return nuo
 }
 
@@ -292,6 +301,12 @@ func (nuo *NFTUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (nuo *NFTUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *NFTUpdateOne {
+	nuo.modifiers = append(nuo.modifiers, modifiers...)
+	return nuo
+}
+
 func (nuo *NFTUpdateOne) sqlSave(ctx context.Context) (_node *NFT, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -350,18 +365,19 @@ func (nuo *NFTUpdateOne) sqlSave(ctx context.Context) (_node *NFT, err error) {
 	}
 	if value, ok := nuo.mutation.SequenceID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: nft.FieldSequenceID,
 		})
 	}
 	if value, ok := nuo.mutation.AddedSequenceID(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: nft.FieldSequenceID,
 		})
 	}
+	_spec.Modifiers = nuo.modifiers
 	_node = &NFT{config: nuo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

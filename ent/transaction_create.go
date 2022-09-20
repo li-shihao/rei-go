@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"rei.io/rei/ent/schema"
 	"rei.io/rei/ent/transaction"
 )
 
@@ -125,6 +126,12 @@ func (tc *TransactionCreate) SetNillableFunction(s *string) *TransactionCreate {
 // SetGas sets the "Gas" field.
 func (tc *TransactionCreate) SetGas(u uint32) *TransactionCreate {
 	tc.mutation.SetGas(u)
+	return tc
+}
+
+// SetChanged sets the "Changed" field.
+func (tc *TransactionCreate) SetChanged(s []schema.Changed) *TransactionCreate {
+	tc.mutation.SetChanged(s)
 	return tc
 }
 
@@ -337,6 +344,14 @@ func (tc *TransactionCreate) createSpec() (*Transaction, *sqlgraph.CreateSpec) {
 			Column: transaction.FieldGas,
 		})
 		_node.Gas = value
+	}
+	if value, ok := tc.mutation.Changed(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: transaction.FieldChanged,
+		})
+		_node.Changed = value
 	}
 	return _node, _spec
 }
@@ -561,6 +576,24 @@ func (u *TransactionUpsert) UpdateGas() *TransactionUpsert {
 // AddGas adds v to the "Gas" field.
 func (u *TransactionUpsert) AddGas(v uint32) *TransactionUpsert {
 	u.Add(transaction.FieldGas, v)
+	return u
+}
+
+// SetChanged sets the "Changed" field.
+func (u *TransactionUpsert) SetChanged(v []schema.Changed) *TransactionUpsert {
+	u.Set(transaction.FieldChanged, v)
+	return u
+}
+
+// UpdateChanged sets the "Changed" field to the value that was provided on create.
+func (u *TransactionUpsert) UpdateChanged() *TransactionUpsert {
+	u.SetExcluded(transaction.FieldChanged)
+	return u
+}
+
+// ClearChanged clears the value of the "Changed" field.
+func (u *TransactionUpsert) ClearChanged() *TransactionUpsert {
+	u.SetNull(transaction.FieldChanged)
 	return u
 }
 
@@ -804,6 +837,27 @@ func (u *TransactionUpsertOne) AddGas(v uint32) *TransactionUpsertOne {
 func (u *TransactionUpsertOne) UpdateGas() *TransactionUpsertOne {
 	return u.Update(func(s *TransactionUpsert) {
 		s.UpdateGas()
+	})
+}
+
+// SetChanged sets the "Changed" field.
+func (u *TransactionUpsertOne) SetChanged(v []schema.Changed) *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetChanged(v)
+	})
+}
+
+// UpdateChanged sets the "Changed" field to the value that was provided on create.
+func (u *TransactionUpsertOne) UpdateChanged() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateChanged()
+	})
+}
+
+// ClearChanged clears the value of the "Changed" field.
+func (u *TransactionUpsertOne) ClearChanged() *TransactionUpsertOne {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearChanged()
 	})
 }
 
@@ -1206,6 +1260,27 @@ func (u *TransactionUpsertBulk) AddGas(v uint32) *TransactionUpsertBulk {
 func (u *TransactionUpsertBulk) UpdateGas() *TransactionUpsertBulk {
 	return u.Update(func(s *TransactionUpsert) {
 		s.UpdateGas()
+	})
+}
+
+// SetChanged sets the "Changed" field.
+func (u *TransactionUpsertBulk) SetChanged(v []schema.Changed) *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.SetChanged(v)
+	})
+}
+
+// UpdateChanged sets the "Changed" field to the value that was provided on create.
+func (u *TransactionUpsertBulk) UpdateChanged() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.UpdateChanged()
+	})
+}
+
+// ClearChanged clears the value of the "Changed" field.
+func (u *TransactionUpsertBulk) ClearChanged() *TransactionUpsertBulk {
+	return u.Update(func(s *TransactionUpsert) {
+		s.ClearChanged()
 	})
 }
 

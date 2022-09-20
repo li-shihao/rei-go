@@ -17,8 +17,9 @@ import (
 // ObjectUpdate is the builder for updating Object entities.
 type ObjectUpdate struct {
 	config
-	hooks    []Hook
-	mutation *ObjectMutation
+	hooks     []Hook
+	mutation  *ObjectMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the ObjectUpdate builder.
@@ -137,6 +138,19 @@ func (ou *ObjectUpdate) SetTransactionID(s string) *ObjectUpdate {
 	return ou
 }
 
+// SetVersion sets the "Version" field.
+func (ou *ObjectUpdate) SetVersion(i int) *ObjectUpdate {
+	ou.mutation.ResetVersion()
+	ou.mutation.SetVersion(i)
+	return ou
+}
+
+// AddVersion adds i to the "Version" field.
+func (ou *ObjectUpdate) AddVersion(i int) *ObjectUpdate {
+	ou.mutation.AddVersion(i)
+	return ou
+}
+
 // Mutation returns the ObjectMutation object of the builder.
 func (ou *ObjectUpdate) Mutation() *ObjectMutation {
 	return ou.mutation
@@ -194,6 +208,12 @@ func (ou *ObjectUpdate) ExecX(ctx context.Context) {
 	if err := ou.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (ou *ObjectUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ObjectUpdate {
+	ou.modifiers = append(ou.modifiers, modifiers...)
+	return ou
 }
 
 func (ou *ObjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -300,6 +320,21 @@ func (ou *ObjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: object.FieldTransactionID,
 		})
 	}
+	if value, ok := ou.mutation.Version(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: object.FieldVersion,
+		})
+	}
+	if value, ok := ou.mutation.AddedVersion(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: object.FieldVersion,
+		})
+	}
+	_spec.Modifiers = ou.modifiers
 	if n, err = sqlgraph.UpdateNodes(ctx, ou.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{object.Label}
@@ -314,9 +349,10 @@ func (ou *ObjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // ObjectUpdateOne is the builder for updating a single Object entity.
 type ObjectUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *ObjectMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *ObjectMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetStatus sets the "Status" field.
@@ -429,6 +465,19 @@ func (ouo *ObjectUpdateOne) SetTransactionID(s string) *ObjectUpdateOne {
 	return ouo
 }
 
+// SetVersion sets the "Version" field.
+func (ouo *ObjectUpdateOne) SetVersion(i int) *ObjectUpdateOne {
+	ouo.mutation.ResetVersion()
+	ouo.mutation.SetVersion(i)
+	return ouo
+}
+
+// AddVersion adds i to the "Version" field.
+func (ouo *ObjectUpdateOne) AddVersion(i int) *ObjectUpdateOne {
+	ouo.mutation.AddVersion(i)
+	return ouo
+}
+
 // Mutation returns the ObjectMutation object of the builder.
 func (ouo *ObjectUpdateOne) Mutation() *ObjectMutation {
 	return ouo.mutation
@@ -499,6 +548,12 @@ func (ouo *ObjectUpdateOne) ExecX(ctx context.Context) {
 	if err := ouo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (ouo *ObjectUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ObjectUpdateOne {
+	ouo.modifiers = append(ouo.modifiers, modifiers...)
+	return ouo
 }
 
 func (ouo *ObjectUpdateOne) sqlSave(ctx context.Context) (_node *Object, err error) {
@@ -622,6 +677,21 @@ func (ouo *ObjectUpdateOne) sqlSave(ctx context.Context) (_node *Object, err err
 			Column: object.FieldTransactionID,
 		})
 	}
+	if value, ok := ouo.mutation.Version(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: object.FieldVersion,
+		})
+	}
+	if value, ok := ouo.mutation.AddedVersion(); ok {
+		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: object.FieldVersion,
+		})
+	}
+	_spec.Modifiers = ouo.modifiers
 	_node = &Object{config: ouo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

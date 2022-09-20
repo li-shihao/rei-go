@@ -23,8 +23,8 @@ type PkgQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Pkg
-	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*Pkg) error
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -429,6 +429,9 @@ func (pq *PkgQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if pq.unique != nil && *pq.unique {
 		selector.Distinct()
 	}
+	for _, m := range pq.modifiers {
+		m(selector)
+	}
 	for _, p := range pq.predicates {
 		p(selector)
 	}
@@ -444,6 +447,12 @@ func (pq *PkgQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (pq *PkgQuery) Modify(modifiers ...func(s *sql.Selector)) *PkgSelect {
+	pq.modifiers = append(pq.modifiers, modifiers...)
+	return pq.Select()
 }
 
 // PkgGroupBy is the group-by builder for Pkg entities.
@@ -536,4 +545,10 @@ func (ps *PkgSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ps *PkgSelect) Modify(modifiers ...func(s *sql.Selector)) *PkgSelect {
+	ps.modifiers = append(ps.modifiers, modifiers...)
+	return ps
 }

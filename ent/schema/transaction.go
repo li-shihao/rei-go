@@ -10,6 +10,12 @@ type Transaction struct {
 	ent.Schema
 }
 
+type Changed struct {
+	Version  int
+	Type     string
+	ObjectId string
+}
+
 // Fields of the Transaction.
 func (Transaction) Fields() []ent.Field {
 	return []ent.Field{
@@ -24,6 +30,7 @@ func (Transaction) Fields() []ent.Field {
 		field.String("Module").Optional(),
 		field.String("Function").Optional(),
 		field.Uint32("Gas"),
+		field.JSON("Changed", []Changed{}).Optional(),
 	}
 }
 

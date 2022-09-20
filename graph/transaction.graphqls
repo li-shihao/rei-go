@@ -5,11 +5,31 @@ type Transaction {
   Status: Boolean!
   Sender: String!
   Recipient: String!
-  Amount: Float!
+  Amount: Float
+  Package: String
+  Module: String
+  Function: String
+  Args: [Argument]
+  Gas: Int!
+  Change: [Change]
+}
+
+type Frequency {
+  Time: Time!
+  Count: Int!
+}
+
+type Change {
+  Version: Int!
+  Type: String!
+  Before: Object
+  After: Object!
+}
+
+type HotModule {
   Package: String!
   Module: String!
-  Function: String!
-  Gas: Int!
+  Count: Int!
 }
 
 extend type Query {
@@ -20,4 +40,6 @@ extend type Query {
 type Subscription {
   TPS: Float
   transactions: [Transaction]
+  lastDay: [Frequency]
+  hotModule: [HotModule]
 }

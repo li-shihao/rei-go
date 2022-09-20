@@ -66,7 +66,7 @@ func (a *Account) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[0] = &Field{
-		Type:  "uint64",
+		Type:  "int64",
 		Name:  "SequenceID",
 		Value: string(buf),
 	}
@@ -82,7 +82,7 @@ func (a *Account) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[2] = &Field{
-		Type:  "uint64",
+		Type:  "int64",
 		Name:  "Balance",
 		Value: string(buf),
 	}
@@ -243,7 +243,7 @@ func (n *NFT) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[3] = &Field{
-		Type:  "uint64",
+		Type:  "int64",
 		Name:  "SequenceID",
 		Value: string(buf),
 	}
@@ -254,7 +254,7 @@ func (o *Object) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     o.ID,
 		Type:   "Object",
-		Fields: make([]*Field, 8),
+		Fields: make([]*Field, 9),
 		Edges:  make([]*Edge, 0),
 	}
 	var buf []byte
@@ -320,6 +320,14 @@ func (o *Object) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[7] = &Field{
 		Type:  "string",
 		Name:  "TransactionID",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(o.Version); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "int",
+		Name:  "Version",
 		Value: string(buf),
 	}
 	return node, nil
@@ -399,7 +407,7 @@ func (t *Transaction) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     t.ID,
 		Type:   "Transaction",
-		Fields: make([]*Field, 11),
+		Fields: make([]*Field, 12),
 		Edges:  make([]*Edge, 0),
 	}
 	var buf []byte
@@ -489,6 +497,14 @@ func (t *Transaction) Node(ctx context.Context) (node *Node, err error) {
 	node.Fields[10] = &Field{
 		Type:  "uint32",
 		Name:  "Gas",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(t.Changed); err != nil {
+		return nil, err
+	}
+	node.Fields[11] = &Field{
+		Type:  "[]schema.Changed",
+		Name:  "Changed",
 		Value: string(buf),
 	}
 	return node, nil

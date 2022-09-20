@@ -23,8 +23,8 @@ type NFTQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.NFT
-	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*NFT) error
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -429,6 +429,9 @@ func (nq *NFTQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if nq.unique != nil && *nq.unique {
 		selector.Distinct()
 	}
+	for _, m := range nq.modifiers {
+		m(selector)
+	}
 	for _, p := range nq.predicates {
 		p(selector)
 	}
@@ -444,6 +447,12 @@ func (nq *NFTQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (nq *NFTQuery) Modify(modifiers ...func(s *sql.Selector)) *NFTSelect {
+	nq.modifiers = append(nq.modifiers, modifiers...)
+	return nq.Select()
 }
 
 // NFTGroupBy is the group-by builder for NFT entities.
@@ -536,4 +545,10 @@ func (ns *NFTSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (ns *NFTSelect) Modify(modifiers ...func(s *sql.Selector)) *NFTSelect {
+	ns.modifiers = append(ns.modifiers, modifiers...)
+	return ns
 }

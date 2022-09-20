@@ -23,6 +23,8 @@ const (
 	FieldObjectID = "object_id"
 	// FieldTransactionID holds the string denoting the transactionid field in the database.
 	FieldTransactionID = "transaction_id"
+	// FieldVersion holds the string denoting the version field in the database.
+	FieldVersion = "version"
 	// Table holds the table name of the object in the database.
 	Table = "objects"
 )
@@ -38,6 +40,7 @@ var Columns = []string{
 	FieldOwner,
 	FieldObjectID,
 	FieldTransactionID,
+	FieldVersion,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

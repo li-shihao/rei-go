@@ -8,6 +8,11 @@ type Account {
 
 scalar Map
 
+type HomeAcc {
+  AccountID: String!
+  Balance: Int!
+}
+
 type AccObject {
   ObjectId: String!
   Type: String!
@@ -28,5 +33,5 @@ extend type Query {
 }
 
 extend type Subscription {
-  accounts: [Account]
+  accounts: [HomeAcc]
 }

@@ -127,6 +127,13 @@ func TransactionID(v string) predicate.Object {
 	})
 }
 
+// Version applies equality check predicate on the "Version" field. It's identical to VersionEQ.
+func Version(v int) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldVersion), v))
+	})
+}
+
 // StatusEQ applies the EQ predicate on the "Status" field.
 func StatusEQ(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
@@ -802,6 +809,70 @@ func TransactionIDEqualFold(v string) predicate.Object {
 func TransactionIDContainsFold(v string) predicate.Object {
 	return predicate.Object(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldTransactionID), v))
+	})
+}
+
+// VersionEQ applies the EQ predicate on the "Version" field.
+func VersionEQ(v int) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldVersion), v))
+	})
+}
+
+// VersionNEQ applies the NEQ predicate on the "Version" field.
+func VersionNEQ(v int) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldVersion), v))
+	})
+}
+
+// VersionIn applies the In predicate on the "Version" field.
+func VersionIn(vs ...int) predicate.Object {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldVersion), v...))
+	})
+}
+
+// VersionNotIn applies the NotIn predicate on the "Version" field.
+func VersionNotIn(vs ...int) predicate.Object {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldVersion), v...))
+	})
+}
+
+// VersionGT applies the GT predicate on the "Version" field.
+func VersionGT(v int) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldVersion), v))
+	})
+}
+
+// VersionGTE applies the GTE predicate on the "Version" field.
+func VersionGTE(v int) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldVersion), v))
+	})
+}
+
+// VersionLT applies the LT predicate on the "Version" field.
+func VersionLT(v int) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldVersion), v))
+	})
+}
+
+// VersionLTE applies the LTE predicate on the "Version" field.
+func VersionLTE(v int) predicate.Object {
+	return predicate.Object(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldVersion), v))
 	})
 }
 

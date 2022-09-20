@@ -101,6 +101,12 @@ func (oc *ObjectCreate) SetTransactionID(s string) *ObjectCreate {
 	return oc
 }
 
+// SetVersion sets the "Version" field.
+func (oc *ObjectCreate) SetVersion(i int) *ObjectCreate {
+	oc.mutation.SetVersion(i)
+	return oc
+}
+
 // Mutation returns the ObjectMutation object of the builder.
 func (oc *ObjectCreate) Mutation() *ObjectMutation {
 	return oc.mutation
@@ -185,6 +191,9 @@ func (oc *ObjectCreate) check() error {
 	}
 	if _, ok := oc.mutation.TransactionID(); !ok {
 		return &ValidationError{Name: "TransactionID", err: errors.New(`ent: missing required field "Object.TransactionID"`)}
+	}
+	if _, ok := oc.mutation.Version(); !ok {
+		return &ValidationError{Name: "Version", err: errors.New(`ent: missing required field "Object.Version"`)}
 	}
 	return nil
 }
@@ -277,6 +286,14 @@ func (oc *ObjectCreate) createSpec() (*Object, *sqlgraph.CreateSpec) {
 			Column: object.FieldTransactionID,
 		})
 		_node.TransactionID = value
+	}
+	if value, ok := oc.mutation.Version(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt,
+			Value:  value,
+			Column: object.FieldVersion,
+		})
+		_node.Version = value
 	}
 	return _node, _spec
 }
@@ -453,6 +470,24 @@ func (u *ObjectUpsert) SetTransactionID(v string) *ObjectUpsert {
 // UpdateTransactionID sets the "TransactionID" field to the value that was provided on create.
 func (u *ObjectUpsert) UpdateTransactionID() *ObjectUpsert {
 	u.SetExcluded(object.FieldTransactionID)
+	return u
+}
+
+// SetVersion sets the "Version" field.
+func (u *ObjectUpsert) SetVersion(v int) *ObjectUpsert {
+	u.Set(object.FieldVersion, v)
+	return u
+}
+
+// UpdateVersion sets the "Version" field to the value that was provided on create.
+func (u *ObjectUpsert) UpdateVersion() *ObjectUpsert {
+	u.SetExcluded(object.FieldVersion)
+	return u
+}
+
+// AddVersion adds v to the "Version" field.
+func (u *ObjectUpsert) AddVersion(v int) *ObjectUpsert {
+	u.Add(object.FieldVersion, v)
 	return u
 }
 
@@ -640,6 +675,27 @@ func (u *ObjectUpsertOne) SetTransactionID(v string) *ObjectUpsertOne {
 func (u *ObjectUpsertOne) UpdateTransactionID() *ObjectUpsertOne {
 	return u.Update(func(s *ObjectUpsert) {
 		s.UpdateTransactionID()
+	})
+}
+
+// SetVersion sets the "Version" field.
+func (u *ObjectUpsertOne) SetVersion(v int) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetVersion(v)
+	})
+}
+
+// AddVersion adds v to the "Version" field.
+func (u *ObjectUpsertOne) AddVersion(v int) *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.AddVersion(v)
+	})
+}
+
+// UpdateVersion sets the "Version" field to the value that was provided on create.
+func (u *ObjectUpsertOne) UpdateVersion() *ObjectUpsertOne {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateVersion()
 	})
 }
 
@@ -986,6 +1042,27 @@ func (u *ObjectUpsertBulk) SetTransactionID(v string) *ObjectUpsertBulk {
 func (u *ObjectUpsertBulk) UpdateTransactionID() *ObjectUpsertBulk {
 	return u.Update(func(s *ObjectUpsert) {
 		s.UpdateTransactionID()
+	})
+}
+
+// SetVersion sets the "Version" field.
+func (u *ObjectUpsertBulk) SetVersion(v int) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.SetVersion(v)
+	})
+}
+
+// AddVersion adds v to the "Version" field.
+func (u *ObjectUpsertBulk) AddVersion(v int) *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.AddVersion(v)
+	})
+}
+
+// UpdateVersion sets the "Version" field to the value that was provided on create.
+func (u *ObjectUpsertBulk) UpdateVersion() *ObjectUpsertBulk {
+	return u.Update(func(s *ObjectUpsert) {
+		s.UpdateVersion()
 	})
 }
 

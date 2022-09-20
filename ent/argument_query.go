@@ -23,8 +23,8 @@ type ArgumentQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Argument
-	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*Argument) error
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -429,6 +429,9 @@ func (aq *ArgumentQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if aq.unique != nil && *aq.unique {
 		selector.Distinct()
 	}
+	for _, m := range aq.modifiers {
+		m(selector)
+	}
 	for _, p := range aq.predicates {
 		p(selector)
 	}
@@ -444,6 +447,12 @@ func (aq *ArgumentQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (aq *ArgumentQuery) Modify(modifiers ...func(s *sql.Selector)) *ArgumentSelect {
+	aq.modifiers = append(aq.modifiers, modifiers...)
+	return aq.Select()
 }
 
 // ArgumentGroupBy is the group-by builder for Argument entities.
@@ -536,4 +545,10 @@ func (as *ArgumentSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (as *ArgumentSelect) Modify(modifiers ...func(s *sql.Selector)) *ArgumentSelect {
+	as.modifiers = append(as.modifiers, modifiers...)
+	return as
 }

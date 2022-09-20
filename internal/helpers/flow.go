@@ -8,8 +8,8 @@ import (
 var check = Check
 
 // Finds a number in a given file; if file does not exist assume the number to be 0
-func InitResume(name string) uint64 {
-	cnt := uint64(0)
+func InitResume(name string) int64 {
+	cnt := int64(0)
 
 	// If count file exists
 	if _, err := os.Stat(name); err == nil {
@@ -27,7 +27,7 @@ func InitResume(name string) uint64 {
 }
 
 // Truncates and saves a number into a given file
-func Save(name string, cnt uint64) {
+func Save(name string, cnt int64) {
 	file, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE, 0755)
 	check(err)
 
@@ -42,7 +42,7 @@ func Save(name string, cnt uint64) {
 }
 
 // Truncates and saves a number into a given file, then exits
-func CleanUp(name string, cnt uint64) {
+func CleanUp(name string, cnt int64) {
 
 	file, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE, 0755)
 	check(err)

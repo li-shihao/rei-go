@@ -23,8 +23,8 @@ type ObjectQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Object
-	modifiers  []func(*sql.Selector)
 	loadTotal  []func(context.Context, []*Object) error
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -429,6 +429,9 @@ func (oq *ObjectQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if oq.unique != nil && *oq.unique {
 		selector.Distinct()
 	}
+	for _, m := range oq.modifiers {
+		m(selector)
+	}
 	for _, p := range oq.predicates {
 		p(selector)
 	}
@@ -444,6 +447,12 @@ func (oq *ObjectQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (oq *ObjectQuery) Modify(modifiers ...func(s *sql.Selector)) *ObjectSelect {
+	oq.modifiers = append(oq.modifiers, modifiers...)
+	return oq.Select()
 }
 
 // ObjectGroupBy is the group-by builder for Object entities.
@@ -536,4 +545,10 @@ func (os *ObjectSelect) sqlScan(ctx context.Context, v any) error {
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
+}
+
+// Modify adds a query modifier for attaching custom logic to queries.
+func (os *ObjectSelect) Modify(modifiers ...func(s *sql.Selector)) *ObjectSelect {
+	os.modifiers = append(os.modifiers, modifiers...)
+	return os
 }

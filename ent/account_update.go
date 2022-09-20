@@ -18,8 +18,9 @@ import (
 // AccountUpdate is the builder for updating Account entities.
 type AccountUpdate struct {
 	config
-	hooks    []Hook
-	mutation *AccountMutation
+	hooks     []Hook
+	mutation  *AccountMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // Where appends a list predicates to the AccountUpdate builder.
@@ -29,15 +30,15 @@ func (au *AccountUpdate) Where(ps ...predicate.Account) *AccountUpdate {
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (au *AccountUpdate) SetSequenceID(u uint64) *AccountUpdate {
+func (au *AccountUpdate) SetSequenceID(i int64) *AccountUpdate {
 	au.mutation.ResetSequenceID()
-	au.mutation.SetSequenceID(u)
+	au.mutation.SetSequenceID(i)
 	return au
 }
 
-// AddSequenceID adds u to the "SequenceID" field.
-func (au *AccountUpdate) AddSequenceID(u int64) *AccountUpdate {
-	au.mutation.AddSequenceID(u)
+// AddSequenceID adds i to the "SequenceID" field.
+func (au *AccountUpdate) AddSequenceID(i int64) *AccountUpdate {
+	au.mutation.AddSequenceID(i)
 	return au
 }
 
@@ -48,21 +49,41 @@ func (au *AccountUpdate) SetAccountID(s string) *AccountUpdate {
 }
 
 // SetBalance sets the "Balance" field.
-func (au *AccountUpdate) SetBalance(u uint64) *AccountUpdate {
+func (au *AccountUpdate) SetBalance(i int64) *AccountUpdate {
 	au.mutation.ResetBalance()
-	au.mutation.SetBalance(u)
+	au.mutation.SetBalance(i)
 	return au
 }
 
-// AddBalance adds u to the "Balance" field.
-func (au *AccountUpdate) AddBalance(u int64) *AccountUpdate {
-	au.mutation.AddBalance(u)
+// SetNillableBalance sets the "Balance" field if the given value is not nil.
+func (au *AccountUpdate) SetNillableBalance(i *int64) *AccountUpdate {
+	if i != nil {
+		au.SetBalance(*i)
+	}
+	return au
+}
+
+// AddBalance adds i to the "Balance" field.
+func (au *AccountUpdate) AddBalance(i int64) *AccountUpdate {
+	au.mutation.AddBalance(i)
+	return au
+}
+
+// ClearBalance clears the value of the "Balance" field.
+func (au *AccountUpdate) ClearBalance() *AccountUpdate {
+	au.mutation.ClearBalance()
 	return au
 }
 
 // SetObjects sets the "Objects" field.
 func (au *AccountUpdate) SetObjects(so []schema.AccObject) *AccountUpdate {
 	au.mutation.SetObjects(so)
+	return au
+}
+
+// ClearObjects clears the value of the "Objects" field.
+func (au *AccountUpdate) ClearObjects() *AccountUpdate {
+	au.mutation.ClearObjects()
 	return au
 }
 
@@ -137,6 +158,12 @@ func (au *AccountUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (au *AccountUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AccountUpdate {
+	au.modifiers = append(au.modifiers, modifiers...)
+	return au
+}
+
 func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -157,14 +184,14 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := au.mutation.SequenceID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: account.FieldSequenceID,
 		})
 	}
 	if value, ok := au.mutation.AddedSequenceID(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: account.FieldSequenceID,
 		})
@@ -178,15 +205,21 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := au.mutation.Balance(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: account.FieldBalance,
 		})
 	}
 	if value, ok := au.mutation.AddedBalance(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
+			Column: account.FieldBalance,
+		})
+	}
+	if au.mutation.BalanceCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
 			Column: account.FieldBalance,
 		})
 	}
@@ -194,6 +227,12 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
+			Column: account.FieldObjects,
+		})
+	}
+	if au.mutation.ObjectsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
 			Column: account.FieldObjects,
 		})
 	}
@@ -210,6 +249,7 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: account.FieldTransactions,
 		})
 	}
+	_spec.Modifiers = au.modifiers
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{account.Label}
@@ -224,21 +264,22 @@ func (au *AccountUpdate) sqlSave(ctx context.Context) (n int, err error) {
 // AccountUpdateOne is the builder for updating a single Account entity.
 type AccountUpdateOne struct {
 	config
-	fields   []string
-	hooks    []Hook
-	mutation *AccountMutation
+	fields    []string
+	hooks     []Hook
+	mutation  *AccountMutation
+	modifiers []func(*sql.UpdateBuilder)
 }
 
 // SetSequenceID sets the "SequenceID" field.
-func (auo *AccountUpdateOne) SetSequenceID(u uint64) *AccountUpdateOne {
+func (auo *AccountUpdateOne) SetSequenceID(i int64) *AccountUpdateOne {
 	auo.mutation.ResetSequenceID()
-	auo.mutation.SetSequenceID(u)
+	auo.mutation.SetSequenceID(i)
 	return auo
 }
 
-// AddSequenceID adds u to the "SequenceID" field.
-func (auo *AccountUpdateOne) AddSequenceID(u int64) *AccountUpdateOne {
-	auo.mutation.AddSequenceID(u)
+// AddSequenceID adds i to the "SequenceID" field.
+func (auo *AccountUpdateOne) AddSequenceID(i int64) *AccountUpdateOne {
+	auo.mutation.AddSequenceID(i)
 	return auo
 }
 
@@ -249,21 +290,41 @@ func (auo *AccountUpdateOne) SetAccountID(s string) *AccountUpdateOne {
 }
 
 // SetBalance sets the "Balance" field.
-func (auo *AccountUpdateOne) SetBalance(u uint64) *AccountUpdateOne {
+func (auo *AccountUpdateOne) SetBalance(i int64) *AccountUpdateOne {
 	auo.mutation.ResetBalance()
-	auo.mutation.SetBalance(u)
+	auo.mutation.SetBalance(i)
 	return auo
 }
 
-// AddBalance adds u to the "Balance" field.
-func (auo *AccountUpdateOne) AddBalance(u int64) *AccountUpdateOne {
-	auo.mutation.AddBalance(u)
+// SetNillableBalance sets the "Balance" field if the given value is not nil.
+func (auo *AccountUpdateOne) SetNillableBalance(i *int64) *AccountUpdateOne {
+	if i != nil {
+		auo.SetBalance(*i)
+	}
+	return auo
+}
+
+// AddBalance adds i to the "Balance" field.
+func (auo *AccountUpdateOne) AddBalance(i int64) *AccountUpdateOne {
+	auo.mutation.AddBalance(i)
+	return auo
+}
+
+// ClearBalance clears the value of the "Balance" field.
+func (auo *AccountUpdateOne) ClearBalance() *AccountUpdateOne {
+	auo.mutation.ClearBalance()
 	return auo
 }
 
 // SetObjects sets the "Objects" field.
 func (auo *AccountUpdateOne) SetObjects(so []schema.AccObject) *AccountUpdateOne {
 	auo.mutation.SetObjects(so)
+	return auo
+}
+
+// ClearObjects clears the value of the "Objects" field.
+func (auo *AccountUpdateOne) ClearObjects() *AccountUpdateOne {
+	auo.mutation.ClearObjects()
 	return auo
 }
 
@@ -351,6 +412,12 @@ func (auo *AccountUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
+func (auo *AccountUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AccountUpdateOne {
+	auo.modifiers = append(auo.modifiers, modifiers...)
+	return auo
+}
+
 func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -388,14 +455,14 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 	}
 	if value, ok := auo.mutation.SequenceID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: account.FieldSequenceID,
 		})
 	}
 	if value, ok := auo.mutation.AddedSequenceID(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: account.FieldSequenceID,
 		})
@@ -409,15 +476,21 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 	}
 	if value, ok := auo.mutation.Balance(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
 			Column: account.FieldBalance,
 		})
 	}
 	if value, ok := auo.mutation.AddedBalance(); ok {
 		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeUint64,
+			Type:   field.TypeInt64,
 			Value:  value,
+			Column: account.FieldBalance,
+		})
+	}
+	if auo.mutation.BalanceCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
 			Column: account.FieldBalance,
 		})
 	}
@@ -425,6 +498,12 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeJSON,
 			Value:  value,
+			Column: account.FieldObjects,
+		})
+	}
+	if auo.mutation.ObjectsCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
 			Column: account.FieldObjects,
 		})
 	}
@@ -441,6 +520,7 @@ func (auo *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err e
 			Column: account.FieldTransactions,
 		})
 	}
+	_spec.Modifiers = auo.modifiers
 	_node = &Account{config: auo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues

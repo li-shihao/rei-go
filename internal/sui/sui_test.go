@@ -941,7 +941,7 @@ func TestGetAccount(t *testing.T) {
 
 	result1, _ := tc.GetAccount("0x66f68a701b4cb5f2b3d3446c093eb91fae8af34f")
 	got1 := result1.Balance
-	exp1 := uint64(250000)
+	exp1 := int64(250000)
 
 	if got1 != exp1 {
 		t.Errorf("Result was incorrect, got %d, want %d.", got1, exp1)

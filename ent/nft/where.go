@@ -93,7 +93,7 @@ func Type(v string) predicate.NFT {
 }
 
 // SequenceID applies equality check predicate on the "SequenceID" field. It's identical to SequenceIDEQ.
-func SequenceID(v uint64) predicate.NFT {
+func SequenceID(v int64) predicate.NFT {
 	return predicate.NFT(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldSequenceID), v))
 	})
@@ -298,21 +298,21 @@ func TypeContainsFold(v string) predicate.NFT {
 }
 
 // SequenceIDEQ applies the EQ predicate on the "SequenceID" field.
-func SequenceIDEQ(v uint64) predicate.NFT {
+func SequenceIDEQ(v int64) predicate.NFT {
 	return predicate.NFT(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldSequenceID), v))
 	})
 }
 
 // SequenceIDNEQ applies the NEQ predicate on the "SequenceID" field.
-func SequenceIDNEQ(v uint64) predicate.NFT {
+func SequenceIDNEQ(v int64) predicate.NFT {
 	return predicate.NFT(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldSequenceID), v))
 	})
 }
 
 // SequenceIDIn applies the In predicate on the "SequenceID" field.
-func SequenceIDIn(vs ...uint64) predicate.NFT {
+func SequenceIDIn(vs ...int64) predicate.NFT {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -323,7 +323,7 @@ func SequenceIDIn(vs ...uint64) predicate.NFT {
 }
 
 // SequenceIDNotIn applies the NotIn predicate on the "SequenceID" field.
-func SequenceIDNotIn(vs ...uint64) predicate.NFT {
+func SequenceIDNotIn(vs ...int64) predicate.NFT {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -334,28 +334,28 @@ func SequenceIDNotIn(vs ...uint64) predicate.NFT {
 }
 
 // SequenceIDGT applies the GT predicate on the "SequenceID" field.
-func SequenceIDGT(v uint64) predicate.NFT {
+func SequenceIDGT(v int64) predicate.NFT {
 	return predicate.NFT(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldSequenceID), v))
 	})
 }
 
 // SequenceIDGTE applies the GTE predicate on the "SequenceID" field.
-func SequenceIDGTE(v uint64) predicate.NFT {
+func SequenceIDGTE(v int64) predicate.NFT {
 	return predicate.NFT(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldSequenceID), v))
 	})
 }
 
 // SequenceIDLT applies the LT predicate on the "SequenceID" field.
-func SequenceIDLT(v uint64) predicate.NFT {
+func SequenceIDLT(v int64) predicate.NFT {
 	return predicate.NFT(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldSequenceID), v))
 	})
 }
 
 // SequenceIDLTE applies the LTE predicate on the "SequenceID" field.
-func SequenceIDLTE(v uint64) predicate.NFT {
+func SequenceIDLTE(v int64) predicate.NFT {
 	return predicate.NFT(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldSequenceID), v))
 	})
