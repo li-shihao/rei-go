@@ -1,0 +1,349 @@
+diff --git a/crates/sui-adapter/src/temporary_store.rs b/crates/sui-adapter/src/temporary_store.rs
+index 6e15dde8..c4e15567 100644
+--- a/crates/sui-adapter/src/temporary_store.rs
++++ b/crates/sui-adapter/src/temporary_store.rs
+@@ -25,7 +25,6 @@ pub struct InnerTemporaryStore {
+     pub written: BTreeMap<ObjectID, (ObjectRef, Object)>,
+     pub deleted: BTreeMap<ObjectID, (SequenceNumber, DeleteKind)>,
+ }
+-
+ pub struct TemporaryStore<S> {
+     // The backing store for retrieving Move packages onchain.
+     // When executing a Move call, the dependent packages are not going to be
+@@ -77,29 +76,32 @@ impl<S> TemporaryStore<S> {
+     }
+ 
+     /// Break up the structure and return its internal stores (objects, active_inputs, written, deleted)
+-    pub fn into_inner(self) -> (InnerTemporaryStore, Vec<Event>) {
++    pub fn into_inner(self) -> (InnerTemporaryStore, Vec<Event>, TemporaryStore<S>) {
+         #[cfg(debug_assertions)]
+         {
+             self.check_invariants();
+         }
+         let written = self
+             ._written
++            .clone()
+             .into_iter()
+             .map(|(id, obj)| (id, (obj.compute_object_reference(), obj)))
+             .collect();
+         let deleted = self
+             .deleted
++            .clone()
+             .into_iter()
+             .map(|(id, (seq, kind))| (id, (seq, kind)))
+             .collect();
+         (
+             InnerTemporaryStore {
+-                objects: self.input_objects,
+-                mutable_inputs: self.mutable_input_refs,
++                objects: self.input_objects.clone(),
++                mutable_inputs: self.mutable_input_refs.clone(),
+                 written,
+                 deleted,
+             },
+-            self.events,
++            self.events.clone(),
++            self,
+         )
+     }
+ 
+@@ -200,7 +202,7 @@ impl<S> TemporaryStore<S> {
+         gas_cost_summary: GasCostSummary,
+         status: ExecutionStatus,
+         gas_object_ref: ObjectRef,
+-    ) -> (InnerTemporaryStore, TransactionEffects) {
++    ) -> (InnerTemporaryStore, TransactionEffects, TemporaryStore<S>) {
+         let written = self
+             ._written
+             .iter()
+@@ -245,7 +247,7 @@ impl<S> TemporaryStore<S> {
+                 }
+             }
+         }
+-        let (inner, events) = self.into_inner();
++        let (inner, events, temporary_store) = self.into_inner();
+ 
+         let effects = TransactionEffects {
+             status,
+@@ -261,7 +263,7 @@ impl<S> TemporaryStore<S> {
+             events,
+             dependencies: transaction_dependencies,
+         };
+-        (inner, effects)
++        (inner, effects, temporary_store)
+     }
+ 
+     /// An internal check of the invariants (will only fire in debug)
+diff --git a/crates/sui-config/src/genesis.rs b/crates/sui-config/src/genesis.rs
+index 5ae5361d..a6ae4b6a 100644
+--- a/crates/sui-config/src/genesis.rs
++++ b/crates/sui-config/src/genesis.rs
+@@ -514,6 +514,7 @@ fn process_package(
+             written, deleted, ..
+         },
+         _events,
++        _,
+     ) = temporary_store.into_inner();
+ 
+     store.finish(written, deleted);
+@@ -580,6 +581,7 @@ pub fn generate_genesis_system_object(
+             written, deleted, ..
+         },
+         _events,
++        _,
+     ) = temporary_store.into_inner();
+ 
+     store.finish(written, deleted);
+diff --git a/crates/sui-core/src/authority.rs b/crates/sui-core/src/authority.rs
+index 57239302..c2ba75ef 100644
+--- a/crates/sui-core/src/authority.rs
++++ b/crates/sui-core/src/authority.rs
+@@ -29,6 +29,7 @@ use prometheus::{
+     register_histogram_with_registry, register_int_counter_with_registry,
+     register_int_gauge_with_registry, Histogram, IntCounter, IntGauge,
+ };
++use serde::Deserialize;
+ use std::ops::Deref;
+ use std::path::PathBuf;
+ use std::{
+@@ -43,11 +44,17 @@ use sui_adapter::adapter;
+ use sui_adapter::temporary_store::InnerTemporaryStore;
+ use sui_config::genesis::Genesis;
+ use sui_json_rpc_types::SuiEventEnvelope;
++use sui_json_rpc_types::SuiMoveStruct;
+ use sui_storage::{
+     event_store::{EventStore, EventStoreType, StoredEvent},
+     write_ahead_log::{DBTxGuard, TxGuard, WriteAheadLog},
+     IndexStore,
+ };
++
++use serde::Serialize;
++use std::io::prelude::*;
++use std::str;
++
+ use sui_types::{
+     base_types::*,
+     batch::{TxSequenceNumber, UpdateItem},
+@@ -691,7 +698,8 @@ impl AuthorityState {
+         let transaction_dependencies = input_objects.transaction_dependencies();
+         let temporary_store =
+             TemporaryStore::new(self.database.clone(), input_objects, transaction_digest);
+-        let (inner_temp_store, effects, _execution_error) =
++
++        let (inner_temp_store, effects, _execution_error, temporary_store) =
+             execution_engine::execute_transaction_to_effects(
+                 shared_object_refs,
+                 temporary_store,
+@@ -704,6 +712,144 @@ impl AuthorityState {
+                 self.epoch(),
+             );
+ 
++        // My own added code to display post-transaction object states
++        /////////////////////////////////////////////////////////////////////////////////////////////////////////
++        /////////////////////////////////////////////////////////////////////////////////////////////////////////
++        // Super unstable!!!
++
++        // Set up unix socket
++        use move_binary_format::normalized;
++        use std::collections::BTreeMap;
++
++        #[derive(Debug, Deserialize, Serialize)]
++        enum Field {
++            SuiMoveStruct(SuiMoveStruct),
++            NotExist,
++            Package(BTreeMap<String, normalized::Module>),
++        }
++
++        #[derive(Debug, Deserialize, Serialize)]
++        enum Status {
++            Exists,
++            NotExists,
++        }
++
++        #[derive(Debug, Deserialize, Serialize)]
++        struct ObjectPrint {
++            fields: Field,
++            version: u64,
++            type_: String,
++            owner: String,
++            id: ObjectID,
++            status: Status,
++            transaction_id: TransactionDigest,
++        }
++
++        let input_objects = certificate
++            .clone()
++            .signed_data
++            .data
++            .input_objects()
++            .unwrap(); // Should be okay because worst case this returns a null sized array
++
++        for obj in input_objects {
++            let t = temporary_store.objects().get(&obj.object_id()).clone();
++
++            let output: ObjectPrint;
++
++            match t {
++                // If not found
++                None => {
++                    let temp_output = ObjectPrint {
++                        fields: Field::NotExist,
++                        owner: String::from(""),
++                        type_: String::from(""),
++                        version: 18446744073709551615,
++                        id: obj.object_id(),
++                        status: Status::NotExists,
++                        transaction_id: effects.clone().transaction_digest,
++                    };
++                    output = temp_output;
++                }
++                Some(object) => {
++                    let layout_wrapped = object
++                        .get_layout(ObjectFormatOptions::default(), self.module_cache.as_ref())
++                        .clone()
++                        .unwrap(); // get_layout never returns Err
++
++                    match layout_wrapped {
++                        None => {
++                            continue;
++                        }
++                        Some(lay) => {
++                            let temp = object
++                                .clone()
++                                .data
++                                .try_as_move()
++                                .unwrap()
++                                .to_move_struct(&lay.clone())
++                                .unwrap()
++                                .into();
++
++                            use sui_types::object::Owner;
++
++                            let ownert = match object.owner {
++                                Owner::AddressOwner(_) => {
++                                    object.owner.get_owner_address().unwrap().to_string()
++                                }
++                                Owner::ObjectOwner(_) => {
++                                    object.owner.get_owner_address().unwrap().to_string()
++                                }
++                                Owner::Shared => String::from("Shared"),
++                                Owner::Immutable => String::from("Immutable"),
++                            };
++
++                            let temp_output = if let SuiMoveStruct::WithTypes { type_, fields } =
++                                temp
++                            {
++                                ObjectPrint {
++                                    type_,
++                                    version: object.clone().version().value(),
++                                    owner: ownert,
++                                    fields: Field::SuiMoveStruct(SuiMoveStruct::WithFields(fields)),
++                                    id: obj.object_id(),
++                                    status: Status::Exists,
++                                    transaction_id: effects.clone().transaction_digest,
++                                }
++                            } else {
++                                ObjectPrint {
++                                    type_: object.clone().type_().unwrap().to_string(),
++                                    version: object.clone().version().value(),
++                                    owner: ownert,
++                                    fields: Field::SuiMoveStruct(temp),
++                                    id: obj.object_id(),
++                                    status: Status::Exists,
++                                    transaction_id: effects.clone().transaction_digest,
++                                }
++                            };
++                            output = temp_output;
++                        }
++                    };
++                }
++            };
++
++            let data = serde_json::to_string(&output).unwrap();
++
++            use std::fs::OpenOptions;
++            let mut file = OpenOptions::new()
++                .write(true)
++                .append(true)
++                .open("cache")
++                .unwrap();
++
++            match writeln!(file, "{}", data) {
++                Err(_) => {
++                    print!("{}", data)
++                }
++                Ok(_) => {}
++            }
++        }
++
+         // TODO: Distribute gas charge and rebate, which can be retrieved from effects.
+         let signed_effects = effects.to_sign_effects(self.epoch(), &self.name, &*self.secret);
+ 
+diff --git a/crates/sui-core/src/authority/authority_store.rs b/crates/sui-core/src/authority/authority_store.rs
+index 930c4210..78da51f1 100644
+--- a/crates/sui-core/src/authority/authority_store.rs
++++ b/crates/sui-core/src/authority/authority_store.rs
+@@ -676,7 +676,7 @@ impl<S: Eq + Debug + Serialize + for<'de> Deserialize<'de>> SuiDataStore<S> {
+             std::iter::once((transaction_digest, &certificate)),
+         )?;
+ 
+-        let (inner_temporary_store, _events) = temporary_store.into_inner();
++        let (inner_temporary_store, _events, _) = temporary_store.into_inner();
+         self.sequence_tx(
+             write_batch,
+             inner_temporary_store,
+diff --git a/crates/sui-core/src/epoch/tests/reconfiguration_tests.rs b/crates/sui-core/src/epoch/tests/reconfiguration_tests.rs
+index 86dc6213..b9cd1f88 100644
+--- a/crates/sui-core/src/epoch/tests/reconfiguration_tests.rs
++++ b/crates/sui-core/src/epoch/tests/reconfiguration_tests.rs
+@@ -144,7 +144,7 @@ async fn test_start_epoch_change() {
+         ),
+         tx_digest,
+     );
+-    let (inner_temporary_store, effects, _) = execution_engine::execute_transaction_to_effects(
++    let (inner_temporary_store, effects, _, _) = execution_engine::execute_transaction_to_effects(
+         vec![],
+         temporary_store,
+         transaction.signed_data.data.clone(),
+diff --git a/crates/sui-core/src/execution_engine.rs b/crates/sui-core/src/execution_engine.rs
+index 8be79c71..3aa5d5d0 100644
+--- a/crates/sui-core/src/execution_engine.rs
++++ b/crates/sui-core/src/execution_engine.rs
+@@ -48,6 +48,7 @@ pub fn execute_transaction_to_effects<S: BackingPackageStore + ParentSync>(
+     InnerTemporaryStore,
+     TransactionEffects,
+     Option<ExecutionError>,
++    TemporaryStore<S>,
+ ) {
+     let mut tx_ctx = TxContext::new(&transaction_data.signer(), &transaction_digest, epoch);
+ 
+@@ -80,7 +81,7 @@ pub fn execute_transaction_to_effects<S: BackingPackageStore + ParentSync>(
+     // Remove from dependencies the generic hash
+     transaction_dependencies.remove(&TransactionDigest::genesis());
+ 
+-    let (inner, effects) = temporary_store.to_effects(
++    let (inner, effects, temporary_store) = temporary_store.to_effects(
+         shared_object_refs,
+         &transaction_digest,
+         transaction_dependencies.into_iter().collect(),
+@@ -88,7 +89,7 @@ pub fn execute_transaction_to_effects<S: BackingPackageStore + ParentSync>(
+         status,
+         gas_object_ref,
+     );
+-    (inner, effects, execution_error)
++    (inner, effects, execution_error, temporary_store)
+ }
+ 
+ fn charge_gas_for_object_read<S>(
+diff --git a/crates/sui-transactional-test-runner/src/test_adapter.rs b/crates/sui-transactional-test-runner/src/test_adapter.rs
+index 79ce8549..6a41fe40 100644
+--- a/crates/sui-transactional-test-runner/src/test_adapter.rs
++++ b/crates/sui-transactional-test-runner/src/test_adapter.rs
+@@ -499,6 +499,7 @@ impl<'a> SuiTestAdapter<'a> {
+                 ..
+             },
+             execution_error,
++            _,
+         ) = execution_engine::execute_transaction_to_effects(
+             shared_object_refs,
+             temporary_store,
